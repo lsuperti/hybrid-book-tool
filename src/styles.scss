@@ -1,1 +1,39 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --primary-color: hsl(210, 92%, 35%);
+  --primary-contrast: #ffffff;
+  --primary-assent: hsl(210, 92%, 20%);
+  --card-bg: hsl(210, 20%, 95%);
+  --card-bg-assent: hsl(210, 20%, 90%);
+  --icon-color: hsl(210, 50%, 10%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg-color: #070b13;
+    --text-color: #ffffff;
+    --primary-color: hsl(210, 63%, 50%);
+    --primary-contrast: #ffffff;
+    --primary-assent: hsl(210, 63%, 40%);
+    --card-bg: hsl(210, 33%, 17%);
+    --card-bg-assent: hsl(210, 33%, 22%);
+    --icon-color: hsl(210, 63%, 50%);
+  }
+}
+
+body {
+    margin: 0;
+    font-family: var(--inter-font);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow: clip;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}

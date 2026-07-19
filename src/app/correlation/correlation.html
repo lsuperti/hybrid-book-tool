@@ -1,0 +1,10 @@
+<app-horizontal-split [defaultLeftWidth]="50" [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de texto e registro de texto e de segmentos de vídeo e visualização de vídeo'">
+    <app-vertical-split left [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de texto e registro de texto'">
+      <div tabindex="0" top>Text Segments</div>
+      <div tabindex="0" bottom>Text Record</div>
+    </app-vertical-split>
+    <app-vertical-split right [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de vídeo e visualização de vídeo'">
+      <div tabindex="0" top>Video Segments</div>
+      <div tabindex="0" bottom>Video</div>
+    </app-vertical-split>
+</app-horizontal-split>
