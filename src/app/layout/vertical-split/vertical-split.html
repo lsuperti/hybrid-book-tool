@@ -1,0 +1,16 @@
+<div class="split-container" #splitContainer [style.--top-height.%]="topHeight()">
+  <div class="top-area">
+    <ng-content select="[top]"></ng-content>
+  </div>
+  <div class="resize-bar"
+  (pointerdown)="resizeBarPointerDown($event)"
+  (keydown)="resizeBarKeyDown($event)"
+  role="separator"
+  aria-orientation="horizontal"
+  aria-valuenow="{{ topHeight() }}"
+  aria-label="{{ resizeBarAriaLabel() }}"
+  tabindex="0"></div>
+  <div class="bottom-area">
+    <ng-content select="[bottom]"></ng-content>
+  </div>
+</div>

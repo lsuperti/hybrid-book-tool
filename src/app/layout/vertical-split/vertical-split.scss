@@ -1,0 +1,44 @@
+.split-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    position: relative;
+}
+
+$resize-bar-width: 0.25rem;
+$resize-bar-grab-width: 0.5rem;
+
+.top-area {
+    height: calc(var(--top-height) - $resize-bar-width / 2);
+}
+
+.bottom-area {
+    height: calc(100% - var(--top-height) - $resize-bar-width / 2);
+}
+
+.resize-bar {
+    position: absolute;
+    width: 100%;
+    height: $resize-bar-grab-width;
+    top: calc(var(--top-height) - $resize-bar-grab-width / 2);
+    cursor: ns-resize;
+}
+
+.resize-bar:focus-visible {
+    outline: none;
+}
+
+.resize-bar::after {
+    content: '';
+    width: 100%;
+    height: $resize-bar-width;
+    top: calc($resize-bar-width / 2);
+    position: absolute;
+    background-color: var(--card-bg-assent);
+    transition: background-color 0.2s;
+}
+
+.resize-bar:hover::after, .resize-bar:focus-visible::after, .resize-bar:active::after {
+    background-color: var(--primary-color);
+}

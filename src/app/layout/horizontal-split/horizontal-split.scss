@@ -1,0 +1,44 @@
+.split-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 100%;
+    position: relative;
+}
+
+$resize-bar-width: 0.25rem;
+$resize-bar-grab-width: 0.5rem;
+
+.left-area {
+    width: calc(var(--left-width) - $resize-bar-width / 2);
+}
+
+.right-area {
+    width: calc(100% - var(--left-width) - $resize-bar-width / 2);
+}
+
+.resize-bar {
+    position: absolute;
+    height: 100%;
+    width: $resize-bar-grab-width;
+    left: calc(var(--left-width) - $resize-bar-grab-width / 2);
+    cursor: ew-resize;
+}
+
+.resize-bar:focus-visible {
+    outline: none;
+}
+
+.resize-bar::after {
+    content: '';
+    height: 100%;
+    width: $resize-bar-width;
+    left: calc($resize-bar-width / 2);
+    position: absolute;
+    background-color: var(--card-bg-assent);
+    transition: background-color 0.2s;
+}
+
+.resize-bar:hover::after, .resize-bar:focus-visible::after, .resize-bar:active::after {
+    background-color: var(--primary-color);
+}
