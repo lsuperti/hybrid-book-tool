@@ -1,0 +1,23 @@
+.warning-card {
+  height: calc(100% - 0.75rem);
+  width: calc(100% - 0.75rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0.25rem;
+  border-radius: 0.5rem;
+  background-color: var(--card-bg);
+  border: 0.125rem solid var(--card-bg-assent);
+  color: var(--card-bg-assent-assent-assent);
+}
+
+.warning-card svg {
+  width: 10rem;
+  margin-bottom: 2rem;
+}
+
+.warning-card p {
+  font-size: 1.5rem;
+  color: var(--card-bg-assent-assent-assent-assent);
+}

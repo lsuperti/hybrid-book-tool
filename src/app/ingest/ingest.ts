@@ -1,7 +1,7 @@
 import { Component, inject, Renderer2, afterNextRender, viewChild, ElementRef, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HorizontalSplit } from '../layout/horizontal-split/horizontal-split';
-import { MediaFiles } from './media-files';
+import { MediaFiles } from '../services/media-files';
 
 @Component({
   selector: 'app-ingest',
@@ -12,7 +12,6 @@ import { MediaFiles } from './media-files';
 export class Ingest {
   protected readonly mediaFilesService = inject(MediaFiles);
   private readonly renderer2 = inject(Renderer2);
-  private readonly sanitizer = inject(DomSanitizer);
 
   protected readonly mediaFiles = this.mediaFilesService.mediaFiles;
   private readonly unlisteners: (() => void)[] = [];

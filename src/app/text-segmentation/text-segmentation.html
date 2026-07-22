@@ -1,4 +1,55 @@
 <app-horizontal-split [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'">
-  <div tabindex="0" left>Segments</div>
-  <div tabindex="0" right>Text Record</div>
+  @if (mediaFilesService.textRecord().type !== 'application/pdf') {
+    <app-warning-card left class="warning-card" [message]="'Registro de texto não selecionado.'"></app-warning-card>
+  } @else {
+    <div class="segments-container" left>
+      <ol class="segments-list">
+        @for (segment of textSegmentationService.segments(); track segment.id; let last = $last) {
+          <li class="segments-list-item">
+            <button class="segments-list-item-main-button" (click)="selectedSegmentIndex.set(textSegmentationService.segments().indexOf(segment))" [aria-selected]="textSegmentationService.segments().indexOf(segment) === selectedSegmentIndex()">
+              <p>{{ segment.text }}</p>
+            </button>
+            @if (!last) {
+              <button class="segments-list-link-button" (click)="toggleSegmentLinked(segment)" [class.linked]="segment.linked">
+                @if (segment.linked) {
+                  <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,44 V 84" />
+                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="72" rx="16" ry="16" />
+                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="16" rx="16" ry="16" />
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,84 V 96" />
+                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="84" rx="16" ry="16" />
+                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="4" rx="16" ry="16" />
+                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,32 V 44" />
+                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,73 V 84" />
+                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,55 V 44" />
+                  </svg>
+                }
+              </button>
+            }
+          </li>
+        }
+      </ol>
+    </div>
+  }
+  @if (mediaFilesService.textRecord().type !== 'application/pdf') {
+    <app-warning-card right class="warning-card" [message]="'Registro de texto não selecionado.'"></app-warning-card>
+  } @else {
+    <div right class="text-record-area">
+      <div class="text-record-container">
+        <!--
+        STUB: The PDF will be displayed with the PDF.js library, which will be implemented in the next iteration. For now,
+        we are using an iframe to display the PDF.
+        -->
+        <iframe
+        [src]="mediaFilesService.textRecord().url"
+        width="100%"
+        height="100%"
+        frameborder="0"
+        ></iframe>
+      </div>
+    </div>
+  }
 </app-horizontal-split>

@@ -44,7 +44,7 @@ describe('Ingest', () => {
       configurable: true
     });
 
-    component['onFileSelected']({ target: inputElement } as unknown as Event);
+    component['onMediaFileSelected']({ target: inputElement } as unknown as Event);
 
     const mediaFilesAfterSelection = component['mediaFiles']();
     expect(mediaFilesAfterSelection).toHaveLength(1);

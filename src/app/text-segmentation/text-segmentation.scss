@@ -1,0 +1,105 @@
+.segments-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+$list-item-height: 2rem;
+$list-item-link-button-height: 2rem;
+
+.segments-list {
+  list-style: none;
+  margin: 0.25rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--card-bg-assent-assent) var(--card-bg);
+}
+
+.segments-list-item {
+  height: $list-item-height + $list-item-link-button-height + 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.segments-list-item:last-child {
+  height: $list-item-height;
+}
+
+.segments-list-item-main-button {
+  border: 0.125rem solid var(--card-bg-assent);
+  border-radius: 0.5rem;
+  width: 100%;
+  $list-item-height: 2rem;
+  padding: 0.5rem;
+  background-color: var(--background-color);
+  display: flex;
+  align-items: center;
+}
+
+.segments-list-link-button {
+  border: 0.125rem solid var(--card-bg-assent);
+  border-radius: 0.5rem;
+  width: $list-item-link-button-height - 0.0625rem - 0.125rem;
+  padding: 0.0625rem;
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
+  background-color: var(--card-bg);
+  display: flex;
+  align-items: center;
+}
+
+.segments-list-link-button.linked {
+  background-color: var(--card-bg-assent-assent);
+  border: 0.125rem solid var(--card-bg-assent-assent-assent);
+}
+
+.segments-list-item button[aria-selected="true"] {
+  background-color: var(--card-bg);
+  border: 0.125rem solid var(--primary-color);
+}
+
+.segments-list-item button:focus-visible {
+  outline: 0.125rem solid var(--primary-color);
+  outline-offset: -0.125rem;
+}
+
+.segments-list-item button p {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.text-record-area {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-record-container {
+  width: calc(100% - 0.75rem);
+  height: calc(100% - 0.75rem);
+  border: 0.125rem solid var(--card-bg-assent);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.text-record-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0.375rem;
+}
+
+.warning-card {
+  width: 100%;
+  height: 100%;
+}
