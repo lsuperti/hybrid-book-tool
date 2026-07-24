@@ -1,3 +1,47 @@
+$list-item-height: 3rem;
+
+.upload-area {
+  background-color: var(--card-bg);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem;
+  border: 0.125rem dashed var(--card-bg-assent-assent);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.upload-area.dragging-over {
+  background-color: var(--card-bg-assent);
+  border-color: var(--card-bg-assent-assent-assent);
+}
+
+.upload-area p {
+  margin: 0;
+  text-align: center;
+  font-size: 1.25rem;
+}
+
+.upload-area .upload-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.upload-area .upload-link:focus-visible {
+  outline: 2px solid var(--primary-color);
+  border-radius: 2px;
+}
+
+.upload-area svg {
+  color: var(--icon-color);
+  width: 10rem;
+  padding-bottom: 2rem;
+}
+
 .media-area-container {
   display: flex;
   flex-direction: column;
@@ -5,7 +49,9 @@
   height: 100%;
 }
 
-$list-item-height: 3rem;
+.media-files-upload-area {
+  margin-right: 0.125rem;
+}
 
 .media-files-list {
   list-style: none;
@@ -99,50 +145,9 @@ $list-item-height: 3rem;
   height: calc($list-item-height * 2/3);
 }
 
-.upload-area {
-  background-color: var(--card-bg);
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 0.25rem;
-  border: 0.125rem dashed var(--card-bg-assent-assent);
-  border-radius: 0.5rem;
-  padding: 2rem;
-  transition: background-color 0.3s, border-color 0.3s;
-}
-
-.upload-area.dragging-over {
-  background-color: var(--card-bg-assent);
-  border-color: var(--card-bg-assent-assent-assent);
-}
-
-.upload-area p {
-  margin: 0;
-  text-align: center;
-  font-size: 1.25rem;
-}
-
-.upload-area .upload-link {
-  color: var(--primary-color);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.upload-area .upload-link:focus-visible {
-  outline: 2px solid var(--primary-color);
-  border-radius: 2px;
-}
-
-.upload-area svg {
-  color: var(--icon-color);
-  width: 10rem;
-  padding-bottom: 2rem;
-}
-
 .text-record-upload-area {
   height: calc(1/6 * 100%);
+  margin-left: 0.125rem;
 }
 
 .text-record-area-container {
@@ -160,7 +165,7 @@ $list-item-height: 3rem;
 .text-record-content {
   width: calc(100% - 0.5rem);
   height: calc(100% - 0.5rem);
-  margin: 0.25rem;
+  margin: 0.25rem 0.25rem 0.25rem 0;
   border: 0.125rem solid var(--card-bg-assent);
   border-radius: 0.5rem;
 }

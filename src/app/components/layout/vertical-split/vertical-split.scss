@@ -1,44 +1,48 @@
 .split-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  position: relative;
 }
 
 $resize-bar-width: 0.25rem;
 $resize-bar-grab-width: 0.5rem;
 
 .top-area {
-    height: calc(var(--top-height) - $resize-bar-width / 2);
+  height: var(--top-height);
 }
 
 .bottom-area {
-    height: calc(100% - var(--top-height) - $resize-bar-width / 2);
+  height: calc(100% - var(--top-height));
 }
 
 .resize-bar {
-    position: absolute;
-    width: 100%;
-    height: $resize-bar-grab-width;
-    top: calc(var(--top-height) - $resize-bar-grab-width / 2);
-    cursor: ns-resize;
+  position: absolute;
+  width: 100%;
+  height: $resize-bar-grab-width;
+  top: calc(var(--top-height) - $resize-bar-grab-width / 2);
+  cursor: ns-resize;
 }
 
 .resize-bar:focus-visible {
-    outline: none;
+  outline: none;
 }
 
 .resize-bar::after {
-    content: '';
-    width: 100%;
-    height: $resize-bar-width;
-    top: calc($resize-bar-width / 2);
-    position: absolute;
-    background-color: var(--card-bg-assent);
-    transition: background-color 0.2s;
+  content: '';
+  width: calc(100% - var(--left-margin) - var(--right-margin));
+  height: $resize-bar-width;
+  position: absolute;
+  top: calc(($resize-bar-grab-width - $resize-bar-width) / 2);
+  left: var(--left-margin);
+  background-color: var(--primary-color);
+  transform-origin: center;
+  transform: scaleY(0);
+  transition: transform 0.2s;
+  transition-timing-function: ease-in-out;
 }
 
 .resize-bar:hover::after, .resize-bar:focus-visible::after, .resize-bar:active::after {
-    background-color: var(--primary-color);
+  transform: scaleY(1);
 }

@@ -7,5 +7,8 @@ import { Component, input } from '@angular/core';
   styleUrl: './warning-card.scss',
 })
 export class WarningCard {
-  message = input.required<string>();
+  public readonly halfWidthMargin = input<Side[]>([]);
+  public readonly message = input.required<string>();
 }
+
+export type Side = 'left' | 'right' | 'top' | 'bottom';

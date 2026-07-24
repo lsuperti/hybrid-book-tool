@@ -1,3 +1,9 @@
+.segments-area {
+  width: 100%;
+  height: 100%;
+  margin: 0.25rem 0.125rem 0.25rem 0.25rem;
+}
+
 .segments-container {
   width: 100%;
   height: 100%;
@@ -76,8 +82,8 @@ $list-item-link-button-height: 2rem;
 }
 
 .text-record-area {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 0.75rem);
+  height: calc(100% - 0.75rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -99,9 +105,4 @@ $list-item-link-button-height: 2rem;
   height: 100%;
   border: none;
   border-radius: 0.375rem;
-}
-
-.warning-card {
-  width: 100%;
-  height: 100%;
 }

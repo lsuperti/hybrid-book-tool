@@ -2,7 +2,10 @@
   <div class="top-area">
     <ng-content select="[top]"></ng-content>
   </div>
-  <div class="resize-bar"
+  <div
+  class="resize-bar"
+  [style.--left-margin]="resizeBarLeftMargin()"
+  [style.--right-margin]="resizeBarRightMargin()"
   (pointerdown)="resizeBarPointerDown($event)"
   (keydown)="resizeBarKeyDown($event)"
   role="separator"

@@ -1,4 +1,8 @@
-<app-horizontal-split [resizeBarAriaLabel]="'Redimensionamento das áreas de mídia e de visualização do registro de texto'">
+<app-horizontal-split
+[resizeBarAriaLabel]="'Redimensionamento das áreas de mídia e de visualização do registro de texto'"
+[resizeBarTopMargin]="'0.75rem'"
+[resizeBarBottomMargin]="'0.75rem'"
+>
   <div class="media-area-container" left>
     <ol class="media-files-list" [style.display]="mediaFiles().length > 0 ? 'block' : 'none'">
       @for (mediaFile of mediaFiles(); track mediaFile.id) {

@@ -1,6 +1,10 @@
-<app-horizontal-split [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'">
+<app-horizontal-split
+[resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'"
+[resizeBarTopMargin]="'0.75rem'"
+[resizeBarBottomMargin]="'0.75rem'"
+>
   @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card left class="warning-card" [message]="'Registro de texto não selecionado.'"></app-warning-card>
+    <app-warning-card left class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right']"></app-warning-card>
   } @else {
     <div class="segments-container" left>
       <ol class="segments-list">
@@ -35,7 +39,7 @@
     </div>
   }
   @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card right class="warning-card" [message]="'Registro de texto não selecionado.'"></app-warning-card>
+    <app-warning-card right class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['left']"></app-warning-card>
   } @else {
     <div right class="text-record-area">
       <div class="text-record-container">

@@ -12,6 +12,34 @@
   color: var(--card-bg-assent-assent-assent);
 }
 
+.warning-card[halfWidthLeft] {
+  margin-left: 0.125rem;
+  width: calc(100% - 0.75rem + 0.125rem);
+}
+
+.warning-card[halfWidthRight] {
+  margin-right: 0.125rem;
+  width: calc(100% - 0.75rem + 0.125rem);
+}
+
+.warning-card[halfWidthLeft][halfWidthRight] {
+  width: calc(100% - 0.75rem + 0.125rem + 0.125rem);
+}
+
+.warning-card[halfWidthTop] {
+  margin-top: 0.125rem;
+  height: calc(100% - 0.75rem + 0.125rem);
+}
+
+.warning-card[halfWidthBottom] {
+  margin-bottom: 0.125rem;
+  height: calc(100% - 0.75rem + 0.125rem);
+}
+
+.warning-card[halfWidthTop][halfWidthBottom] {
+  height: calc(100% - 0.75rem + 0.125rem + 0.125rem);
+}
+
 .warning-card svg {
   width: 10rem;
   margin-bottom: 2rem;

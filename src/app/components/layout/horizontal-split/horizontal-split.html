@@ -2,7 +2,10 @@
   <div class="left-area">
     <ng-content select="[left]"></ng-content>
   </div>
-  <div class="resize-bar"
+  <div
+  class="resize-bar"
+  [style.--top-margin]="resizeBarTopMargin()"
+  [style.--bottom-margin]="resizeBarBottomMargin()"
   (pointerdown)="resizeBarPointerDown($event)"
   (keydown)="resizeBarKeyDown($event)"
   role="separator"

@@ -11,6 +11,8 @@ export class VerticalSplit {
   
   public readonly defaultTopHeight = input<number>(50);
   public readonly resizeBarAriaLabel = input.required<string>();
+  public readonly resizeBarLeftMargin = input<string>('0px');
+  public readonly resizeBarRightMargin = input<string>('0px');
   
   protected topHeight!: WritableSignal<number>;
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');

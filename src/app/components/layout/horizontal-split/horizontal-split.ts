@@ -11,6 +11,8 @@ export class HorizontalSplit {
   
   public readonly defaultLeftWidth = input<number>(50);
   public readonly resizeBarAriaLabel = input.required<string>();
+  public readonly resizeBarTopMargin = input<string>('0px');
+  public readonly resizeBarBottomMargin = input<string>('0px');
   
   protected leftWidth!: WritableSignal<number>;
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
