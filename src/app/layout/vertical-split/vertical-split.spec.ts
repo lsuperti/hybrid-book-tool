@@ -13,6 +13,9 @@ describe('VerticalSplit', () => {
 
     fixture = TestBed.createComponent(VerticalSplit);
     component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('resizeBarAriaLabel', 'Resize bar');
+
     await fixture.whenStable();
   });
 

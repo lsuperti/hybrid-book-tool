@@ -30,7 +30,8 @@ export class MediaFiles {
       id: this.createMediaFileId(),
       file,
       name: file.name,
-      thumbnail: null
+      thumbnail: null,
+      url: this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(file)) as string
     }));
     
     this.mediaFiles.update(currentFiles => [...currentFiles, ...newMediaFiles]);
@@ -51,6 +52,10 @@ export class MediaFiles {
     if (mediaFileToRemove && mediaFileToRemove.thumbnail) {
       URL.revokeObjectURL(mediaFileToRemove.thumbnail);
       this.generatedThumbnailUrls.delete(mediaFileToRemove.thumbnail);
+    }
+
+    if (mediaFileToRemove && mediaFileToRemove.url) {
+      URL.revokeObjectURL(mediaFileToRemove.url);
     }
   
     this.mediaFiles.update((currentFiles) =>
@@ -114,6 +119,7 @@ export interface MediaFile {
   id: string;
   file: File;
   name: string;
+  url: string | null;
   thumbnail: string | null;
 }
 

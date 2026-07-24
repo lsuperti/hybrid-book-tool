@@ -13,6 +13,9 @@ describe('WarningCard', () => {
 
     fixture = TestBed.createComponent(WarningCard);
     component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('message', 'Test warning message');
+
     await fixture.whenStable();
   });
 

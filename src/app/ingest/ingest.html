@@ -7,7 +7,7 @@
             aria-label="{{ mediaFile.name }}">
           @if (mediaFile.thumbnail) {
             <div class="media-file-thumbnail-container">
-              <img src="{{ mediaFile.thumbnail }}" alt="Thumbnail de {{ mediaFile.name }}" class="media-file-thumbnail" />
+              <img inert src="{{ mediaFile.thumbnail }}" alt="Thumbnail de {{ mediaFile.name }}" class="media-file-thumbnail" />
             </div>
           } @else {
             <div class="media-file-thumbnail-container media-file-thumbnail-placeholder">
@@ -21,7 +21,7 @@
             <p class="media-file-name">{{ mediaFile.name }}</p>
           </div>
           <button class="media-file-delete-button" type="button" aria-label="Remover {{ mediaFile.name }}" (click)="removeMediaFile(mediaFile.id)">
-            <svg class="icon delete-icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+            <svg class="icon delete-icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
               <path style="fill:none;stroke:currentColor;stroke-width:42.6667;stroke-linecap:round;stroke-linejoin:round" d="M 141.1836,162.35464 H 371.632 l -37.33333,261.8112 H 178.51693 Z" />
               <path style="fill:none;stroke:currentColor;stroke-width:42.6667;stroke-linecap:round;stroke-linejoin:round" d="M 114.10913,162.35464 H 397.89087" />
               <rect style="fill:none;stroke:currentColor;stroke-width:42.6667;stroke-linecap:round;stroke-linejoin:round" width="108.49552" height="70.526405" x="204.06201" y="91.828255" />
@@ -40,7 +40,7 @@
         <rect style="fill:currentColor;fill-rule:evenodd" width="32" height="104" x="112" y="24" ry="8" />
       </svg>
       <p>Solte arquivos de mídia aqui ou <span #mediaFilesUploadLink class="upload-link" tabindex="0" role="button" (click)="mediaFileInput.click()">selecione arquivos</span>.</p>
-      <input type="file" #mediaFileInput multiple (change)="onMediaFileSelected($event)" style="display: none;" />
+      <input type="file" #mediaFileInput multiple accept="video/*" (change)="onMediaFileSelected($event)" style="display: none;" />
     </div>
   </div>
   <div class="text-record-area-container" right>
@@ -75,7 +75,7 @@
         <rect style="fill:currentColor;fill-rule:evenodd" width="32" height="104" x="112" y="24" ry="8" />
       </svg>
       <p>{{this.mediaFilesService.textRecord().type === null ? 'Solte o registro de texto aqui ou ' : 'Para alterar o registro de texto, solte um novo registro de texto aqui ou '}} <span #textRecordUploadLink class="upload-link" tabindex="0" role="button" (click)="textRecordFileInput.click()">selecione um arquivo</span>.</p>
-      <input type="file" #textRecordFileInput (change)="onTextRecordFileSelected($event)" style="display: none;" />
+      <input type="file" #textRecordFileInput accept="application/pdf" (change)="onTextRecordFileSelected($event)" style="display: none;" />
     </div>
   </div>
 </app-horizontal-split>

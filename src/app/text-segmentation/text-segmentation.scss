@@ -11,8 +11,9 @@ $list-item-height: 2rem;
 $list-item-link-button-height: 2rem;
 
 .segments-list {
+  width: 100%;
+  height: 100%;
   list-style: none;
-  margin: 0.25rem;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--card-bg-assent-assent) var(--card-bg);
@@ -23,10 +24,11 @@ $list-item-link-button-height: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0.25rem;
 }
 
 .segments-list-item:last-child {
-  height: $list-item-height;
+  height: $list-item-height + 0.1875rem;
 }
 
 .segments-list-item-main-button {
@@ -43,7 +45,7 @@ $list-item-link-button-height: 2rem;
 .segments-list-link-button {
   border: 0.125rem solid var(--card-bg-assent);
   border-radius: 0.5rem;
-  width: $list-item-link-button-height - 0.0625rem - 0.125rem;
+  width: $list-item-link-button-height + 0.0625rem;
   padding: 0.0625rem;
   margin-top: 0.125rem;
   margin-bottom: 0.125rem;

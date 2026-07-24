@@ -13,6 +13,9 @@ describe('HorizontalSplit', () => {
 
     fixture = TestBed.createComponent(HorizontalSplit);
     component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('resizeBarAriaLabel', 'Resize bar');
+
     await fixture.whenStable();
   });
 
