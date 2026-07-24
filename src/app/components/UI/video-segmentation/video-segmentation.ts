@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
-import { HorizontalSplit } from '../layout/horizontal-split/horizontal-split';
-import { VerticalSplit } from '../layout/vertical-split/vertical-split';
-import { WarningCard } from "../warning-card/warning-card";
-import { MediaFiles } from '../services/media-files';
+import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
+import { VerticalSplit } from '../../layout/vertical-split/vertical-split';
+import { WarningCard } from "../../common/warning-card/warning-card";
+import { MediaFiles } from '../../../services/media-files/media-files';
 
 @Component({
   selector: 'app-video-segmentation',

@@ -1,5 +1,5 @@
 import { Service, inject, signal } from '@angular/core';
-import { MediaFiles } from './media-files';
+import { MediaFiles } from '../media-files/media-files';
 
 @Service()
 export class TextSegmentationService {

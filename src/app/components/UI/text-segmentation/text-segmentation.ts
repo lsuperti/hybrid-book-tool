@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
-import { HorizontalSplit } from '../layout/horizontal-split/horizontal-split';
-import { WarningCard } from '../warning-card/warning-card';
-import { MediaFiles } from '../services/media-files';
-import { TextSegmentationService, type TextSegment } from '../services/text-segmentation';
+import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
+import { WarningCard } from '../../common/warning-card/warning-card';
+import { MediaFiles } from '../../../services/media-files/media-files';
+import { TextSegmentationService, type TextSegment } from '../../../services/text-segmentation/text-segmentation';
 
 @Component({
   selector: 'app-text-segmentation',

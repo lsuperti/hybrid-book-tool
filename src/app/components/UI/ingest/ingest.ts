@@ -1,7 +1,6 @@
 import { Component, inject, Renderer2, afterNextRender, viewChild, ElementRef, signal } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { HorizontalSplit } from '../layout/horizontal-split/horizontal-split';
-import { MediaFiles } from '../services/media-files';
+import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
+import { MediaFiles } from '../../../services/media-files/media-files';
 
 @Component({
   selector: 'app-ingest',

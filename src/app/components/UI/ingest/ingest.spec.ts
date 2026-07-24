@@ -6,7 +6,7 @@ import {
   Thumbnail,
   type ThumbnailGenerationRequest,
   type ThumbnailGenerationResult
-} from '../services/thumbnail';
+} from '../../../services/thumbnail/thumbnail';
 
 describe('Ingest', () => {
   let component: Ingest;

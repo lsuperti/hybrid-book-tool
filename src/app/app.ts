@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
-import { Ingest } from './ingest/ingest';
-import { TextSegmentation } from './text-segmentation/text-segmentation';
-import { VideoSegmentation } from './video-segmentation/video-segmentation';
-import { Correlation } from './correlation/correlation';
-import { Export } from './export/export';
+import { Ingest } from './components/UI/ingest/ingest';
+import { TextSegmentation } from './components/UI/text-segmentation/text-segmentation';
+import { VideoSegmentation } from './components/UI/video-segmentation/video-segmentation';
+import { Correlation } from './components/UI/correlation/correlation';
+import { Export } from './components/UI/export/export';
 
 @Component({
   selector: 'app-root',

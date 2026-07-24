@@ -1,6 +1,6 @@
 import { Service, signal, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Thumbnail, type ThumbnailGenerationResult } from './thumbnail';
+import { Thumbnail, type ThumbnailGenerationResult } from '../thumbnail/thumbnail';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Service()
