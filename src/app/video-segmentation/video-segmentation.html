@@ -1,7 +1,51 @@
 <app-vertical-split [defaultTopHeight]="90" [resizeBarAriaLabel]="'Redimensionamento das áreas de linha do tempo e de segmentos e visualização de vídeo'">
     <app-horizontal-split top [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização de vídeo'">
-      <div tabindex="0" left>Video Segments</div>
-      <div tabindex="0" right>Video</div>
+      <div class="video-segments-area"left>
+        @if (mediaFilesService.mediaFiles().length <= 0) {
+          <app-warning-card class="warning-card" [message]="'Nenhum arquivo de mídia foi carregado.'"></app-warning-card>
+        } @else {
+          <div class="video-segments-container">
+            <ol class="video-segments-list">
+              <!--
+              STUB: We don't yet have the segment logic, so we are just displaying the media files as if each was a
+              segment, basically how they would appear if no segmentation was done.
+              -->
+              @for (segment of mediaFilesService.mediaFiles(); track segment.id; let i = $index) {
+                <li class="video-segments-list-item" [aria-selected]="selectedSegmentIndex() === i">
+                  <button class="video-segments-list-item-main-button" (click)="onSegmentSelected(i)" [attr.aria-label]="'Selecionar segmento ' + segment.name">
+                    <p>{{ segment.name }}</p>
+                    @if (segment.thumbnail) {
+                      <div class="video-segment-thumbnail-container">
+                        <img inert src="{{ segment.thumbnail }}" alt="Thumbnail de {{ segment.name }}" class="segment-thumbnail" />
+                      </div>
+                    } @else {
+                      <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
+                        <svg viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
+                          <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
+                        </svg>
+                      </div>
+                    }
+                  </button>
+                </li>
+              }
+            </ol>
+          </div>
+        }
+      </div>
+      <div right class="video-preview-area">
+        @if (mediaFilesService.mediaFiles().length <= 0 || mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null) {
+          <app-warning-card class="warning-card" [message]="'Nenhum arquivo de mídia foi carregado.'"></app-warning-card>
+        } @else {
+          <!--
+          STUB: The video preview will be displayed differently in the future and will align with the timeline. For
+          now, we are just displaying the video preview as a simple illustrative video element.
+          -->
+          <div class="video-preview-container">
+            <video #videoPreview controls [src]="mediaFilesService.mediaFiles()[selectedSegmentIndex()].url " class="video-preview"></video>
+          </div>
+        }
+      </div>
     </app-horizontal-split>
-    <div tabindex="0" bottom>Timeline</div>
+    <div tabindex="0" bottom>[PH] Linha do tempo</div>
 </app-vertical-split>
