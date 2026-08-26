@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { TextSegmentationService, TextSegment } from './text-segmentation';
 import { mockSegments } from './mock-data.json';
+import { TextContent } from 'ngx-extended-pdf-viewer';
 
 describe('TextSegmentationService', () => {
   let service: TextSegmentationService;
@@ -764,7 +765,7 @@ describe('TextSegmentationService', () => {
           { str: 'Page 1 paragraph 2' },
           { type: 'endMarkedContent' },
         ]
-      } as any;
+      };
 
       const mockPage2 = {
         items: [
@@ -772,9 +773,9 @@ describe('TextSegmentationService', () => {
           { str: 'Page 2 content' },
           { type: 'endMarkedContent' },
         ]
-      } as any;
+      };
 
-      service.segmentText([mockPage1, mockPage2]);
+      service.segmentText([mockPage1 as TextContent, mockPage2 as TextContent]);
 
       expect(service.status()).toBe('success');
       const segments = service.segments();
@@ -808,11 +809,11 @@ describe('TextSegmentationService', () => {
           { str: 'New text' },
           { type: 'endMarkedContent' },
         ]
-      } as any;
+      };
 
       expect(service.segments().length).toBeGreaterThan(0);
 
-      service.segmentText([mockPage]);
+      service.segmentText([mockPage as TextContent]);
 
       expect(service.status()).toBe('success');
       const segments = service.segments();

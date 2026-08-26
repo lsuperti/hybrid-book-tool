@@ -4,7 +4,7 @@ import { VerticalSplit } from "../../layout/vertical-split/vertical-split";
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { PdfViewerFrame } from '../../common/pdf-viewer/pdf-viewer-frame';
-import { PDFNotificationService, PDFPageProxy, TextContent, type IPDFViewerApplication, type PagesLoadedEvent } from 'ngx-extended-pdf-viewer'
+import { PDFNotificationService, PDFPageProxy, TextContent, type IPDFViewerApplication } from 'ngx-extended-pdf-viewer'
 import { TextSegmentationService } from '../../../services/text-segmentation/text-segmentation';
 
 @Component({
@@ -13,7 +13,7 @@ import { TextSegmentationService } from '../../../services/text-segmentation/tex
   templateUrl: './ingest.html',
   styleUrl: './ingest.scss',
 })
-export class Ingest {
+export class Ingest implements OnDestroy {
   protected readonly mediaFilesService = inject(MediaFiles);
   private readonly renderer2 = inject(Renderer2);
   private readonly injector = inject(Injector);

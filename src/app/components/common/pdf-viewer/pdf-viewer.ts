@@ -187,7 +187,7 @@ export class PdfViewer implements OnDestroy {
       if (!selected || this.previousSelectedMarkedContent.pdfJsId !== selected.pdfJsId || this.previousSelectedMarkedContent.page !== selected.page) {
         try {
           this.removeMarkedContentHighlight(this.previousSelectedMarkedContent);
-        } catch (e) {
+        } catch (_e) {
           // Ignore if page/element is not found
         }
         this.previousSelectedMarkedContent = null;
@@ -203,7 +203,7 @@ export class PdfViewer implements OnDestroy {
             this.previousHoveredMarkedContent.page === selected.page) {
           try {
             this.removeMarkedContentHighlight(this.previousHoveredMarkedContent);
-          } catch (e) {
+          } catch (_e) {
             // Ignore
           }
           this.previousHoveredMarkedContent = null;
@@ -211,7 +211,7 @@ export class PdfViewer implements OnDestroy {
 
         try {
           this.highlightMarkedContent(selected, 'select');
-        } catch (e) {
+        } catch (_e) {
           // Ignore
         }
       }
@@ -243,7 +243,7 @@ export class PdfViewer implements OnDestroy {
       if (isSelected || isDifferent) {
         try {
           this.removeMarkedContentHighlight(this.previousHoveredMarkedContent);
-        } catch (e) {
+        } catch (_e) {
           // Ignore
         }
         this.previousHoveredMarkedContent = null;
@@ -260,7 +260,7 @@ export class PdfViewer implements OnDestroy {
         if (page) {
           try {
             this.highlightMarkedContent(hovered, 'hover');
-          } catch (e) {
+          } catch (_e) {
             // Ignore
           }
         }

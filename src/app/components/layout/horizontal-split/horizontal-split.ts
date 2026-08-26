@@ -1,4 +1,4 @@
-import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect } from '@angular/core';
+import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect, OnInit, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-horizontal-split',
@@ -6,7 +6,7 @@ import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRend
   templateUrl: './horizontal-split.html',
   styleUrl: './horizontal-split.scss',
 })
-export class HorizontalSplit {
+export class HorizontalSplit implements OnInit, OnDestroy {
   private readonly renderer2 = inject(Renderer2);
   
   public readonly defaultLeftWidth = input<number>(50);
@@ -15,7 +15,7 @@ export class HorizontalSplit {
   public readonly resizeBarBottomMargin = input<string>('0px');
   public readonly minWidthPercentage = input<number>(10);
   public readonly collapsed = input<CollapsedState>('none');
-  public readonly onLayoutChange = output<void>();
+  public readonly layoutChanged = output<void>();
   
   protected leftWidth!: WritableSignal<number>;
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
@@ -45,10 +45,10 @@ export class HorizontalSplit {
 
     if (event.key === 'ArrowLeft') {
       this.leftWidth.set(Math.max(this.leftWidth() - step, this.minWidthPercentage()));
-      this.onLayoutChange.emit();
+      this.layoutChanged.emit();
     } else if (event.key === 'ArrowRight') {
       this.leftWidth.set(Math.min(this.leftWidth() + step, 100 - this.minWidthPercentage()));
-      this.onLayoutChange.emit();
+      this.layoutChanged.emit();
     }
   }
   
@@ -68,7 +68,7 @@ export class HorizontalSplit {
             // Ensure the new width is within the allowed range
             if (newLeftWidth >= this.minWidthPercentage() && newLeftWidth <= 100 - this.minWidthPercentage()) {
               this.leftWidth.set(newLeftWidth);
-              this.onLayoutChange.emit();
+              this.layoutChanged.emit();
             }
           }
         })
@@ -85,7 +85,7 @@ export class HorizontalSplit {
 
     effect(() => {
       this.collapsed();
-      this.onLayoutChange.emit();
+      this.layoutChanged.emit();
     });
   }
 

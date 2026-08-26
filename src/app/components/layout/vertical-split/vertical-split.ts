@@ -1,4 +1,4 @@
-import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect } from '@angular/core';
+import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect, OnInit, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-vertical-split',
@@ -6,7 +6,7 @@ import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRend
   templateUrl: './vertical-split.html',
   styleUrl: './vertical-split.scss',
 })
-export class VerticalSplit {
+export class VerticalSplit implements OnInit, OnDestroy {
   private readonly renderer2 = inject(Renderer2);
   
   public readonly defaultTopHeight = input<number>(50);
@@ -15,7 +15,7 @@ export class VerticalSplit {
   public readonly resizeBarRightMargin = input<string>('0px');
   public readonly minHeightPercentage = input<number>(0.5);
   public readonly collapsed = input<CollapsedState>('none');
-  public readonly onLayoutChange = output<void>();
+  public readonly layoutChanged = output<void>();
   
   protected topHeight!: WritableSignal<number>;
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
@@ -45,10 +45,10 @@ export class VerticalSplit {
 
     if (event.key === 'ArrowUp') {
       this.topHeight.set(Math.max(this.topHeight() - step, this.minHeightPercentage()));
-      this.onLayoutChange.emit();
+      this.layoutChanged.emit();
     } else if (event.key === 'ArrowDown') {
       this.topHeight.set(Math.min(this.topHeight() + step, 100 - this.minHeightPercentage()));
-      this.onLayoutChange.emit();
+      this.layoutChanged.emit();
     }
   }
   
@@ -68,7 +68,7 @@ export class VerticalSplit {
             // Ensure the new height is within the allowed range
             if (newTopHeight >= this.minHeightPercentage() && newTopHeight <= 100 - this.minHeightPercentage()) {
               this.topHeight.set(newTopHeight);
-              this.onLayoutChange.emit();
+              this.layoutChanged.emit();
             }
           }
         })
@@ -85,7 +85,7 @@ export class VerticalSplit {
 
     effect(() => {
       this.collapsed();
-      this.onLayoutChange.emit();
+      this.layoutChanged.emit();
     });
   }
 

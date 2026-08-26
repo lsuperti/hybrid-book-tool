@@ -43,9 +43,9 @@ export class TextSegmentationService {
       return;
     }
 
-    let text: string = '';
-    let pdfJsId: string = '';
-    let inMarkedContent: boolean = false;
+    let text = '';
+    let pdfJsId = '';
+    let inMarkedContent = false;
     const segments: TextSegment[] = [];
     
     content.forEach((pageContent, pageNumberZeroIndexed) => {

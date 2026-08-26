@@ -47,7 +47,7 @@ export class Thumbnail {
    * @throws Will throw an error if a problem with the video stream prevents thumbnail generation, or if the thumbnail
    * could not be extracted or converted to a blob.
    */
-  private async generateThumbnail(file: File, thumbnailSize: number = 128, targetTimestamp: number = 5): Promise<Blob> {
+  private async generateThumbnail(file: File, thumbnailSize = 128, targetTimestamp = 5): Promise<Blob> {
     // Initialize Mediabunny with a local file blob source
     const input = new Input({
       source: new BlobSource(file),
