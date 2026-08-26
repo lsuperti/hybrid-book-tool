@@ -1,4 +1,4 @@
-import { Component, inject, viewChildren, viewChild, ElementRef, afterNextRender, Injector, input, signal, Renderer2, effect } from '@angular/core';
+import { Component, inject, viewChildren, viewChild, ElementRef, afterNextRender, Injector, input, signal, Renderer2, effect, OnDestroy } from '@angular/core';
 import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
@@ -11,7 +11,7 @@ import { PdfViewer } from "../../common/pdf-viewer/pdf-viewer";
   templateUrl: './text-segmentation.html',
   styleUrl: './text-segmentation.scss',
 })
-export class TextSegmentation {
+export class TextSegmentation implements OnDestroy {
   protected readonly mediaFilesService = inject(MediaFiles);
   protected readonly textSegmentationService = inject(TextSegmentationService);
   private readonly injector = inject(Injector);
@@ -51,6 +51,45 @@ export class TextSegmentation {
 
 
       this.wasInSegmentsList = isInSegmentsList;
+    }));
+
+    this.unlisteners.push(this.renderer2.listen('document', 'focusin', (event: FocusEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target) {
+        const isInSegmentsList = target.closest('.segments-list') !== null;
+        if (isInSegmentsList) {
+          const button = target.closest('button');
+          if (button) {
+            if (button.classList.contains('link-button')) {
+              this.hoveredSegmentPdfJsId.set(null);
+            } else {
+              const segmentItem = button.closest('[data-segment-page]') as HTMLElement | null;
+              if (segmentItem) {
+                const pdfJsId = segmentItem.getAttribute('data-segment-id');
+                const page = segmentItem.getAttribute('data-segment-page');
+                if (pdfJsId && page) {
+                  this.hoveredSegmentPdfJsId.set({ pdfJsId, page: parseInt(page, 10) });
+                } else {
+                  this.hoveredSegmentPdfJsId.set(null);
+                }
+              } else {
+                this.hoveredSegmentPdfJsId.set(null);
+              }
+            }
+          } else {
+            this.hoveredSegmentPdfJsId.set(null);
+          }
+        } else {
+          this.hoveredSegmentPdfJsId.set(null);
+        }
+      }
+    }));
+
+    this.unlisteners.push(this.renderer2.listen('document', 'focusout', (event: FocusEvent) => {
+      const relatedTarget = event.relatedTarget as HTMLElement | null;
+      if (!relatedTarget) {
+        this.hoveredSegmentPdfJsId.set(null);
+      }
     }));
 
     effect(() => {
@@ -164,7 +203,7 @@ export class TextSegmentation {
     }
   }
 
-  onDestroy() {
+  ngOnDestroy() {
     this.unlisteners.forEach(unlisten => unlisten());
 
     if (this.segmentListScrollUnlistener) {
