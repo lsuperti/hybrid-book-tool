@@ -1,19 +1,27 @@
-<div class="split-container" #splitContainer [style.--left-width.%]="leftWidth()">
-  <div class="left-area">
-    <ng-content select="[left]"></ng-content>
-  </div>
-  <div
-  class="resize-bar"
-  [style.--top-margin]="resizeBarTopMargin()"
-  [style.--bottom-margin]="resizeBarBottomMargin()"
-  (pointerdown)="resizeBarPointerDown($event)"
-  (keydown)="resizeBarKeyDown($event)"
-  role="separator"
-  aria-orientation="vertical"
-  aria-valuenow="{{ leftWidth() }}"
-  aria-label="{{ resizeBarAriaLabel() }}"
-  tabindex="0"></div>
-  <div class="right-area">
-    <ng-content select="[right]"></ng-content>
-  </div>
+<div class="split-container" #splitContainer [style.--left-width.%]="this.collapsed() === 'left' ? 0 : this.collapsed() === 'right' ? 100 : this.leftWidth()">
+  @if (this.collapsed() === 'right' || this.collapsed() === 'none') {
+    <div class="left-area">
+      <ng-content select="[left]"></ng-content>
+    </div>
+  }
+
+  @if (this.collapsed() === 'none') {
+    <div
+    class="resize-bar"
+    [style.--top-margin]="resizeBarTopMargin()"
+    [style.--bottom-margin]="resizeBarBottomMargin()"
+    (pointerdown)="resizeBarPointerDown($event)"
+    (keydown)="resizeBarKeyDown($event)"
+    role="separator"
+    aria-orientation="vertical"
+    aria-valuenow="{{ leftWidth() }}"
+    aria-label="{{ resizeBarAriaLabel() }}"
+    tabindex="0"></div>
+  }
+
+  @if (this.collapsed() === 'left' || this.collapsed() === 'none') {
+    <div class="right-area">
+      <ng-content select="[right]"></ng-content>
+    </div>
+  }
 </div>

@@ -8,43 +8,68 @@
   height: 100%;
 }
 
-.video-segments-container {
-  width: 100%;
-  height: 100%;
-}
-
-.video-segments-list {
-  list-style: none;
-  margin-bottom: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--card-bg-assent-assent) var(--card-bg);
-  width: 100%;
-  height: 100%;
-}
-
 $list-item-height: 4rem;
 $thumbnail-height: $list-item-height - 1rem;
 
-.video-segments-list-item {
-  margin: 0.25rem;
+.video-segments-container {
+  width: calc(100% - 0.625rem);
+  height: calc(100% - 0.625rem);
+  margin: 0.25rem 0.125rem 0.125rem 0.25rem;
   border: 0.125rem solid var(--card-bg-assent);
   border-radius: 0.5rem;
-  margin-bottom: 0.25rem;
+  overflow: hidden;
+}
+
+.video-segments-list {
+  width: 100%;
+  height: 100%;
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg);
+  background-color: var(--card-bg);
+  container-type: scroll-state;
+}
+
+.video-segments-list-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   height: $list-item-height;
 }
 
-.video-segments-list-item[aria-selected="true"] {
-  border-color: var(--primary-color);
+.video-segments-list-item:last-child {
+  border-radius: 0 0 0.5rem 0.5rem;
+  border-bottom: 0.125rem solid var(--card-bg-assent);
+}
+
+@container scroll-state(scrollable: top) or scroll-state(scrollable: bottom) {
+  .video-segments-list-item:last-child {
+    border-radius: 0;
+    border-bottom: none;
+  }
+}
+
+.video-segments-list-item:nth-child(odd) {
+  background-color: var(--card-bg);
+}
+
+.video-segments-list-item:nth-child(even) {
   background-color: var(--card-bg-assent);
 }
 
-.video-segments-list-item:has(.video-segments-list-item-main-button:focus-visible) {
-  outline: 2px solid var(--primary-color);
-  outline-offset: -2px;
+.video-segments-list-item[aria-selected="true"] {
+  background-color: var(--primary-assent);
+}
+
+.video-segments-list-item:has(.video-segments-list-item-main-button:focus-visible)::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  outline: 0.125rem solid var(--primary-color);
+  outline-offset: -0.125rem;
+  border-radius: 0.5rem;
 }
 
 .video-segments-list-item-main-button:focus-visible {
@@ -52,7 +77,7 @@ $thumbnail-height: $list-item-height - 1rem;
 }
 
 .video-segments-list-item-main-button {
-  width: calc(100% + 1rem);
+  width: 100%;
   height: 100%;
   background-color: transparent;
   border: none;
@@ -62,17 +87,30 @@ $thumbnail-height: $list-item-height - 1rem;
   padding: 0.5rem;
 }
 
+.segment-name-container {
+  width: calc(100% - $thumbnail-height * 1.5 - 0.5rem);
+  overflow: hidden;
+}
+
+.segment-name-container p {
+  font-size: 1rem;
+  text-align: start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .video-segment-thumbnail-placeholder {
-  outline: 4px solid var(--card-bg-assent-assent); outline-offset: -4px;
-  color: var(--card-bg-assent-assent);
+  outline: 0.25rem solid var(--card-bg-assent-assent-assent); outline-offset: -0.25rem;
+  color: var(--card-bg-assent-assent-assent);
   background-color: var(--card-bg);
 }
 
 .video-segment-thumbnail-container {
   width: $thumbnail-height * 1.5;
   height: $thumbnail-height;
-  border: 2px solid var(--card-bg-assent-assent);
-  border-radius: 4px;
+  border: 0.125rem solid var(--card-bg-assent-assent-assent);
+  border-radius: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,19 +120,19 @@ $thumbnail-height: $list-item-height - 1rem;
   width: 100%;
   height: 100%;
   color: var(--icon-color);
-  border-radius: 3px;
+  border-radius: 0.1875rem;
 }
 
 .video-segment-thumbnail-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
 .video-segment-thumbnail-placeholder {
-  outline: 4px solid var(--card-bg-assent-assent); outline-offset: -4px;
-  color: var(--card-bg-assent-assent);
+  outline: 0.25rem solid var(--card-bg-assent-assent-assent); outline-offset: -0.25rem;
+  color: var(--card-bg-assent-assent-assent);
   background-color: var(--card-bg);
 }
 
@@ -102,14 +140,14 @@ $thumbnail-height: $list-item-height - 1rem;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
 .video-segment-thumbnail svg {
   width: 100%;
   height: 100%;
   color: var(--icon-color);
-  border-radius: 3px;
+  border-radius: 0.1875rem;
 }
 
 .video-preview-area {

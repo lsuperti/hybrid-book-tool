@@ -1,214 +1,518 @@
-import { Service, inject, signal } from '@angular/core';
-import { MediaFiles } from '../media-files/media-files';
+import { Service, signal } from '@angular/core';
+import { type TextContent, type TextItem, type TextMarkedContent } from 'ngx-extended-pdf-viewer';
 
 @Service()
-export class TextSegmentationService {
-    private mediaFilesService = inject(MediaFiles);
+export class TextSegmentationService {  
+  public segments = signal<TextSegment[]>([]);
+  public readonly status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  private addressableSegments = new Set<string>();
 
-    public segments = signal<TextSegment[]>([]);
+  /**
+   * The IDs returned by the PDF.js are an undocumented library implementation detail. They can reasonably be expected
+   * to be unique and to correspond to element IDs in the PDF viewer DOM. However, their specific format is not
+   * guaranteed to remain the same in the future, and their library-specific nature makes them highly unsuitable for
+   * document encoding. Therefore, we use the sequential order the marked content appears in the document structure to
+   * generate standard IDs suitable for the document encoding we are implementing. The sequential order is guaranteed to
+   * be stable and consistent across different libraries and implementations, and it is not dependent on any specific
+   * library implementation details, as long as the document structure is transcended in the standard order, which is a
+   * reasonable expectation.
+   */
+  private sequentialIdCounter = 0;
 
-    constructor() {
-        // STUB: Segmentation to be called when a new text record is added.
-        this.segmentText();
+  /**
+   * Sets the status of the text segmentation service to 'loading'. This should be called when parts of the text
+   * segmentation process that are not handled by the text segmentation service start being executed, such as when the
+   * text content is being extracted from the PDF so that the text segmentation service status reflects the overall
+   * status of the text segmentation process, not just the parts handled by the service itself.
+   */
+  public workUpcoming() {
+    this.status.set('loading');
+  }
+
+  /**
+   * Creates the segments for a text record from the text content taken from PDF.js.
+   * 
+   * @param content An array with the text content from PDF.js including Marked Content for each page of the PDF.
+   */
+  public segmentText(content: TextContent[]): void {
+    // Set the status in case workUpcoming was not called.
+    this.status.set('loading');
+
+    if (this.segments().length > 0) {
+      this.recoverSegmentsForNewTextRecord(content);
+      return;
     }
 
-    // STUB: Text segmentation to be implemented in the next iteration. For now, segments for the requirements
-    // specification document are hardcoded here.
-    public segmentText(): void {
-        this.segments.set([
-            { id: this.generateSegmentId(), text: 'Especificação de Requisitos', linked: false },
-            { id: this.generateSegmentId(), text: 'Introdução', linked: false },
-            { id: this.generateSegmentId(), text: 'Este documento tem como objetivo especificar os requisitos funcionais e não funcionais da ferramenta para criação de livros híbridos desenvolvida no contexto do projeto ÆMIA. O propósito deste documento é mapear o que deverá atendido para a funcionalidade efetiva da ferramenta, idealmente em estágio prévio ao início do desenvolvimento.', linked: false },
-            { id: this.generateSegmentId(), text: 'Em um momento posterior serão adicionados a este documento as validações dos diversos requisitos conforme o estágio de desenvolvimento requerer que eles sejam atendidos.', linked: false },
-            { id: this.generateSegmentId(), text: 'Escopo', linked: false },
-            { id: this.generateSegmentId(), text: 'Este documento descreve os requisitos da ferramenta de criação, que receberá arquivos de vídeo e áudio, registros de texto e opcionalmente arquivos de anotação e gerará um arquivo portátil contendo o livro híbrido criado.', linked: false },
-            { id: this.generateSegmentId(), text: 'Não estão incluídos neste documento os requisitos do visualizador de livros híbridos, de ferramentas de software para preparo dos arquivos de livro híbrido para distribuição para uso com o visualizador e da plataforma unificada que unirá a criação, curadoria e distribuição de livros híbridos.', linked: false },
-            { id: this.generateSegmentId(), text: 'Siglas, termos e abreviações', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' RF: Requisito Funcional', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF: Requisito Não Funcional', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' MP4:', linked: true },
-            { id: this.generateSegmentId(), text: ' MPEG', linked: true },
-            { id: this.generateSegmentId(), text: '-', linked: true },
-            { id: this.generateSegmentId(), text: '4 Part 14', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' H.264', linked: true },
-            { id: this.generateSegmentId(), text: ':', linked: true },
-            { id: this.generateSegmentId(), text: ' Advanced Video Coding', linked: true },
-            { id: this.generateSegmentId(), text: ' (ITU', linked: true },
-            { id: this.generateSegmentId(), text: '-', linked: true },
-            { id: this.generateSegmentId(), text: 'T H.264)', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' H.', linked: true },
-            { id: this.generateSegmentId(), text: '265', linked: true },
-            { id: this.generateSegmentId(), text: ':', linked: true },
-            { id: this.generateSegmentId(), text: ' High Efficiency Video Coding (ITU', linked: true },
-            { id: this.generateSegmentId(), text: '-', linked: true },
-            { id: this.generateSegmentId(), text: 'T H.265)', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' VP9', linked: true },
-            { id: this.generateSegmentId(), text: ':', linked: true },
-            { id: this.generateSegmentId(), text: ' Video Processing 9', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' AV1', linked: true },
-            { id: this.generateSegmentId(), text: ':', linked: true },
-            { id: this.generateSegmentId(), text: ' AOMedia Video 1', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' PDF:', linked: true },
-            { id: this.generateSegmentId(), text: ' Portable Document Format', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' MC:', linked: true },
-            { id: this.generateSegmentId(), text: ' Marked Content', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' MDN:', linked: true },
-            { id: this.generateSegmentId(), text: ' MDN Web Docs', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' HTTP:', linked: true },
-            { id: this.generateSegmentId(), text: ' Hyper', linked: true },
-            { id: this.generateSegmentId(), text: 'T', linked: true },
-            { id: this.generateSegmentId(), text: 'ext', linked: true },
-            { id: this.generateSegmentId(), text: ' Transfer Protocol', linked: false },
-            { id: this.generateSegmentId(), text: '•', linked: true },
-            { id: this.generateSegmentId(), text: ' MVP: Produto Mínimo Viável', linked: false },
-            { id: this.generateSegmentId(), text: 'Requisitos Funcionais (RF)', linked: false },
-            { id: this.generateSegmentId(), text: 'RF1', linked: true },
-            { id: this.generateSegmentId(), text: 'Criação de arquivo único de saída. A ferramenta deverá, ao fim da utilização conceitual, exportar um arquivo de saída único contendo os arquivos necessários para a representação do livro híbrido. Este arquivo', linked: true },
-            { id: this.generateSegmentId(), text: 'deverá conter as mídias utilizadas, o registro de texto e dados estruturados que representem o livro híbrido a partir destes registros.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF2', linked: true },
-            { id: this.generateSegmentId(), text: 'Entrada de arquivos de vídeo. A ferramenta deverá tentar ser agnóstica à medida do possível a formatos desconhecidos de vídeo desde que suportados pelo navegador do usuário e possuir suporte a arquivos de vídeo em formato MP4 codificados com H.264, H.265, VP9 e AV1 sempre que suportados pelo navegador do usuário.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF3', linked: true },
-            { id: this.generateSegmentId(), text: 'Entrada de arquivos PDF. A ferramenta deverá ser capaz de processar arquivos em formato PDF para o registro de texto. O PDF deverá possuir MC com granularidade suficiente para permitir a seleção de parágrafos e outros elementos ancorados a segmentos de vídeos de sinalização.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF4', linked: true },
-            { id: this.generateSegmentId(), text: 'Segmentação parcialmete automatizada. A ferramenta deverá ser capaz segmentar automaticamente vídeos de sinalização a partir de técnicas de visão computacional. A segmentação automática poderá ser propensa a falhas devido à natureza imperfeita destas técnicas.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF5', linked: true },
-            { id: this.generateSegmentId(), text: 'Correção manual da segmentação parcialmente automatizada. A ferramenta deverá permitir a correção manual da segmentação automatizada descrita no', linked: true },
-            { id: this.generateSegmentId(), text: ' RF4', linked: true },
-            { id: this.generateSegmentId(), text: ', permitindo a eliminação de segmentos, criação de segmentos, união de segmentos, divisão de segmentos e ajuste de bordas de segmentos.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF6', linked: true },
-            { id: this.generateSegmentId(), text: 'Ancoragem parcialmente automatizada. A ferramenta deverá ser capaz associar automaticamente segmentos de vídeos a passagens de texto a partir de técnicas de visão computacional e processamento de linguagem natural. A ancoragem automática poderá ser propensa a falhas devido à natureza imperfeita destas técnicas.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF7', linked: true },
-            { id: this.generateSegmentId(), text: 'Correção manual da ancoragem parcialmente automatizada. A ferramenta deverá permitir a correção manual da ancoragem automatizada descrita no', linked: true },
-            { id: this.generateSegmentId(), text: ' RF6', linked: true },
-            { id: this.generateSegmentId(), text: ', permitindo a reassociação de segmentos associados, associação de segmentos não associados e a desassociação de segmentos associados.', linked: false },
-            { id: this.generateSegmentId(), text: 'RF8', linked: true },
-            { id: this.generateSegmentId(), text: 'Compatibilidade com ELAN. A ferramenta deverá ser capaz de receber, juntamente aos arquivos de vídeo, arquivos de anotação do ELAN e extrair suas informações de segmentação.', linked: false },
-            { id: this.generateSegmentId(), text: 'Requisitos Não Funcionais (RNF)', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF1', linked: true },
-            { id: this.generateSegmentId(), text: 'Compatibilidade com navegadores modernos. A ferramenta deverá ser accessível em um endereço da web e funcionar em navegadores com suporte a recursos modernos, requerendo apenas recursos com disponibilidade classificada como Baseline no MDN. Outros recursos podem ser utilizados desde que não sejam essenciais para a utilização básica da ferramenta.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF2', linked: true },
-            { id: this.generateSegmentId(), text: 'Intuitividade. A ferramenta deverá apresentar interface de usuário intuitiva permitindo seu uso por usuários expostos a apenas um breve tutorial sobre seus conceitos e utilização.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF3', linked: true },
-            { id: this.generateSegmentId(), text: 'Automatização não disruptiva. As automatizações descritas em', linked: true },
-            { id: this.generateSegmentId(), text: 'RF4', linked: true },
-            { id: this.generateSegmentId(), text: ' e', linked: true },
-            { id: this.generateSegmentId(), text: ' RF6', linked: true },
-            { id: this.generateSegmentId(), text: ' deverão pertencer naturalmente ao fluxo de trabalho da ferramenta, agindo de forma intuitiva e de forma a fazer com que as correções manuais descritas em', linked: true },
-            { id: this.generateSegmentId(), text: ' RF5', linked: true },
-            { id: this.generateSegmentId(), text: ' e', linked: true },
-            { id: this.generateSegmentId(), text: ' RF7', linked: true },
-            { id: this.generateSegmentId(), text: ' ocorram da mesma forma como seriam feitos os processos de segmentação e ancoragem de forma manual.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF4', linked: true },
-            { id: this.generateSegmentId(), text: 'Requisitos de hardware. A ferramenta deverá ser compatível com computadores pessoais de baixo desempenho capazes de executar um navegador moderno. As automatizações descritas em', linked: true },
-            { id: this.generateSegmentId(), text: ' RF4', linked: true },
-            { id: this.generateSegmentId(), text: ' e', linked: true },
-            { id: this.generateSegmentId(), text: ' RF6', linked: true },
-            { id: this.generateSegmentId(), text: ' e eventuais outras automatizações a serem adicionadas deverão ter individualmente um tempo de execução em um notebook LG Gram 15Z90N não superior a duas vezes a duração dos vídeos.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF5', linked: true },
-            { id: this.generateSegmentId(), text: 'Hospedagem estática. A ferramenta deverá ser hospedada de forma estática em um servidor HTTP sem a necessidade de um backend para processamento de suas funcionalidades.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF6', linked: true },
-            { id: this.generateSegmentId(), text: 'Auto hospedagem. A ferramenta deverá ser disponibilizada de forma a permitir sua auto hospedagem por outros indivíduos e organizações sem prejuízo significativo a sua utilização.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF7', linked: true },
-            { id: this.generateSegmentId(), text: 'Custo zero de licenciamento de software e tecnologia. A ferramenta deverá depender exclusivamente de software livre e padrões livres de custo de licenciamento, de forma a permitir a abertura do código fonte do software sem custos de licenciamento aos usuários.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF8', linked: true },
-            { id: this.generateSegmentId(), text: 'Acessibilidade básica. A Ferramenta deverá atender aos requisitos exigidos pela norma NBR 17225 em nível de conformidade AA.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF9', linked: true },
-            { id: this.generateSegmentId(), text: 'Acessibilidade plena. A ferramenta deverá atingir nível de conformidade AAA da NBR 17225 e implementar outras práticas que promovam acessibilidade plena a quase todos os potenciais usuários.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF10', linked: true },
-            { id: this.generateSegmentId(), text: 'Privacidade. A Ferramenta não deverá se comunicar com qualquer serviço externo a sua hospedagem de forma a revelar informações sobre a sua utilização. A ferramenta não deverá se comunicar automaticamente com qualquer serviço hospedado por nós quando utilizada de forma auto hospedada.', linked: false },
-            { id: this.generateSegmentId(), text: 'RNF11', linked: true },
-            { id: this.generateSegmentId(), text: 'Manutenibilidade. A Ferramenta deverá ser desenvolvida de forma modular e clara, permitindo alterações futuras e contribuições de terceiros.', linked: false },
-            { id: this.generateSegmentId(), text: 'Priorização dos requisitos funcionais', linked: false },
-            { id: this.generateSegmentId(), text: 'Essenciais:', linked: true },
-            { id: this.generateSegmentId(), text: ' RF1', linked: true },
-            { id: this.generateSegmentId(), text: ',', linked: true },
-            { id: this.generateSegmentId(), text: ' RF2', linked: true },
-            { id: this.generateSegmentId(), text: ' e', linked: true },
-            { id: this.generateSegmentId(), text: ' RF3', linked: true },
-            { id: this.generateSegmentId(), text: 'são essenciais para a utilização da ferramenta em qualquer contexto. Um MVP deverá obrigatoriamente atendê-los, pois sem eles não há qualquer utilidade na ferramenta.', linked: false },
-            { id: this.generateSegmentId(), text: 'Desejáveis:', linked: true },
-            { id: this.generateSegmentId(), text: ' RF4', linked: true },
-            { id: this.generateSegmentId(), text: ', a segmentação parcialmente automatizada, é um recurso importante para justificar a existência da ferramenta dentro do contexto da pesquisa sendo realizada, se ele for atendido deverá obrigatoriamente também ser atendido o', linked: true },
-            { id: this.generateSegmentId(), text: ' RF5', linked: true },
-            { id: this.generateSegmentId(), text: '.', linked: false },
-            { id: this.generateSegmentId(), text: 'Futuros:', linked: true },
-            { id: this.generateSegmentId(), text: ' RF6', linked: true },
-            { id: this.generateSegmentId(), text: ' e', linked: true },
-            { id: this.generateSegmentId(), text: ' RF7', linked: true },
-            { id: this.generateSegmentId(), text: 'dependem de pesquisa substancial a ser realizada, e só poderão ser atendidos quando essas pesquisas tiverem dado resultados satisfatórios.', linked: true },
-            { id: this.generateSegmentId(), text: ' RF8', linked: true },
-            { id: this.generateSegmentId(), text: 'é relativo a um fluxo de trabalho alternativo que provavelmente pouco comum, assim poderá ser deixado para um momento oportuno.', linked: false },
-            { id: this.generateSegmentId(), text: 'Priorização dos requisitos não funcionais', linked: false },
-            { id: this.generateSegmentId(), text: 'Essenciais:', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF1', linked: true },
-            { id: this.generateSegmentId(), text: ',', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF5', linked: true },
-            { id: this.generateSegmentId(), text: ',', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF6', linked: true },
-            { id: this.generateSegmentId(), text: ' e', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF7', linked: true },
-            { id: this.generateSegmentId(), text: 'são requisitos básicos da ferramenta dentro de seu contexto esperado de utilização, então devem ser atendidas por qualquer versão da ferramenta, inclusive um MVP.', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF8', linked: true },
-            { id: this.generateSegmentId(), text: 'é um requisito legal que precisa ser atendido por qualquer sistema web.', linked: true },
-            { id: this.generateSegmentId(), text: 'Desejáveis:', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF2', linked: true },
-            { id: this.generateSegmentId(), text: 'é relativo a intuitividade, o que é importante para a utilidade efetiva no contexto esperado de utilização, mas não torna a ferramenta inútil em todos os contextos se não atendido.', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF3', linked: true },
-            { id: this.generateSegmentId(), text: ' requer que', linked: true },
-            { id: this.generateSegmentId(), text: ' RF4', linked: true },
-            { id: this.generateSegmentId(), text: ' e/ou', linked: true },
-            { id: this.generateSegmentId(), text: ' RF6', linked: true },
-            { id: this.generateSegmentId(), text: ', não essenciais, sejam atendidos, mas é de grande importância para o', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF6', linked: true },
-            { id: this.generateSegmentId(), text: 'quando forem.', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF4', linked: true },
-            { id: this.generateSegmentId(), text: 'é importante para a utilização da ferramenta no contexto esperado, mas não é estritamente essencial.', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF10', linked: true },
-            { id: this.generateSegmentId(), text: 'possui relevância política no contexto de controle e governança sobre o software livre e deverá ser atendido em qualquer versão não MVP da ferramenta, mas não é essencial para sua utilidade.', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF11', linked: true },
-            { id: this.generateSegmentId(), text: 'é importante para assegurar a longevidade da ferramenta e deve-se tentar atingi-lo desde o início para evitar um excesso de dívida técnica, mas não é estritamente essencial.', linked: false },
-            { id: this.generateSegmentId(), text: 'Futuros:', linked: true },
-            { id: this.generateSegmentId(), text: ' RNF9', linked: true },
-            { id: this.generateSegmentId(), text: 'requer a adoção de expressivo esforço para assegurar a plenitude da acessibilidade. Deve-se tentar atender aos requisitos do nível de conformidade AAA da NBR 17225 e implementar medidas adicionais sempre que possível durante o desenvolvimento. Porém, devido aos desafios substanciais em se atender ao nível de conformidade AAA e a dificuldade de se determinar meios adicionais de acessibilidade fora das boas práticas da indústria, atender a este requisito plenamente deverá ser um esforço não imediato.', linked: false }
-            
-        ]);
-    }
+    let text: string = '';
+    let pdfJsId: string = '';
+    let inMarkedContent: boolean = false;
+    const segments: TextSegment[] = [];
+    
+    content.forEach((pageContent, pageNumberZeroIndexed) => {
+      const items = pageContent.items;
+      items.forEach((item: TextItem | TextMarkedContent) => {
+        // If it is a TextMarkedContent it will have a type that is either 'beginMarkedContentProps' or 'endMarkedContent'.
+        if ('type' in item) {
+          if (item.type === 'beginMarkedContentProps') {
+            inMarkedContent = true;
+            pdfJsId = item.id;
+            this.sequentialIdCounter++;
+          } else if (item.type === 'endMarkedContent') {
+            if (inMarkedContent && pdfJsId && text.trim().length !== 0) {
+              const newSegment: TextSegment = {
+                // The sequential ID is always one less than the current sequential ID counter, because the counter is
+                // incremented when a new marked content is found, but the segment is created when the marked content
+                // ends.
+                sequentialId: this.sequentialIdCounter - 1,
+                pdfJsId: pdfJsId,
+                page: pageNumberZeroIndexed + 1,
+                text: text,
+                excluded: false,
+                linkedChildren: [],
+              };
 
-    // STUB: Attempt to recover existing segments for a new media file. For now, this method does nothing and is a
-    // placeholder for future implementation.
-    public recoverSegmentsForNewMediaFile(): void {
-        return;
-    }
+              segments.push(newSegment);
+              this.addressableSegments.add(pdfJsId);
+            }
 
-    public toggleSegmentLinked(segment: TextSegment): void {
-        const segments = this.segments();
-        const segmentIndex = segments.findIndex(s => s.id === segment.id);
-        if (segmentIndex !== -1) {
-            const updatedSegment = { ...segments[segmentIndex], linked: !segments[segmentIndex].linked };
-            const updatedSegments = [...segments];
-            updatedSegments[segmentIndex] = updatedSegment;
-            this.segments.set(updatedSegments);
+            text = '';
+            inMarkedContent = false;
+          } else if (item.type === 'beginMarkedContent') {
+            // We have no way to address marked content without an ID, so they are just ignored, but we still increment
+            // the sequential ID counter to keep the sequential IDs consistent with the order of the marked content in
+            // the document structure.
+            this.sequentialIdCounter++;
+          }
+        // If it is not a TextMarkedContent it will be a TextItem, which has a 'str' property with the text content.
+        // If we are in a marked content, we will add the text to the current segment text.
+        } else {
+          if ('str' in item && inMarkedContent) {
+            text += item.str + ' ';
+          }
         }
+      });
+    });
+
+    this.segments.set([...segments]);
+    this.status.set('success');
+  }
+
+  /**
+   * TODO: Implement this method to recover segments for a new text record. This will be used when a new text record is
+   * set, and the segments need to be recovered from the previous text record.
+   * 
+   * @param content The new text record content.
+   */
+  private recoverSegmentsForNewTextRecord(content: TextContent[]): void {
+    this.sequentialIdCounter = 0;
+    this.segments.set([]);
+    this.addressableSegments.clear();
+    this.segmentText(content);
+  }
+
+  /**
+   * Toggles the linking of a segment with its relatives. If the segment is a parent segment, it will become a child of
+   * the previous parent segment after their last child, the segment's children will become its siblings after it. If
+   * the segment is a child segment, it will be promoted to a parent segment under its previous parent segment, and its
+   * siblings that were under it before the promotion will become its children.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to toggle linking.
+   * @throws Will throw an error if the segment is not found, or if trying to link the first segment.
+   */
+  public toggleSegmentLinking(pdfJsSegmentId: string): void {  
+    const currentSegments = this.segments();
+    const segmentIndex = currentSegments.findIndex(segment => segment.pdfJsId === pdfJsSegmentId);
+    const segment = currentSegments[segmentIndex];
+
+    // If the segment is a parent segment
+    if (segmentIndex !== -1) {
+      if (segmentIndex > 0) {
+        // Move the segment and its children to the linkedChildren of the previous segment
+        const previousSegment = currentSegments[segmentIndex - 1];
+
+        previousSegment.linkedChildren.push(segment);
+        currentSegments.splice(segmentIndex, 1);
+
+        previousSegment.linkedChildren = [...previousSegment.linkedChildren, ...segment.linkedChildren];
+        segment.linkedChildren = [];
+
+        this.segments.set([...currentSegments]);
+      } else {
+        throw new Error('Cannot link the first segment.');
+      }
+    // If the segment is a child segment
+    } else {
+      for (let i = 0; i < currentSegments.length; i++) {
+        const childIndex = currentSegments[i].linkedChildren.findIndex(child => child.pdfJsId === pdfJsSegmentId);
+        
+        // If the child segment is found, move it to the segments list after the parent segment, with the
+        // successor sibling segments as its children
+        if (childIndex !== -1) {
+          const childSegment = currentSegments[i].linkedChildren[childIndex];
+          const successorSegments = currentSegments[i].linkedChildren.slice(childIndex + 1);
+          currentSegments[i].linkedChildren = currentSegments[i].linkedChildren.slice(0, childIndex);
+          const newSegmentIndex = i + 1;
+          currentSegments.splice(newSegmentIndex, 0, childSegment);
+          childSegment.linkedChildren = successorSegments;
+          this.segments.set([...currentSegments]);
+
+          return;
+        }
+      }
+      
+      throw new Error('Segment not found.');
+    }
+  }
+
+  /**
+   * Exclude a segment from the text segmentation. This method will mark the segment as excluded, and it will be
+   * displayed with a strikethrough in the UI. This method deals with segment linking and order. If the segment is a
+   * parent segment its first child will be promoted to a parent segment and subsequent siblings will be linked to it.
+   * If the segment is a child segment, it will become a a parent segment in the next position on the parent segments
+   * list.
+   * 
+   * Note: This method does not remove the segment from the list, it only marks it as excluded. The segment can be
+   * included again using the includeSegment method.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to be excluded.
+   * @throws Will throw an error if the segment is not found.
+   */
+  public excludeSegment(pdfJsSegmentId: string): void {    
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+    
+    if (segmentIndex.parentIndex === -1) {
+      throw new Error('Segment not found.');
     }
 
-    private generateSegmentId(): string {
-        return `segment-${this.segments().length + 1}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const segment = this.segmentFromIndexes(segmentIndex.parentIndex, segmentIndex.childIndex);
+        
+    // If the segment is a parent segment, promote its first child to a parent segment and link subsequent siblings to it
+    if (segmentIndex.childIndex === -1) {
+      if (segment.linkedChildren.length > 0) {
+        const currentSegments = this.segments();
+        const firstChild = segment.linkedChildren[0];
+
+        // Remove the first child from the parent's linkedChildren
+        segment.linkedChildren.splice(0, 1);
+
+        // Insert the first child as a new parent segment in the next position on the parent segments list
+        currentSegments.splice(segmentIndex.parentIndex + 1, 0, firstChild);
+
+        // Link the remaining children to the new parent segment
+        firstChild.linkedChildren = [...firstChild.linkedChildren, ...segment.linkedChildren];
+        segment.linkedChildren = [];
+
+        this.segments.set([...currentSegments]);
+      }
+    // If the segment is a child segment, promote it to a parent segment in the next position on the parent segments list
+    } else {
+      const currentSegments = this.segments();
+      const childSegment = segment;
+      const parentSegment = currentSegments[segmentIndex.parentIndex];  
+
+      // Remove the child segment from the parent's linkedChildren
+      parentSegment.linkedChildren.splice(segmentIndex.childIndex, 1);
+
+      // Insert the child segment as a new parent segment in the next position on the parent segments list
+      currentSegments.splice(segmentIndex.parentIndex + 1, 0, childSegment);
+
+      this.segments.set([...currentSegments]);
     }
+
+    segment.excluded = true;
+  }
+
+  /**
+   * Include a previously excluded segment back into the text segmentation. This method will mark the segment as
+   * included, and it will be displayed normally in the UI.
+   *
+   * Note: This method does not add a new segment, it only marks an existing excluded segment as included. The segment
+   * can be excluded again using the excludeSegment method.
+   *
+   * @param pdfJsSegmentId: The PDF.js ID of the segment to be included.
+   * @throws Will throw an error if the segment is not found.
+   */
+  public includeSegment(pdfJsSegmentId: string): void {
+    const segment = this.findSegment(pdfJsSegmentId);
+    
+    if (!segment) {
+      throw new Error('Segment not found.');
+    }
+    
+    segment.excluded = false;
+  }
+
+  /**
+   * Move a segment up in the list of segments. This method will swap the segment with the previous segment in the list.
+   * This method does not change the order of the linked children of the segment, so the linked children will maintain
+   * their relative order under the segment. For linked children, if the child is the first child of a parent segment,
+   * it will be promoted to a parent segment and the previous parent segment and its other children will be linked to
+   * it. If the child is not the first child of a parent segment, it will be swapped with the previous child of the same
+   * parent segment.
+   * 
+   * @param pdfJsSegmentId: The PDF.js ID of the segment to be moved up.
+   * @throws Will throw an error if the segment is not found, or if trying to move the first segment up.
+   */
+  public moveSegmentUp(pdfJsSegmentId: string): void {
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+
+    if (segmentIndex.parentIndex === -1) {
+      throw new Error('Segment not found.');
+    }
+
+    // The segment is a parent segment
+    if (segmentIndex.childIndex === -1) {
+      const currentSegments = this.segments();
+      const parentIndex = segmentIndex.parentIndex;
+
+      if (parentIndex === 0) {
+        throw new Error('Cannot move the first segment up.');
+      }
+
+      // Swap the parent segment with the previous parent segment
+      [currentSegments[parentIndex - 1], currentSegments[parentIndex]] = [currentSegments[parentIndex], currentSegments[parentIndex - 1]];
+      this.segments.set([...currentSegments]);
+    // The segment is a child segment
+    } else {
+      const currentSegments = this.segments();
+      const parentSegment = currentSegments[segmentIndex.parentIndex];
+      const childIndex = segmentIndex.childIndex;
+
+      // The child segment is the first child of its parent segment, so promote it to a parent segment and give it the
+      // previous parent segment and its other children as its linked children
+      if (childIndex === 0) {
+        const childSegment = parentSegment.linkedChildren[childIndex];
+        
+        // Remove the child segment from the parent's linkedChildren
+        parentSegment.linkedChildren.splice(childIndex, 1);
+
+        // Insert the child segment as a new parent segment in the next position on the parent segments list
+        currentSegments.splice(segmentIndex.parentIndex, 1, childSegment);
+
+        // Link the previous parent segment and its other children to the new parent segment
+        childSegment.linkedChildren = [parentSegment, ...parentSegment.linkedChildren];
+        parentSegment.linkedChildren = [];
+
+        this.segments.set([...currentSegments]);        
+      } else {
+        // Swap the child segment with the previous child segment
+        [parentSegment.linkedChildren[childIndex - 1], parentSegment.linkedChildren[childIndex]] = [parentSegment.linkedChildren[childIndex], parentSegment.linkedChildren[childIndex - 1]];
+        this.segments.set([...currentSegments]);
+      }
+
+    }
+  }
+
+  /**
+   * Move a segment down in the list of segments. For parent segments, this method does not change the order of the
+   * linked children of the segment, so the linked children will maintain their relative order under the segment. For
+   * child segments, if the child is the last child of a parent segment, it will be promoted to a parent segment and
+   * swapped with the next parent segment. If the child is not the last child of a parent segment, it will be swapped
+   * with the next child of the same parent segment.
+   * 
+   * @param pdfJsSegmentId: The PDF.js ID of the segment to be moved down.
+   * @throws Will throw an error if the segment is not found.
+   */
+  public moveSegmentDown(pdfJsSegmentId: string): void {
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+    
+    if (segmentIndex.parentIndex === -1) {
+      throw new Error('Segment not found.');
+    }
+
+    // Move the parent segment down
+    if (segmentIndex.childIndex === -1) {
+      const currentSegments = this.segments();
+      const parentIndex = segmentIndex.parentIndex;
+      if (parentIndex < currentSegments.length - 1) {
+        [currentSegments[parentIndex], currentSegments[parentIndex + 1]] = [currentSegments[parentIndex + 1], currentSegments[parentIndex]];
+        this.segments.set([...currentSegments]);
+      }
+    // Move the child segment down
+    } else {
+      const currentSegments = this.segments();
+      const parentSegment = currentSegments[segmentIndex.parentIndex];
+      const childIndex = segmentIndex.childIndex;
+      
+      // Move the child segment down if it is not the last child of its parent segment
+      if (childIndex < parentSegment.linkedChildren.length - 1) {
+        [parentSegment.linkedChildren[childIndex], parentSegment.linkedChildren[childIndex + 1]] = [parentSegment.linkedChildren[childIndex + 1], parentSegment.linkedChildren[childIndex]];
+        this.segments.set([...currentSegments]);
+      } else {
+        // If the child segment is the last child of its parent segment, promote it to a parent segment and swap it with the next parent segment
+        if (segmentIndex.parentIndex < currentSegments.length - 1) {
+          const childSegment = parentSegment.linkedChildren[childIndex];
+          
+          // Remove the child segment from the parent's linkedChildren
+          parentSegment.linkedChildren.splice(childIndex, 1);
+
+          // Insert the child segment as a new parent segment in the next position on the parent segments list
+          currentSegments.splice(segmentIndex.parentIndex + 2, 0, childSegment);
+
+          this.segments.set([...currentSegments]);
+        }
+      }
+    }
+  }
+
+  /**
+   * Checks if a marked content ID is an addressable text segment that can be used with the text segmentation service.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to check.
+   * @returns True if the segment is addressable, false otherwise.
+   */
+  public isMarkedContentAnAddressableSegment(pdfJsSegmentId: string): boolean {
+    return this.addressableSegments.has(pdfJsSegmentId);
+  }
+
+  /**
+   * Returns the next text segment in the flattened list of segments. It will be the next segment to appear if segments
+   * are shown in a single flattened list with the child segments after their parent segments.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to find the next segment for.
+   * @returns The segment found, or null if the segment is the last segment in the list.
+   */
+  public nextInFlattenedList(pdfJsSegmentId: string): TextSegment | null {
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+    
+    if (segmentIndex.parentIndex === -1) {
+      return null;
+    }
+
+    const segments = this.segments();
+    const parentSegment = segments[segmentIndex.parentIndex];
+
+    // If the segment is a parent segment, return its first child if it has any, otherwise return the next parent
+    // segment
+    if (segmentIndex.childIndex === -1) {
+      if (parentSegment.linkedChildren.length > 0) {
+        return parentSegment.linkedChildren[0];
+      } else if (segmentIndex.parentIndex < segments.length - 1) {
+        return segments[segmentIndex.parentIndex + 1];
+      } else {
+        return null;
+      }
+    // If the segment is a child segment, return the next child if it has any, otherwise return the next parent segment
+    } else {
+      if (segmentIndex.childIndex < parentSegment.linkedChildren.length - 1) {
+        return parentSegment.linkedChildren[segmentIndex.childIndex + 1];
+      } else if (segmentIndex.parentIndex < segments.length - 1) {
+        return segments[segmentIndex.parentIndex + 1];
+      } else {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * Returns the previous text segment in the flattened list of segments. It will be the previous segment to appear if
+   * segments are shown in a single flattened list with the child segments after their parent segments.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to find the previous segment for.
+   * @returns The segment found, or null if the segment is the first segment in the list.
+   */
+  public previousInFlattenedList(pdfJsSegmentId: string): TextSegment | null {
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+
+    if (segmentIndex.parentIndex === -1) {
+      return null;
+    }
+
+    const segments = this.segments();
+    const parentSegment = segments[segmentIndex.parentIndex];
+
+    // If the segment is a parent segment, return the last child of the previous parent segment if it has any, otherwise
+    // return the previous parent segment
+    if (segmentIndex.childIndex === -1) {
+      if (segmentIndex.parentIndex > 0) {
+        const previousParentSegment = segments[segmentIndex.parentIndex - 1];
+        if (previousParentSegment.linkedChildren.length > 0) {
+          return previousParentSegment.linkedChildren[previousParentSegment.linkedChildren.length - 1];
+        } else {
+          return previousParentSegment;
+        }
+      } else {
+        return null;
+      }
+    // If the segment is a child segment, return the previous child if it has any, otherwise return the parent segment
+    } else {
+      if (segmentIndex.childIndex > 0) {
+        return parentSegment.linkedChildren[segmentIndex.childIndex - 1];
+      } else {
+        return parentSegment;
+      }
+    }
+  }
+  
+  /**
+   * Finds the parent and child indexes of a segment in the segments list from the PDF.js ID of the segment. Returns -1
+   * for the parent and child indexes if the segment is not found. Returns -1 for the child index if the segment is a
+   * parent segment.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to find.
+   * @returns The parent and child indexes of the segment in the segments list.
+   */
+  private findSegmentIndex(pdfJsSegmentId: string): { parentIndex: number, childIndex: number } {
+    const currentSegments = this.segments();
+    const parentIndex = currentSegments.findIndex(segment => segment.pdfJsId === pdfJsSegmentId);
+    
+    if (parentIndex !== -1) {
+      return { parentIndex, childIndex: -1 };
+    }
+
+    for (let i = 0; i < currentSegments.length; i++) {
+      const childIndex = currentSegments[i].linkedChildren.findIndex(child => child.pdfJsId === pdfJsSegmentId);
+      if (childIndex !== -1) {
+        return { parentIndex: i, childIndex };
+      }
+    }
+
+    return { parentIndex: -1, childIndex: -1 };
+  }
+
+  /**
+   * Finds a segment in the segments list from the PDF.js ID of the segment. Returns null if the segment is not found.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment to find.
+   * @returns The segment found, or null if the segment is not found.
+   */
+  private findSegment(pdfJsSegmentId: string): TextSegment | null {
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+    
+    if (segmentIndex.parentIndex === -1) {
+      return null;
+    }
+    
+    return this.segmentFromIndexes(segmentIndex.parentIndex, segmentIndex.childIndex);
+  }
+
+  /**
+   * Gets a segment from the segments list using its parent and child indexes.
+   * 
+   * @param parentIndex The index of the parent segment.
+   * @param childIndex The index of the child segment, or -1 if the segment is a parent segment.
+   * @returns The segment found.
+   */
+  private segmentFromIndexes(parentIndex: number, childIndex: number): TextSegment {
+    const currentSegments = this.segments();
+    if (childIndex === -1) {
+      return currentSegments[parentIndex];
+    } else {
+      return currentSegments[parentIndex].linkedChildren[childIndex];
+    }
+  }
 }
 
 export interface TextSegment {
-    id: string;
-    text: string;
-    linked: boolean;
+  sequentialId: number,
+  pdfJsId: string,
+  page: number,
+  text: string,
+  excluded: boolean,
+  linkedChildren: TextSegment[],
+}
+
+export interface PdfJsAccessibleTextSegment {
+  pdfJsId: string;
+  page: number;
 }

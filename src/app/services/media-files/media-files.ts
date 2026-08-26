@@ -25,6 +25,11 @@ export class MediaFiles {
     });
   }
   
+  /**
+   * Adds new media files to the list.
+   * 
+   * @param files The array of `File` objects to be added as media files.
+   */
   public addMediaFiles(files: File[]): void {
     const newMediaFiles: MediaFile[] = files.map(file => ({
       id: this.createMediaFileId(),
@@ -45,9 +50,13 @@ export class MediaFiles {
     .subscribe((result) => this.handleThumbnailGenerationResult(result));
   }
 
+  /**
+   * Removes a media file from the list by its ID and revokes any associated object URLs to free up memory.
+   * 
+   * @param mediaFileId The ID of the media file to be removed.
+   */
   public removeMediaFile(mediaFileId: string): void {
-    const mediaFileToRemove = this.mediaFiles()
-      .find((mediaFile) => mediaFile.id === mediaFileId);
+    const mediaFileToRemove = this.mediaFiles().find((mediaFile) => mediaFile.id === mediaFileId);
       
     if (mediaFileToRemove && mediaFileToRemove.thumbnail) {
       URL.revokeObjectURL(mediaFileToRemove.thumbnail);
@@ -63,6 +72,12 @@ export class MediaFiles {
     );
   }
 
+  /**
+   * Sets the text record.
+   * 
+   * @param file The `File` object representing the text record to be set. `null` indicates that it should be set to
+   * have no text record.
+   */
   public setTextRecord(file: File | null): void {
     const type = file ? (file.type === 'application/pdf' ? 'application/pdf' : 'invalid') : null;
 
@@ -72,7 +87,7 @@ export class MediaFiles {
     }
 
     const unsafeUrl = file ? URL.createObjectURL(file) : null;
-    const url = unsafeUrl ? this.sanitizer.bypassSecurityTrustResourceUrl(unsafeUrl) as string : null;
+    const url = unsafeUrl ? unsafeUrl as string : null;
     
     if (this.textRecord() && typeof this.textRecord().url === 'string') {
       URL.revokeObjectURL(this.textRecord().url as string);
@@ -81,10 +96,15 @@ export class MediaFiles {
     this.textRecord.set({ file, type, url });
   }
 
+  /**
+   * Handles the result of a thumbnail generation request.
+   * 
+   * @param result The result o the thumbnail generation request, sent by the `Thumbnail` service.
+   * @throws Will throw an error if the thumbnail generation failed.
+   */
   private handleThumbnailGenerationResult(result: ThumbnailGenerationResult): void {
     if ('error' in result) {
-      console.error(`Failed to generate thumbnail for media file "${result.mediaFileId}".`, result.error);
-      return;
+      throw new Error(`Failed to generate thumbnail for media file "${result.mediaFileId}".`, result.error);
     }
 
     const previousThumbnailUrl = this.mediaFiles()
@@ -110,6 +130,11 @@ export class MediaFiles {
     );
   }
 
+  /**
+   * Creates a unique ID for a new media file.
+   * 
+   * @returns The ID created.
+   */
   private createMediaFileId(): string {
     return `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }

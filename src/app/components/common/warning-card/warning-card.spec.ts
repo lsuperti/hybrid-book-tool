@@ -15,6 +15,7 @@ describe('WarningCard', () => {
     component = fixture.componentInstance;
 
     fixture.componentRef.setInput('message', 'Test warning message');
+    fixture.componentRef.setInput('type', 'warning');
 
     await fixture.whenStable();
   });

@@ -1,4 +1,4 @@
-import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input } from '@angular/core';
+import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect } from '@angular/core';
 
 @Component({
   selector: 'app-vertical-split',
@@ -13,6 +13,9 @@ export class VerticalSplit {
   public readonly resizeBarAriaLabel = input.required<string>();
   public readonly resizeBarLeftMargin = input<string>('0px');
   public readonly resizeBarRightMargin = input<string>('0px');
+  public readonly minHeightPercentage = input<number>(0.5);
+  public readonly collapsed = input<CollapsedState>('none');
+  public readonly onLayoutChange = output<void>();
   
   protected topHeight!: WritableSignal<number>;
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
@@ -21,8 +24,6 @@ export class VerticalSplit {
   private isResizing = false;
   private startY = 0;
   private startTopHeight = 0;
-  
-  private static readonly MIN_HEIGHT_PERCENTAGE = 0.5; // Minimum height percentage for the areas
 
   protected resizeBarPointerDown(event: PointerEvent) {
     this.isResizing = true;
@@ -43,9 +44,11 @@ export class VerticalSplit {
     }
 
     if (event.key === 'ArrowUp') {
-      this.topHeight.set(Math.max(this.topHeight() - step, VerticalSplit.MIN_HEIGHT_PERCENTAGE));
+      this.topHeight.set(Math.max(this.topHeight() - step, this.minHeightPercentage()));
+      this.onLayoutChange.emit();
     } else if (event.key === 'ArrowDown') {
-      this.topHeight.set(Math.min(this.topHeight() + step, 100 - VerticalSplit.MIN_HEIGHT_PERCENTAGE));
+      this.topHeight.set(Math.min(this.topHeight() + step, 100 - this.minHeightPercentage()));
+      this.onLayoutChange.emit();
     }
   }
   
@@ -63,8 +66,9 @@ export class VerticalSplit {
             const newTopHeight = this.startTopHeight + (deltaX / containerHeight) * 100;
             
             // Ensure the new height is within the allowed range
-            if (newTopHeight >= VerticalSplit.MIN_HEIGHT_PERCENTAGE && newTopHeight <= 100 - VerticalSplit.MIN_HEIGHT_PERCENTAGE) {
+            if (newTopHeight >= this.minHeightPercentage() && newTopHeight <= 100 - this.minHeightPercentage()) {
               this.topHeight.set(newTopHeight);
+              this.onLayoutChange.emit();
             }
           }
         })
@@ -78,9 +82,16 @@ export class VerticalSplit {
         })
       );
     });
+
+    effect(() => {
+      this.collapsed();
+      this.onLayoutChange.emit();
+    });
   }
 
   ngOnDestroy() {
     this.unlisteners.forEach(unlistener => unlistener());
   }
 }
+
+export type CollapsedState = 'top' | 'bottom' | 'none';

@@ -9,7 +9,6 @@
   border-radius: 0.5rem;
   background-color: var(--card-bg);
   border: 0.125rem solid var(--card-bg-assent);
-  color: var(--card-bg-assent-assent-assent);
 }
 
 .warning-card[halfWidthLeft] {
@@ -45,7 +44,40 @@
   margin-bottom: 2rem;
 }
 
+.warning-card.warning svg {
+  color: var(--card-bg-assent-assent-assent-assent);
+}
+
+.warning-card.info svg {
+  color: var(--card-bg-assent-assent-assent-assent-assent);
+}
+
+.warning-card.error svg {
+  color: var(--error-color);
+}
+
 .warning-card p {
   font-size: 1.5rem;
-  color: var(--card-bg-assent-assent-assent-assent);
+  text-align: center;
+}
+
+.warning-card.warning p, .warning-card.info p, .warning-card.loading-segments p {
+  color: var(--card-bg-assent-assent-assent-assent-assent);
+}
+
+.warning-card.error p {
+  color: var(--error-color);
+}
+
+@keyframes loading-segments {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-5rem);
+  }
+}
+
+.loading-segments-text {
+  animation: loading-segments 1s infinite alternate;
 }

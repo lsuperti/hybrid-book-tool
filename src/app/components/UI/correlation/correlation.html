@@ -11,12 +11,12 @@
   [resizeBarRightMargin]="'0.625rem'"
   >
     @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-      <app-warning-card top class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'bottom']"></app-warning-card>
+      <app-warning-card top class="warning-card" [type]="'warning'" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'bottom']"></app-warning-card>
     } @else {
       <div top class="text-segments-area">
         <div class="text-segments-container">
           <ol class="text-segments-list">
-            @for (segment of textSegmentationService.segments(); track segment.id; let i = $index) {
+            @for (segment of textSegmentationService.segments(); track segment.sequentialId; let i = $index) {
               <li class="text-segments-list-item">
                 <button class="text-segments-list-item-main-button" [attr.aria-label]="'Selecionar segmento de vídeo ' + segment.text">
                   <p>{{ segment.text }}</p>
@@ -28,25 +28,20 @@
       </div>
     }
     @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-      <app-warning-card bottom class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
+      <app-warning-card bottom class="warning-card" [type]="'warning'" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
     } @else {
       <div bottom class="text-record-area">
         <div class="text-record-container">
-          <!--
-          STUB: The PDF will be displayed with the PDF.js library, which will be implemented in the next iteration. For now,
-          we are using an iframe to display the PDF.
-          -->
-          <iframe
-          [src]="mediaFilesService.textRecord().url"
-          width="100%"
-          height="100%"
-          frameborder="0"
-          ></iframe>
+          <app-pdf-viewer
+          class="pdf-viewer"
+          [src]="this.mediaFilesService.textRecord()?.url!"
+          [visible]="visible()"
+          [name]="'correlation'"
+          ></app-pdf-viewer>
         </div>
       </div>
     }
-  </app-vertical-split>
-  <app-vertical-split
+  </app-vertical-split><app-vertical-split
   right
   [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de vídeo e visualização de vídeo'"
   [resizeBarLeftMargin]="'0.625rem'"
@@ -54,7 +49,7 @@
   >
     <div class="video-segments-area" top>
       @if (mediaFilesService.mediaFiles().length <= 0) {
-        <app-warning-card class="warning-card" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left', 'bottom']"></app-warning-card>
+        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left', 'bottom']"></app-warning-card>
       } @else {
         <div class="video-segments-container">
           <ol class="video-segments-list">
@@ -87,7 +82,7 @@
     </div>
     <div bottom class="video-preview-area">
       @if (mediaFilesService.mediaFiles().length <= 0 || mediaFilesService.mediaFiles()[0]?.url === null) {
-        <app-warning-card class="warning-card" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left', 'top']"></app-warning-card>
+        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left', 'top']"></app-warning-card>
       } @else {
         <!--
         STUB: The video preview will be displayed differently in the future and will align with the timeline. For

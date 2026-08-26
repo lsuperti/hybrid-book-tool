@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-export',
@@ -6,4 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './export.html',
   styleUrl: './export.scss',
 })
-export class Export {}
+export class Export {
+  public readonly visible = input.required<boolean>();
+}

@@ -23,6 +23,7 @@ $resize-bar-grab-width: 0.5rem;
   height: $resize-bar-grab-width;
   top: calc(var(--top-height) - $resize-bar-grab-width / 2);
   cursor: ns-resize;
+  z-index: 1;
 }
 
 .resize-bar:focus-visible {

@@ -1,13 +1,51 @@
 <div
 class="warning-card"
+[class]="{
+  'warning': type() === 'warning',
+  'info': type() === 'info',
+  'error': type() === 'error',
+  'loading-segments': type() === 'loading-segments'
+}"
 [attr.halfWidthLeft]="halfWidthMargin().includes('left') ? 'true' : null"
 [attr.halfWidthRight]="halfWidthMargin().includes('right') ? 'true' : null"
 [attr.halfWidthTop]="halfWidthMargin().includes('top') ? 'true' : null"
 [attr.halfWidthBottom]="halfWidthMargin().includes('bottom') ? 'true' : null">
+  @if (type() === 'warning') {
     <svg class="icon" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <circle style="fill:currentColor;fill-rule:evenodd" cx="128" cy="198.4852" r="8" />
-    <path style="fill:currentColor;fill-rule:evenodd;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="m 125.18985,91.16989 h 5.6203 L 128,169.50391 Z" />
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 128,23.360286 248,231.20638 H 8 Z" />
+      <circle style="fill:currentColor;fill-rule:evenodd" cx="128" cy="198.4852" r="8" />
+      <path style="fill:currentColor;fill-rule:evenodd;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="m 125.18985,91.16989 h 5.6203 L 128,169.50391 Z" />
+      <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 128,23.360286 248,231.20638 H 8 Z" />
     </svg>
-    <p>{{ message() }}</p>
+  } @else if (type() === 'info') {
+    <svg class="icon" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <circle style="fill:currentColor;fill-rule:evenodd" cx="128" cy="181.6572" r="8" />
+      <path style="fill:currentColor;fill-rule:evenodd;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="m 125.18985,74.341887 h 5.6203 L 128,152.67591 Z" />
+      <circle style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" cx="128" cy="128" r="120" />
+    </svg>
+  } @else if (type() === 'error') {
+    <svg class="icon" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <circle style="fill:currentColor;fill-rule:evenodd" cx="128" cy="198.4852" r="8" />
+      <path style="fill:currentColor;fill-rule:evenodd;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="m 125.18985,91.16989 h 5.6203 L 128,169.50391 Z" />
+      <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 128,23.360286 248,231.20638 H 8 Z" />
+    </svg>
+  } @else if (type() === 'loading-segments') {
+    <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <g style="transform: rotateX(65deg) rotate(45deg); transform-origin: center; scale: calc(1/sqrt(2))">
+        <rect style="fill:#0759ab;fill-opacity:1;fill-rule:evenodd" width="512" height="512" x="256" y="256" />
+        <rect style="fill:#8f99a3;fill-opacity:1;fill-rule:evenodd" width="240" height="198.4" x="288" y="288" />
+      </g>
+      <g class="loading-segments-text">
+        <g style="transform: rotateX(65deg) rotate(45deg); transform-origin: center; scale: calc(1/sqrt(2))">
+          <rect style="fill:#8f99a3;fill-opacity:calc(1/3);fill-rule:evenodd" width="512" height="512" x="256" y="256" />
+          <path style="fill:none;stroke:#73808c;stroke-width:32;stroke-linecap:butt" d="M 560,304 H 736" />
+          <path style="fill:none;stroke:#73808c;stroke-width:32;stroke-linecap:butt" d="M 560,387.2 H 736" />
+          <path style="fill:none;stroke:#73808c;stroke-width:32;stroke-linecap:butt" d="M 560,470.4 H 736" />
+          <path style="fill:none;stroke:#73808c;stroke-width:32;stroke-linecap:butt" d="M 304,553.6 H 736" />
+          <path style="fill:none;stroke:#73808c;stroke-width:32;stroke-linecap:butt" d="M 304,636.8 H 736" />
+          <path style="fill:none;stroke:#73808c;stroke-width:32;stroke-linecap:butt" d="M 304,720 H 736" />
+        </g>
+      </g>
+    </svg>
+  }
+  <p>{{ message() }}</p>
 </div>

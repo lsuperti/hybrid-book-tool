@@ -23,6 +23,7 @@ $resize-bar-grab-width: 0.5rem;
   width: $resize-bar-grab-width;
   left: calc(var(--left-width) - $resize-bar-grab-width / 2);
   cursor: ew-resize;
+  z-index: 1;
 }
 
 .resize-bar::after {

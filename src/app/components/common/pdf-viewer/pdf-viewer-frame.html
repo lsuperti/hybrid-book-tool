@@ -1,0 +1,29 @@
+@if (isBrowser) {
+  <ngx-extended-pdf-viewer
+  #pdfViewer
+  [src]="src()"
+  [textLayer]="true"
+  [handTool]="false"
+  [ignoreKeyboard]="true"
+  [backgroundColor]="'var(--card-bg)'"
+  [showOpenFileButton]="false"
+  [showPrintButton]="false"
+  [showDownloadButton]="false"
+  [showEditorButtons]="false"
+  [showInfiniteScrollButton]="false"
+  [showRotateButton]="false"
+  [showTextEditor]="false"
+  [showDrawEditor]="false"
+  [showStampEditor]="false"
+  [showHighlightEditor]="false"
+  [showCommentEditor]="false"
+  [showSignatureEditor]="false"
+  [disableForms]="true"
+  [enableDragAndDrop]="false"
+  [sidebarVisible]="false"
+  [showBorders]="false"
+  [language]="'pt-BR'"
+  (pagesLoaded)="onPagesLoaded($event)"
+  (textLayerRendered)="onTextLayerRendered($event)"
+  ></ngx-extended-pdf-viewer>
+}

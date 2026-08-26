@@ -5,12 +5,13 @@
   --text-color: #000000;
   --primary-color: hsl(210, 92%, 35%);
   --primary-contrast: #ffffff;
-  --primary-assent: hsl(210, 92%, 20%);
+  --primary-assent: hsl(210, 65%, 50%);
   --card-bg: hsl(210, 20%, 95%);
   --card-bg-assent: hsl(210, 15%, 90%);
-  --card-bg-assent-assent: hsl(210, 10%, 70%);
-  --card-bg-assent-assent-assent: hsl(210, 10%, 60%);
-  --card-bg-assent-assent-assent-assent: hsl(210, 10%, 50%);
+  --card-bg-assent-assent: hsl(210, 10%, 85%);
+  --card-bg-assent-assent-assent: hsl(210, 10%, 70%);
+  --card-bg-assent-assent-assent-assent: hsl(210, 10%, 60%);
+  --card-bg-assent-assent-assent-assent-assent: hsl(210, 10%, 50%);
   --icon-color: hsl(210, 50%, 10%);
   --error-color: hsl(0, 75%, 60%);
 
@@ -27,10 +28,11 @@
     --primary-assent: hsl(210, 63%, 40%);
     --card-bg: hsl(210, 33%, 17%);
     --card-bg-assent: hsl(210, 33%, 22%);
-    --card-bg-assent-assent: hsl(210, 35%, 30%);
-    --card-bg-assent-assent-assent: hsl(210, 35%, 40%);
-    --card-bg-assent-assent-assent-assent: hsl(210, 35%, 50%);
-    --icon-color: hsl(210, 20%, 85%);
+    --card-bg-assent-assent: hsl(210, 35%, 25%);
+    --card-bg-assent-assent-assent: hsl(210, 35%, 30%);
+    --card-bg-assent-assent-assent-assent: hsl(210, 35%, 40%);
+    --card-bg-assent-assent-assent-assent-assent: hsl(210, 35%, 50%);
+    --icon-color: hsl(210, 20%, 95%);
   }
 }
 
@@ -45,6 +47,10 @@ body {
 * {
   margin: 0;
   padding: 0;
+}
+
+ngx-extended-pdf-viewer .body, ngx-extended-pdf-viewer .pdf-viewer input, ngx-extended-pdf-viewer .pdf-viewer button, ngx-extended-pdf-viewer .pdf-viewer select {
+  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg) !important;
 }
 
 // cyrillic-ext

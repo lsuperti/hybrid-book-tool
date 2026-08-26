@@ -1,0 +1,9 @@
+<!-- The PDF iframe and its parents keep visibility-based hiding and off-screen positioning to preserve viewer state. -->
+<iframe
+#pdfViewerIframe
+class="pdf-viewer-frame"
+[src]="iframeSrc()"
+title="Visualizador de PDF"
+[inert]="visible() ? false : true"
+[style.left]="visible() ? '0' : '-100000px'"
+></iframe>

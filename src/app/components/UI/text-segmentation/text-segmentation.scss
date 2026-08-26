@@ -5,85 +5,223 @@
 }
 
 .segments-container {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 0.625rem);
+  height: calc(100% - 0.75rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow-y: auto;
+  border: 0.125rem solid var(--card-bg-assent);
+  border-radius: 0.5rem;
+  margin: 0.25rem 0.125rem 0.25rem 0.25rem;
 }
-
-$list-item-height: 2rem;
-$list-item-link-button-height: 2rem;
 
 .segments-list {
-  width: 100%;
   height: 100%;
   list-style: none;
+  margin: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--card-bg-assent-assent) var(--card-bg);
+  overflow-x: hidden;
+  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg);
+  container-type: scroll-state;
 }
 
-.segments-list-item {
-  height: $list-item-height + $list-item-link-button-height + 0.25rem;
+.parent-segment-item:last-child ol li .segment-bottom-background {
+  border-radius: 0 0 0.5rem 0.5rem;
+  border-bottom: 0.125rem solid var(--card-bg-assent);
+}
+
+@container scroll-state(scrollable: top) or scroll-state(scrollable: bottom) {
+  .parent-segment-item:last-child ol li .segment-bottom-background {
+    border-radius: 0;
+    border-bottom: none;
+  }
+}
+
+.parent-segment-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin: 0.25rem;
-}
-
-.segments-list-item:last-child {
-  height: $list-item-height + 0.1875rem;
-}
-
-.segments-list-item-main-button {
-  border: 0.125rem solid var(--card-bg-assent);
-  border-radius: 0.5rem;
+  justify-content: space-between;
   width: 100%;
-  $list-item-height: 2rem;
-  padding: 0.5rem;
-  background-color: var(--background-color);
+  position: relative;
+}
+
+.parent-segment-item .segments-sublist .segment .segment-top-background {
+  position: absolute;
+  left: -0.125rem;
+  width: calc(100% + 0.125rem);
+  height: 0.9375rem;
+  z-index: 2;
+}
+
+.parent-segment-item .segments-sublist .parent-segment .segment-bottom-background {
+  position: absolute;
+  left: -0.125rem;
+  top: 0.9375rem;
+  width: calc(100% + 0.125rem);
+  height: calc(100% - 0.9375rem);
+  z-index: 1;
+}
+
+.parent-segment-item:first-child .segments-sublist .parent-segment .segment-bottom-background {
+  height: calc(100% + 0.5625rem);
+  top: 0;
+}
+
+.parent-segment-item:nth-child(odd) .segments-sublist .parent-segment .segment-bottom-background {
+  background-color: var(--card-bg);
+}
+
+.parent-segment-item:nth-child(even) .segments-sublist .parent-segment .segment-bottom-background {
+  background-color: var(--card-bg-assent);
+}
+
+.parent-segment-item:nth-child(odd) .segments-sublist .parent-segment .segment-top-background {
+  background-color: var(--card-bg-assent);
+}
+
+.parent-segment-item:nth-child(even) .segments-sublist .parent-segment .segment-top-background {
+  background-color: var(--card-bg);
+}
+
+.parent-segment-item:nth-child(odd) .segments-sublist .child-segment .segment-top-background {
+  border-bottom: 0.125rem solid var(--card-bg-assent);
+}
+
+.parent-segment-item:nth-child(even) .segments-sublist .child-segment .segment-top-background {
+  border-bottom: 0.125rem solid var(--card-bg-assent-assent);
+}
+
+.segments-sublist {
+  list-style: none;
+  width: 100%;
+}
+
+.segment {
+  padding-bottom: 1rem;
+}
+
+.child-segment {
+  z-index: 2;
+  position: relative;
+}
+
+.segment:last-child {
+  margin-bottom: 0;
+}
+
+$button-size: 2rem;
+$spacing-between-up-down-buttons: 0.125rem;
+$inner-button-spacing: 1rem;
+
+.segment-inner-items-container {
+  margin-top: 0.75rem;
+  padding: 0 0.5rem 0 0.5rem;
+  position: relative;
+  z-index: 1;
   display: flex;
+  flex-direction: row;
   align-items: center;
 }
 
-.segments-list-link-button {
-  border: 0.125rem solid var(--card-bg-assent);
+.segment-button {
+  width: calc(100% - 2 * $button-size);
+  min-height: $button-size * 2 + $spacing-between-up-down-buttons;
+  background-color: transparent;
+  border: none;
+  padding: 0 $inner-button-spacing 0 $inner-button-spacing;
+}
+
+.segment-button:focus-visible {
+  outline: none;
+}
+
+.segment-button:focus-visible .segment-text {
+  outline: 0.125rem solid var(--primary-color);
+  outline-offset: 0.125rem;
   border-radius: 0.5rem;
-  width: $list-item-link-button-height + 0.0625rem;
+}
+
+.segment-button[aria-selected="true"] .segment-text {
+  color: var(--primary-color);
+}
+
+.segment-text {
+  display: flex;
+  align-items: center;
+  text-align: justify;
+  min-height: $button-size * 2 + $spacing-between-up-down-buttons;
+}
+
+.parent-segment-item:first-child .segments-sublist .parent-segment .segment-inner-items-container {
+  margin-top: 1.5rem;
+}
+
+.include-button, .exclude-button {
+  width: $button-size;
+  height: $button-size;
+  border: 0.125rem solid var(--card-bg-assent-assent);
+  border-radius: 0.5rem;
   padding: 0.0625rem;
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
   background-color: var(--card-bg);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
-.segments-list-link-button.linked {
-  background-color: var(--card-bg-assent-assent);
-  border: 0.125rem solid var(--card-bg-assent-assent-assent);
+.up-down-buttons-container {
+  width: $button-size;
 }
 
-.segments-list-item button[aria-selected="true"] {
+.up-button, .down-button {
+  width: $button-size;
+  height: $button-size;
+  border: 0.125rem solid var(--card-bg-assent-assent);
+  border-radius: 0.5rem;
+  padding: 0.0625rem;
   background-color: var(--card-bg);
-  border: 0.125rem solid var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.segments-list-item button:focus-visible {
+.up-button {
+  margin-bottom: calc($spacing-between-up-down-buttons / 2);
+}
+
+.down-button {
+  margin-top: calc($spacing-between-up-down-buttons / 2);
+}
+
+.link-button-container {
+  width: $button-size;
+  height: $button-size;
+  margin-left: auto;
+  margin-right: auto;
+  position:relative;
+  z-index: 2;
+}
+
+.link-button {
+  width: 100%;
+  height: 100%;
+  border: 0.125rem solid var(--card-bg-assent-assent);
+  border-radius: 0.5rem;
+  padding: 0.0625rem;
+  background-color: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:focus-visible {
   outline: 0.125rem solid var(--primary-color);
   outline-offset: -0.125rem;
 }
 
-.segments-list-item button p {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
 .text-record-area {
-  width: calc(100% - 0.75rem);
-  height: calc(100% - 0.75rem);
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -91,8 +229,9 @@ $list-item-link-button-height: 2rem;
 }
 
 .text-record-container {
-  width: calc(100% - 0.75rem);
+  width: calc(100% - 0.625rem);
   height: calc(100% - 0.75rem);
+  margin: 0.25rem 0.25rem 0.25rem 0.125rem;
   border: 0.125rem solid var(--card-bg-assent);
   border-radius: 0.5rem;
   display: flex;
@@ -100,9 +239,10 @@ $list-item-link-button-height: 2rem;
   justify-content: center;
 }
 
-.text-record-container iframe {
+.pdf-viewer {
+  border-radius: 0.375rem;
   width: 100%;
   height: 100%;
-  border: none;
-  border-radius: 0.375rem;
+  overflow: hidden;
+  display: block;
 }

@@ -1,58 +1,214 @@
-<app-horizontal-split
+<app-horizontal-split #horizontalSplit
 [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'"
 [resizeBarTopMargin]="'0.75rem'"
 [resizeBarBottomMargin]="'0.75rem'"
 >
-  @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card left class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right']"></app-warning-card>
+  @if (mediaFilesService.textRecord().type === 'invalid') {
+    <app-warning-card left [type]="'error'" class="warning-card" [message]="'Registro de texto inválido.'" [halfWidthMargin]="['right']"></app-warning-card>
+  } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
+    <app-warning-card left class="warning-card" [type]="'warning'" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right']"></app-warning-card>
+  } @else if (textSegmentationService.status() === 'loading') {
+    <app-warning-card left class="warning-card" [type]="'loading-segments'" [message]="'Extraindo texto do registro de texto...'" [halfWidthMargin]="['right']"></app-warning-card>
   } @else {
     <div class="segments-container" left>
-      <ol class="segments-list">
-        @for (segment of textSegmentationService.segments(); track segment.id; let last = $last) {
-          <li class="segments-list-item">
-            <button class="segments-list-item-main-button" (click)="selectedSegmentIndex.set(textSegmentationService.segments().indexOf(segment))" [aria-selected]="textSegmentationService.segments().indexOf(segment) === selectedSegmentIndex()">
-              <p>{{ segment.text }}</p>
-            </button>
-            @if (!last) {
-              <button class="segments-list-link-button" (click)="toggleSegmentLinked(segment)" [class.linked]="segment.linked">
-                @if (segment.linked) {
-                  <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,44 V 84" />
-                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="72" rx="16" ry="16" />
-                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="16" rx="16" ry="16" />
-                  </svg>
-                } @else {
-                  <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,84 V 96" />
-                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="84" rx="16" ry="16" />
-                    <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="4" rx="16" ry="16" />
-                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,32 V 44" />
-                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,73 V 84" />
-                    <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,55 V 44" />
-                  </svg>
+      <ol #segmentsList class="segments-list">
+        @for (segment of textSegmentationService.segments(); track segment.sequentialId; let first = $first; let index = $index) {
+          <li
+          #segmentItem
+          [attr.data-segment-id]="segment.pdfJsId"
+          [attr.data-segment-page]="segment.page"
+          class="parent-segment-item"
+          >
+            <ol class="segments-sublist">
+              <li class="segment parent-segment">
+                <div class="segment-bottom-background"></div>
+                @if (!first) {
+                  <div
+                  class="segment-top-background"
+                  ></div>
+                  <div class="link-button-container">
+                      @if (!segment.excluded && !textSegmentationService.segments()[index - 1].excluded) {
+                      <button #linkButton [attr.data-segment-id]="segment.pdfJsId" class="link-button" (click)="onLinkButtonClick(segment)">
+                        <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,82 V 94" />
+                          <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="82" rx="16" ry="16" />
+                          <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="6" rx="16" ry="16" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,34 V 46" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,71 V 82" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,57 V 46" />
+                        </svg>
+                      </button>
+                    }
+                    </div>
                 }
-              </button>
-            }
-          </li>
+                <div class="segment-inner-items-container">
+                  <div class="up-down-buttons-container">
+                    <button #upButton [attr.data-segment-id]="segment.pdfJsId" class="up-button" (click)="first ? null : onUpButtonClick(segment)">
+                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
+                        </svg>
+                      </button>
+                      <button #downButton [attr.data-segment-id]="segment.pdfJsId" class="down-button" (click)="onDownButtonClick(segment)">
+                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
+                        </svg>
+                      </button>
+                  </div>
+                  @if (segment.excluded) {
+                    <button
+                    class="segment-button"
+                    (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    [aria-selected]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                    >
+                      <del
+                      class="segment-text"
+                      [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                      [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                      >
+                        {{ segment.text }}
+                      </del>
+                    </button>
+                  } @else {
+                    <button
+                    class="segment-button"
+                    (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    [aria-selected]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                    >
+                      <p
+                      class="segment-text"
+                      [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                      [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                      >
+                        {{ segment.text }}
+                      </p>
+                    </button>
+                  }
+                  @if (segment.excluded) {
+                    <button #includeButton [attr.data-segment-id]="segment.pdfJsId" class="include-button" (click)="onIncludeButtonClick(segment)">
+                      <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 256,144 V 368" />
+                        <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
+                      </svg>
+                    </button>
+                  } @else {
+                    <button #excludeButton [attr.data-segment-id]="segment.pdfJsId" class="exclude-button" (click)="onExcludeButtonClick(segment)">
+                      <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
+                        <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </li>
+              @for (childSegment of segment.linkedChildren; track childSegment.sequentialId) {
+                <li
+                #segmentItem
+                [attr.data-segment-id]="childSegment.pdfJsId"
+                [attr.data-segment-page]="childSegment.page"
+                class="segment child-segment"
+                >
+                  <div class="segment-top-background"></div>
+                  <div class="link-button-container">
+                    <button #linkButton [attr.data-segment-id]="childSegment.pdfJsId" class="link-button" (click)="onLinkButtonClick(childSegment)">
+                      <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                        <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,44 V 84" />
+                        <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="72" rx="16" ry="16" />
+                        <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="16" rx="16" ry="16" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="segment-inner-items-container">
+                    <div class="up-down-buttons-container">
+                      <button #upButton [attr.data-segment-id]="childSegment.pdfJsId" class="up-button" (click)="onUpButtonClick(childSegment)">
+                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
+                        </svg>
+                      </button>
+                      <button #downButton [attr.data-segment-id]="childSegment.pdfJsId" class="down-button" (click)="onDownButtonClick(childSegment)">
+                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
+                        </svg>
+                      </button>
+                    </div>
+                    @if (childSegment.excluded) {
+                      <button
+                      class="segment-button"
+                      (click)="onSegmentButtonClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
+                      (dblclick)="onSegmentButtonDoubleClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
+                      [aria-selected]="childSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                      >
+                        <del
+                        class="segment-text"
+                        [style.font-style]="childSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                        [style.color]="childSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && childSegment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                        >
+                          {{ childSegment.text }}
+                        </del>
+                      </button>
+                    } @else {
+                      <button
+                      class="segment-button"
+                      (click)="onSegmentButtonClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
+                      (dblclick)="onSegmentButtonDoubleClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
+                      [aria-selected]="childSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                      >
+                        <p
+                        class="segment-text"
+                        [style.font-style]="childSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                        [style.color]="childSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && childSegment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                        >
+                          {{ childSegment.text }}
+                        </p>
+                      </button>
+                    }
+                    @if (childSegment.excluded) {
+                      <button #includeButton [attr.data-segment-id]="childSegment.pdfJsId" class="include-button" (click)="onIncludeButtonClick(childSegment)">
+                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 256,144 V 368" />
+                          <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
+                        </svg>
+                      </button>
+                    } @else {
+                      <button #excludeButton [attr.data-segment-id]="childSegment.pdfJsId" class="exclude-button" (click)="onExcludeButtonClick(childSegment)">
+                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
+                          <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ol>
         }
       </ol>
     </div>
   }
-  @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card right class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['left']"></app-warning-card>
+  @if (mediaFilesService.textRecord().type === 'invalid') {
+    <app-warning-card right [type]="'error'" class="warning-card" [message]="'Registro de texto inválido.'" [halfWidthMargin]="['left']"></app-warning-card>
+  } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
+    <app-warning-card right [type]="'warning'" class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['left']"></app-warning-card>
   } @else {
     <div right class="text-record-area">
       <div class="text-record-container">
-        <!--
-        STUB: The PDF will be displayed with the PDF.js library, which will be implemented in the next iteration. For now,
-        we are using an iframe to display the PDF.
-        -->
-        <iframe
-        [src]="mediaFilesService.textRecord().url"
-        width="100%"
-        height="100%"
-        frameborder="0"
-        ></iframe>
+        <app-pdf-viewer
+        class="pdf-viewer"
+        [src]="mediaFilesService.textRecord().url!"
+        [visible]="visible()"
+        [name]="'text-segmentation'"
+        [navigateToMarkedContentInViewer]="navigateToMarkedContentInViewer()"
+        (navigateToMarkedContentInParent)="onNavigateToMarkedContent($event)"
+        [(hoveredMarkedContent)]="hoveredSegmentPdfJsId"
+        [(selectedMarkedContent)]="selectedSegmentPdfJsId"
+        ></app-pdf-viewer>
       </div>
     </div>
   }

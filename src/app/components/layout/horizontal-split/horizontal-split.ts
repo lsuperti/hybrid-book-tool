@@ -1,4 +1,4 @@
-import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input } from '@angular/core';
+import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect } from '@angular/core';
 
 @Component({
   selector: 'app-horizontal-split',
@@ -13,6 +13,9 @@ export class HorizontalSplit {
   public readonly resizeBarAriaLabel = input.required<string>();
   public readonly resizeBarTopMargin = input<string>('0px');
   public readonly resizeBarBottomMargin = input<string>('0px');
+  public readonly minWidthPercentage = input<number>(10);
+  public readonly collapsed = input<CollapsedState>('none');
+  public readonly onLayoutChange = output<void>();
   
   protected leftWidth!: WritableSignal<number>;
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
@@ -22,8 +25,6 @@ export class HorizontalSplit {
   private startX = 0;
   private startLeftWidth = 0;
   
-  private static readonly MIN_WIDTH_PERCENTAGE = 10; // Minimum width percentage for the areas
-
   protected resizeBarPointerDown(event: PointerEvent) {
     this.isResizing = true;
     this.startX = event.clientX;
@@ -43,9 +44,11 @@ export class HorizontalSplit {
     }
 
     if (event.key === 'ArrowLeft') {
-      this.leftWidth.set(Math.max(this.leftWidth() - step, HorizontalSplit.MIN_WIDTH_PERCENTAGE));
+      this.leftWidth.set(Math.max(this.leftWidth() - step, this.minWidthPercentage()));
+      this.onLayoutChange.emit();
     } else if (event.key === 'ArrowRight') {
-      this.leftWidth.set(Math.min(this.leftWidth() + step, 100 - HorizontalSplit.MIN_WIDTH_PERCENTAGE));
+      this.leftWidth.set(Math.min(this.leftWidth() + step, 100 - this.minWidthPercentage()));
+      this.onLayoutChange.emit();
     }
   }
   
@@ -63,8 +66,9 @@ export class HorizontalSplit {
             const newLeftWidth = this.startLeftWidth + (deltaX / containerWidth) * 100;
             
             // Ensure the new width is within the allowed range
-            if (newLeftWidth >= HorizontalSplit.MIN_WIDTH_PERCENTAGE && newLeftWidth <= 100 - HorizontalSplit.MIN_WIDTH_PERCENTAGE) {
+            if (newLeftWidth >= this.minWidthPercentage() && newLeftWidth <= 100 - this.minWidthPercentage()) {
               this.leftWidth.set(newLeftWidth);
+              this.onLayoutChange.emit();
             }
           }
         })
@@ -78,9 +82,16 @@ export class HorizontalSplit {
         })
       );
     });
+
+    effect(() => {
+      this.collapsed();
+      this.onLayoutChange.emit();
+    });
   }
 
   ngOnDestroy() {
     this.unlisteners.forEach(unlistener => unlistener());
   }
 }
+
+export type CollapsedState = 'left' | 'right' | 'none';

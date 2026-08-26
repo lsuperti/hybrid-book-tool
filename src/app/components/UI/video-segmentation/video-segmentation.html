@@ -7,7 +7,7 @@
   >
     <div class="video-segments-area"left>
       @if (mediaFilesService.mediaFiles().length <= 0) {
-        <app-warning-card class="warning-card" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['right']"></app-warning-card>
+        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['right']"></app-warning-card>
       } @else {
         <div class="video-segments-container">
           <ol class="video-segments-list">
@@ -18,7 +18,9 @@
             @for (segment of mediaFilesService.mediaFiles(); track segment.id; let i = $index) {
               <li class="video-segments-list-item" [aria-selected]="selectedSegmentIndex() === i">
                 <button class="video-segments-list-item-main-button" (click)="onSegmentSelected(i)" [attr.aria-label]="'Selecionar segmento ' + segment.name">
-                  <p>{{ segment.name }}</p>
+                  <div class="segment-name-container">
+                    <p>{{ segment.name }}</p>
+                  </div>
                   @if (segment.thumbnail) {
                     <div class="video-segment-thumbnail-container">
                       <img inert src="{{ segment.thumbnail }}" alt="Thumbnail de {{ segment.name }}" class="segment-thumbnail" />
@@ -40,7 +42,7 @@
     </div>
     <div right class="video-preview-area">
       @if (mediaFilesService.mediaFiles().length <= 0 || mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null) {
-        <app-warning-card class="warning-card" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left']"></app-warning-card>
+        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left']"></app-warning-card>
       } @else {
         <!--
         STUB: The video preview will be displayed differently in the future and will align with the timeline. For
