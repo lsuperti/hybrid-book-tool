@@ -59,12 +59,12 @@
   left: -0.125rem;
   top: 0.9375rem;
   width: calc(100% + 0.125rem);
-  height: calc(100% - 0.9375rem);
+  height: 100%;
   z-index: 1;
 }
 
 .parent-segment-item:first-child .segments-sublist .parent-segment .segment-bottom-background {
-  height: calc(100% + 0.5625rem);
+  height: calc(100% + 0.9375rem);
   top: 0;
 }
 
