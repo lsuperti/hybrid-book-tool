@@ -1,4 +1,4 @@
-import { Component, inject, viewChildren, viewChild, ElementRef, afterNextRender, Injector, input, signal, Renderer2, effect, OnDestroy } from '@angular/core';
+import { Component, inject, viewChildren, viewChild, ElementRef, afterNextRender, Injector, input, signal, effect, Renderer2, OnDestroy } from '@angular/core';
 import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
@@ -29,9 +29,10 @@ export class TextSegmentation implements OnDestroy {
   private excludeButtons = viewChildren<ElementRef<HTMLButtonElement>>('excludeButton');
   private includeButtons = viewChildren<ElementRef<HTMLButtonElement>>('includeButton');
   private readonly segmentsList = viewChild<ElementRef<HTMLOListElement>>('segmentsList');
+  private readonly pdfViewer = viewChild('pdfViewer', { 'read': ElementRef });
   private readonly unlisteners: (() => void)[] = [];
   private segmentListScrollUnlistener: (() => void) | null = null;
-  private wasInSegmentsList = false;
+  private mouseWasInSegmentsList = false;
   private mouseX = 0;
   private mouseY = 0;
 
@@ -45,12 +46,11 @@ export class TextSegmentation implements OnDestroy {
       const hoveredElement = document.elementFromPoint(event.clientX, event.clientY) as HTMLElement | null;
       const isInSegmentsList = hoveredElement?.closest('.segments-sublist') !== null;
       
-      if (!isInSegmentsList && this.wasInSegmentsList) {
+      if (!isInSegmentsList && this.mouseWasInSegmentsList) {
         this.hoveredSegmentPdfJsId.set(null);
       }
 
-
-      this.wasInSegmentsList = isInSegmentsList;
+      this.mouseWasInSegmentsList = isInSegmentsList;
     }));
 
     this.unlisteners.push(this.renderer2.listen('document', 'focusin', (event: FocusEvent) => {
@@ -106,6 +106,19 @@ export class TextSegmentation implements OnDestroy {
           this.hoverFromMousePosition();
         });
       }
+    });
+
+    // Since we are handling the highlighting of segments on musemove events and they don't fire outside of the document
+    // or over the PDF viewer, since it is an iframe, we remove the highlight when the mouse leaves the list. It would
+    // be possible to move the mouse fast enough to leave the list and enter the iframe or leave the document without
+    // firing a mousemove event, so we need to handle that case.
+    effect(() => {
+      if (this.segmentsList()) {
+        this.unlisteners.push(this.renderer2.listen(this.segmentsList()!.nativeElement, 'mouseleave', () => {
+          this.hoveredSegmentPdfJsId.set(null);
+          this.mouseWasInSegmentsList = false;
+        }));
+      };
     });
   }
   

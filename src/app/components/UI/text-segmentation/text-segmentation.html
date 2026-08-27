@@ -208,6 +208,7 @@
     <div right class="text-record-area">
       <div class="text-record-container">
         <app-pdf-viewer
+        #pdfViewer
         class="pdf-viewer"
         [src]="mediaFilesService.textRecord().url!"
         [visible]="visible()"
