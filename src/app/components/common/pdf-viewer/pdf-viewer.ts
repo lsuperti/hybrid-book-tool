@@ -26,6 +26,7 @@ export class PdfViewer implements OnDestroy {
   private pagesPendingSetup: Set<number> = new Set<number>();
   private previousSelectedMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private previousHoveredMarkedContent: PdfJsAccessibleTextSegment | null = null;
+  private pendingScrollToMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private unlisteners: (() => void)[] = [];
 
   constructor() {
@@ -96,6 +97,18 @@ export class PdfViewer implements OnDestroy {
           const hovered = this.hoveredMarkedContent();
           if (hovered && hovered.page === pageNumber) {
             this.updateHoverHighlight(hovered);
+          }
+
+          if (this.pendingScrollToMarkedContent && this.pendingScrollToMarkedContent.page === pageNumber) {
+            // Apply the selection highlight to the selected marked content. It was not possible to apply the selection
+            // highlight before because the page was not yet rendered, so we apply it now. We apply the selection
+            // highlight to the currently selected segment rather than the pending scroll-to segment because the
+            // selection may have been changed while the page was being rendered, possibly to a segment in the same page
+            // as the scroll-to segment.
+            this.updateSelectionHighlight(this.selectedMarkedContent(), true);
+            
+            this.scrollToMarkedContent(this.pendingScrollToMarkedContent);
+            this.pendingScrollToMarkedContent = null;
           }
         } else if (event.data?.type === 'pdf-viewer-pages-loaded') {
           this.addViewerStyles();
@@ -176,15 +189,16 @@ export class PdfViewer implements OnDestroy {
    * Updates the selection highlight on the PDF viewer.
    * 
    * @param selected The selected marked content, or null to remove selection highlight.
+   * @param forceUpdate Whether to force an update even if the selected content is the same.
    */
-  private updateSelectionHighlight(selected: PdfJsAccessibleTextSegment | null) {
+  private updateSelectionHighlight(selected: PdfJsAccessibleTextSegment | null, forceUpdate = false) {
     const iframeDocument = this.pdfViewerIframe().nativeElement.contentDocument;
     if (!iframeDocument) {
       return;
     }
 
     if (this.previousSelectedMarkedContent) {
-      if (!selected || this.previousSelectedMarkedContent.pdfJsId !== selected.pdfJsId || this.previousSelectedMarkedContent.page !== selected.page) {
+      if (forceUpdate || !selected || (this.previousSelectedMarkedContent.pdfJsId !== selected.pdfJsId || this.previousSelectedMarkedContent.page !== selected.page)) {
         try {
           this.removeMarkedContentHighlight(this.previousSelectedMarkedContent);
         } catch (_e) {
@@ -222,8 +236,9 @@ export class PdfViewer implements OnDestroy {
    * Updates the hover highlight on the PDF viewer.
    * 
    * @param hovered The hovered marked content, or null to remove hover highlight.
+   * @param forceUpdate Whether to force an update even if the hovered content is the same.
    */
-  private updateHoverHighlight(hovered: PdfJsAccessibleTextSegment | null) {
+  private updateHoverHighlight(hovered: PdfJsAccessibleTextSegment | null, forceUpdate = false) {
     const iframeDocument = this.pdfViewerIframe().nativeElement.contentDocument;
     if (!iframeDocument) {
       return;
@@ -240,7 +255,7 @@ export class PdfViewer implements OnDestroy {
                           this.previousHoveredMarkedContent.pdfJsId !== hovered.pdfJsId ||
                           this.previousHoveredMarkedContent.page !== hovered.page;
 
-      if (isSelected || isDifferent) {
+      if ( forceUpdate || isSelected || isDifferent) {
         try {
           this.removeMarkedContentHighlight(this.previousHoveredMarkedContent);
         } catch (_e) {
@@ -277,13 +292,44 @@ export class PdfViewer implements OnDestroy {
 
     const page = iframeDocument.querySelector(`.page[data-page-number="${markedContent.page}"]`);
 
+    let pageHasTextLayer = false;
     if (page) {
-      const markedContentElement = iframeDocument.getElementById(markedContent.pdfJsId);
-      const markedContentHighlight = markedContentElement?.querySelector('.marked-content-highlight') as HTMLElement | null;
-      
-      if (markedContentHighlight) {
-        markedContentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const textLayer = page.querySelector('.textLayer');
+      if (textLayer) {
+        pageHasTextLayer = true;
       }
+    }
+
+    if (page && pageHasTextLayer) {
+      this.scrollToMarkedContent(markedContent);
+    } else {
+      const iframeWindow = this.pdfViewerIframe().nativeElement.contentWindow;
+  
+      if (iframeWindow) {
+        iframeWindow.postMessage({
+          name: this.name(),
+          type: 'pdf-viewer-jump-to-page',
+          pageNumber: markedContent.page,
+          pageHasTextLayer
+        }, document.location.origin);
+      }
+    }
+
+    this.pendingScrollToMarkedContent = markedContent;
+  }
+
+  private scrollToMarkedContent(markedContent: PdfJsAccessibleTextSegment) {
+    const iframeDocument = this.pdfViewerIframe().nativeElement.contentDocument;
+
+    if (!iframeDocument) {
+      return;
+    }
+    
+    const markedContentElement = iframeDocument.getElementById(markedContent.pdfJsId);
+    const markedContentHighlight = markedContentElement?.querySelector('.marked-content-highlight') as HTMLElement | null;
+
+    if (markedContentHighlight) {
+      markedContentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
