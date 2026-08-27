@@ -214,6 +214,10 @@ $inner-button-spacing: 1rem;
   justify-content: center;
 }
 
+.link-button[disabled] {
+  color: var(--icon-color);
+}
+
 button:focus-visible {
   outline: 0.125rem solid var(--primary-color);
   outline-offset: -0.125rem;

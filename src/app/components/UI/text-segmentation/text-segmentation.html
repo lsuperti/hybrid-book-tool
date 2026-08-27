@@ -38,6 +38,14 @@
                           <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,57 V 46" />
                         </svg>
                       </button>
+                    } @else {
+                      <button class="link-button" [attr.data-segment-id]="segment.pdfJsId" disabled>
+                        <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 24,104 104,24" />
+                          <path style="fill:currentColor;fill-rule:evenodd" d="M 64,2 C 52.989189,2 44,10.989189 44,22 v 8 c 0,9.64176 6.892781,17.732589 16,19.595703 v 1.433594 L 72.236328,38.792969 C 71.036136,39.915861 69.599207,40.789664 68,41.339844 V 34 a 4,4 0 0 0 -4,-4 4,4 0 0 0 -4,4 v 7.339844 C 55.3,39.722891 52,35.308997 52,30 v -8 c 0,-6.717189 5.282811,-12 12,-12 6.717189,0 12,5.282811 12,12 v 8 c 0,3.21515 -1.2104,6.102116 -3.208984,8.238281 L 84,27.029297 V 22 C 84,10.989189 75.010811,2 64,2 Z m 4,52.34375 -8,8 V 94 a 4,4 0 0 0 4,4 4,4 0 0 0 4,-4 z" />
+                          <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="82" rx="16" ry="16" />
+                        </svg>
+                      </button>
                     }
                     </div>
                 }
