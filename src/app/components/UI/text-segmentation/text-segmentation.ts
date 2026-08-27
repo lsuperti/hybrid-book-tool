@@ -43,7 +43,7 @@ export class TextSegmentation implements OnDestroy {
       this.hoverFromMousePosition();
       
       const hoveredElement = document.elementFromPoint(event.clientX, event.clientY) as HTMLElement | null;
-      const isInSegmentsList = hoveredElement?.closest('.segments-list') !== null;
+      const isInSegmentsList = hoveredElement?.closest('.segments-sublist') !== null;
       
       if (!isInSegmentsList && this.wasInSegmentsList) {
         this.hoveredSegmentPdfJsId.set(null);
