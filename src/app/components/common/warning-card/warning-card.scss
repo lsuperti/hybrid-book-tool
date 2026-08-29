@@ -1,11 +1,12 @@
 .warning-card {
-  height: calc(100% - 0.75rem);
-  width: calc(100% - 0.75rem);
+  height: calc(100% - 2.75rem);
+  width: calc(100% - 2.75rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   margin: 0.25rem;
+  padding: 1rem;
   border-radius: 0.5rem;
   background-color: var(--card-bg);
   border: 0.125rem solid var(--card-bg-assent);
@@ -13,30 +14,30 @@
 
 .warning-card[halfWidthLeft] {
   margin-left: 0.125rem;
-  width: calc(100% - 0.75rem + 0.125rem);
+  width: calc(100% - 2.75rem + 0.125rem);
 }
 
 .warning-card[halfWidthRight] {
   margin-right: 0.125rem;
-  width: calc(100% - 0.75rem + 0.125rem);
+  width: calc(100% - 2.75rem + 0.125rem);
 }
 
 .warning-card[halfWidthLeft][halfWidthRight] {
-  width: calc(100% - 0.75rem + 0.125rem + 0.125rem);
+  width: calc(100% - 2.75rem + 0.125rem + 0.125rem);
 }
 
 .warning-card[halfWidthTop] {
   margin-top: 0.125rem;
-  height: calc(100% - 0.75rem + 0.125rem);
+  height: calc(100% - 2.75rem + 0.125rem);
 }
 
 .warning-card[halfWidthBottom] {
   margin-bottom: 0.125rem;
-  height: calc(100% - 0.75rem + 0.125rem);
+  height: calc(100% - 2.75rem + 0.125rem);
 }
 
 .warning-card[halfWidthTop][halfWidthBottom] {
-  height: calc(100% - 0.75rem + 0.125rem + 0.125rem);
+  height: calc(100% - 2.75rem + 0.125rem + 0.125rem);
 }
 
 .warning-card svg {

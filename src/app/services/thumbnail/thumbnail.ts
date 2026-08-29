@@ -53,7 +53,6 @@ export class Thumbnail {
   private async generateThumbnail(file: File, targetTimestamp = 5, thumbnailSize = NaN): Promise<Blob> {
     // Adjust thumbnail size to fit larger scalings if running in a browser environment and it is not specified.
     if (isPlatformBrowser(this.platformId) && isNaN(thumbnailSize)) {
-      console.log(window.devicePixelRatio);
       thumbnailSize = Math.floor(Thumbnail.DEFAULT_THUMBNAIL_SIZE * window.devicePixelRatio);
     } else {
       thumbnailSize = Thumbnail.DEFAULT_THUMBNAIL_SIZE;

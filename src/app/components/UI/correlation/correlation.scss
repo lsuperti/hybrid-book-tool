@@ -11,6 +11,7 @@
   width: calc(100% - 0.75rem);
   height: calc(100% - 0.75rem);
   border: 0.125rem solid var(--card-bg-assent);
+  margin: 0.125rem 0.125rem 0.25rem 0.25rem;
   border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -25,188 +26,23 @@
   display: block;
 }
 
-.video-preview-area {
-  width: 100%;
-  height: 100%;
-}
-
-.video-preview-container {
-  width: 100%;
-  height: 100%;
-}
-
-.video-preview-container video {
-  width: 100%;
-  height: 100%;
-}
-
-
-$list-item-height: 4rem;
-$thumbnail-height: $list-item-height - 1rem;
-
-.video-segments-area {
-  width: 100%;
-  height: 100%;
-}
-
-.video-segments-container {
-  width: 100%;
-  height: 100%;
-}
-
-.video-segments-list {
-  list-style: none;
-  margin-bottom: 0;
-  overflow-y: auto;
-  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg);
-  width: 100%;
-  height: 100%;
-}
-
-.video-segments-list-item {
-  margin: 0.25rem;
+.video-player-container {
+  width: calc(100% - 0.625rem);
+  height: calc(100% - 0.625rem);
   border: 0.125rem solid var(--card-bg-assent);
   border-radius: 0.5rem;
-  margin-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: $list-item-height;
-}
-
-.video-segments-list-item[aria-selected="true"] {
-  border-color: var(--primary-color);
-  background-color: var(--card-bg-assent);
-}
-
-.video-segments-list-item:has(.video-segments-list-item-main-button:focus-visible) {
-  outline: 0.125rem solid var(--primary-color);
-  outline-offset: -0.125rem;
-}
-
-.video-segments-list-item-main-button:focus-visible {
-  outline: none;
-}
-
-.video-segments-list-item-main-button {
-  width: calc(100% + 1rem);
-  height: 100%;
-  background-color: transparent;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-}
-
-.video-segment-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-assent-assent-assent); outline-offset: -0.25rem;
-  color: var(--card-bg-assent-assent-assent);
-  background-color: var(--card-bg);
-}
-
-.video-segment-thumbnail-container {
-  width: $thumbnail-height * 1.5;
-  height: $thumbnail-height;
-  border: 0.125rem solid var(--card-bg-assent-assent-assent);
-  border-radius: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.video-segments-thumbnail svg {
-  width: 100%;
-  height: 100%;
-  color: var(--icon-color);
-  border-radius: 0.1875rem;
-}
-
-.video-segment-thumbnail-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.125rem;
-}
-
-.video-segment-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-assent-assent-assent); outline-offset: -0.25rem;
-  color: var(--card-bg-assent-assent-assent);
-  background-color: var(--card-bg);
-}
-
-.video-segment-thumbnail-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.125rem;
-}
-
-.video-segment-thumbnail svg {
-  width: 100%;
-  height: 100%;
-  color: var(--icon-color);
-  border-radius: 0.1875rem;
-}
-
-.text-segments-area {
-  width: 100%;
-  height: 100%;
-}
-
-.text-segments-container {
-  width: 100%;
-  height: 100%;
-}
-
-.text-segments-list {
-  list-style: none;
-  margin-bottom: 0;
-  overflow-y: auto;
-  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg);
-  width: 100%;
-  height: 100%;
-}
-
-.text-segments-list-item {
-  margin: 0.25rem;
-  border: 0.125rem solid var(--card-bg-assent);
-  border-radius: 0.5rem;
-  margin-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: $list-item-height;
-}
-
-.text-segments-list-item[aria-selected="true"] {
-  border-color: var(--primary-color);
-  background-color: var(--card-bg-assent);
-}
-
-.text-segments-list-item:has(.text-segments-list-item-main-button:focus-visible) {
-  outline: 0.125rem solid var(--primary-color);
-  outline-offset: -0.125rem;
-}
-
-.text-segments-list-item-main-button:focus-visible {
-  outline: none;
-}
-
-.text-segments-list-item-main-button {
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-}
-
-.text-segments-list-item-main-button p {
-  text-overflow: ellipsis;
+  margin: 0.125rem 0.25rem 0.25rem 0.125rem;
   overflow: hidden;
-  white-space: nowrap;
-  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--card-bg);
+}
+
+// STUB: The video preview will be displayed differently in the future and will show the current video segment in the
+// correlation area.
+.video-player-stub {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }

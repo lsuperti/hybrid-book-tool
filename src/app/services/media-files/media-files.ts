@@ -135,13 +135,19 @@ export class MediaFiles {
    * 
    * @returns The ID created.
    */
-  private createMediaFileId(): string {
-    return `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  private createMediaFileId(): MediaFileId {
+    return `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` as MediaFileId;
   }
 }
 
+declare const brandSymbol: unique symbol;
+export type Branded<Base, BrandName> = Base & {
+  readonly [brandSymbol]: BrandName;
+};
+
+export type MediaFileId = Branded<string, 'MediaFileId'>;
 export interface MediaFile {
-  id: string;
+  id: MediaFileId;
   file: File;
   name: string;
   url: string | null;

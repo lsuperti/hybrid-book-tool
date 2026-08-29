@@ -4,6 +4,7 @@ import { VerticalSplit } from '../../layout/vertical-split/vertical-split';
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { TextSegmentationService } from '../../../services/text-segmentation/text-segmentation';
+import { VideoSegmentation } from '../../../services/video-segmentation/video-segmentation';
 import { PdfViewer } from "../../common/pdf-viewer/pdf-viewer";
 
 @Component({
@@ -14,7 +15,8 @@ import { PdfViewer } from "../../common/pdf-viewer/pdf-viewer";
 })
 export class Correlation {
   protected readonly mediaFilesService = inject(MediaFiles);
-  protected readonly textSegmentationService = inject(TextSegmentationService)
+  protected readonly textSegmentationService = inject(TextSegmentationService);
+  protected readonly videoSegmentationService = inject(VideoSegmentation);
 
   public readonly visible = input.required<boolean>();
 }

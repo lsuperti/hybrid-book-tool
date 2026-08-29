@@ -2,6 +2,8 @@ import { Component, inject, input, output, model, signal, effect, viewChild, Ele
 import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
 import { TextSegmentationService, type PdfJsAccessibleTextSegment } from '../../../services/text-segmentation/text-segmentation';
 
+export type PdfViewerHighlightMode = 'marked-content' | 'text-segment';
+
 @Component({
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-viewer.html',
@@ -16,6 +18,7 @@ export class PdfViewer implements OnDestroy {
   public readonly src = input.required<string>();
   public readonly visible = input.required<boolean>();
   public readonly name = input.required<string>();
+  public readonly highlightMode = input.required<PdfViewerHighlightMode>();
   public readonly navigateToMarkedContentInViewer = input<PdfJsAccessibleTextSegment | null>(null);
   public readonly navigateToMarkedContentInParent = output<PdfJsAccessibleTextSegment>();
   public readonly selectedMarkedContent = model<PdfJsAccessibleTextSegment | null>(null);
@@ -24,6 +27,7 @@ export class PdfViewer implements OnDestroy {
   protected readonly iframeSrc = signal<SafeResourceUrl>(this.sanitizer.bypassSecurityTrustResourceUrl('about:blank'));
   private readonly pdfViewerIframe = viewChild.required<ElementRef<HTMLIFrameElement>>('pdfViewerIframe');
   private pagesPendingSetup: Set<number> = new Set<number>();
+  private renderedPages: Set<number> = new Set<number>();
   private previousSelectedMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private previousHoveredMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private pendingScrollToMarkedContent: PdfJsAccessibleTextSegment | null = null;
@@ -40,10 +44,30 @@ export class PdfViewer implements OnDestroy {
     effect(() => {
       if (this.textSegmentationService.status() === 'success') {
         this.pagesPendingSetup.forEach(pageNumber => {
-          this.setupHighlightSpansAndKeyboardNavigationOnPage(pageNumber);
+          this.setupHighlightSpansOnPage(pageNumber);
           this.styleCursorOnPage(pageNumber);
         });
         this.pagesPendingSetup.clear();
+      }
+    });
+
+    effect(() => {
+      // In 'text-segment' mode, highlight spans must update when segment linking changes in TextSegmentationService
+      this.textSegmentationService.segments();
+      if (this.highlightMode() === 'text-segment' && this.textSegmentationService.status() === 'success') {
+        this.renderedPages.forEach(pageNumber => {
+          this.setupHighlightSpansForTextSegmentsOnPage(pageNumber);
+        });
+
+        // Re-apply active highlights if they were affected
+        const selected = this.selectedMarkedContent();
+        if (selected) {
+          this.updateSelectionHighlight(selected, true);
+        }
+        const hovered = this.hoveredMarkedContent();
+        if (hovered) {
+          this.updateHoverHighlight(hovered, true);
+        }
       }
     });
 
@@ -76,6 +100,7 @@ export class PdfViewer implements OnDestroy {
       ) {
         if (event.data?.type === 'pdf-viewer-text-layer-rendered') {
           const pageNumber = parseInt(event.data.pageNumber, 10);
+          this.renderedPages.add(pageNumber);
           this.addSegmentInteractionEventListenersToPage(pageNumber);
           
           // We can't determine whether an element is addressable until the text segmentation service has finished
@@ -83,7 +108,7 @@ export class PdfViewer implements OnDestroy {
           // keyboard focus/highlights and styling the cursor on the page. So we add the page number to the list of pages
           // pending setup; when the service finishes the segmentation, we setup and style all pending pages.
           if (this.textSegmentationService.status() === 'success') {
-            this.setupHighlightSpansAndKeyboardNavigationOnPage(pageNumber);
+            this.setupHighlightSpansOnPage(pageNumber);
             this.styleCursorOnPage(pageNumber);
           } else {
             this.pagesPendingSetup.add(pageNumber);
@@ -368,10 +393,17 @@ export class PdfViewer implements OnDestroy {
         return;
       }
 
-      if (markedContentElement) {
-        const markedContentId = markedContentElement.id;
-        
-        const page = parseInt(pageElement?.getAttribute('data-page-number') || '0', 10);
+      const markedContentId = markedContentElement.id;
+      const page = parseInt(pageElement?.getAttribute('data-page-number') || '0', 10);
+
+      if (this.highlightMode() === 'text-segment') {
+        const parentSegment = this.textSegmentationService.findParentSegment(markedContentId);
+        if (parentSegment) {
+          this.selectedMarkedContent.set({ pdfJsId: parentSegment.pdfJsId, page: parentSegment.page });
+          const parentElement = iframeDocument.getElementById(parentSegment.pdfJsId);
+          (parentElement?.querySelector('.marked-content-highlight') as HTMLElement | null)?.focus();
+        }
+      } else {
         this.selectedMarkedContent.set({ pdfJsId: markedContentId, page });
         (markedContentElement.querySelector('.marked-content-highlight') as HTMLElement | null)?.focus();
       }
@@ -394,9 +426,15 @@ export class PdfViewer implements OnDestroy {
         return;
       }
 
-      if (markedContentElement) {
-        const markedContentId = markedContentElement.id;
-        const page = parseInt(pageElement?.getAttribute('data-page-number') || '0', 10);
+      const markedContentId = markedContentElement.id;
+      const page = parseInt(pageElement?.getAttribute('data-page-number') || '0', 10);
+
+      if (this.highlightMode() === 'text-segment') {
+        const parentSegment = this.textSegmentationService.findParentSegment(markedContentId);
+        if (parentSegment) {
+          this.navigateToMarkedContentInParent.emit({ pdfJsId: parentSegment.pdfJsId, page: parentSegment.page });
+        }
+      } else {
         this.navigateToMarkedContentInParent.emit({ pdfJsId: markedContentId, page });
       }
     }));
@@ -418,11 +456,18 @@ export class PdfViewer implements OnDestroy {
         return;
       }
 
-      if (markedContentElement) {
-        const markedContentId = markedContentElement.id;
-        const pageElement = markedContentElement.closest('.page') as HTMLElement | null;
-        const page = parseInt(pageElement?.getAttribute('data-page-number') || '0', 10);
+      const markedContentId = markedContentElement.id;
+      const page = parseInt(pageElement?.getAttribute('data-page-number') || '0', 10);
 
+      if (this.highlightMode() === 'text-segment') {
+        const parentSegment = this.textSegmentationService.findParentSegment(markedContentId);
+        if (parentSegment) {
+          const currentHovered = this.hoveredMarkedContent();
+          if (!currentHovered || currentHovered.pdfJsId !== parentSegment.pdfJsId || currentHovered.page !== parentSegment.page) {
+            this.hoveredMarkedContent.set({ pdfJsId: parentSegment.pdfJsId, page: parentSegment.page });
+          }
+        }
+      } else {
         const currentHovered = this.hoveredMarkedContent();
         if (!currentHovered || currentHovered.pdfJsId !== markedContentId || currentHovered.page !== page) {
           this.hoveredMarkedContent.set({ pdfJsId: markedContentId, page });
@@ -449,9 +494,26 @@ export class PdfViewer implements OnDestroy {
 
       this.hoveredMarkedContent.set(null);
     }));
-
   }
 
+  /**
+   * Sets up highlight spans on a page according to the highlightMode.
+   * 
+   * @param pageNumber The number of the page to set up highlight spans on.
+   */
+  private setupHighlightSpansOnPage(pageNumber: number) {
+    if (this.highlightMode() === 'text-segment') {
+      this.setupHighlightSpansForTextSegmentsOnPage(pageNumber);
+    } else {
+      this.setupHighlightSpansAndKeyboardNavigationOnPage(pageNumber);
+    }
+  }
+
+  /**
+   * Sets up highlight spans for individual marked contents in 'marked-content' mode.
+   * 
+   * @param pageNumber The number of the page to set up highlight spans on.
+   */
   private setupHighlightSpansAndKeyboardNavigationOnPage(pageNumber: number) {
     const iframeDocument: Document | null = this.pdfViewerIframe().nativeElement.contentDocument;
     
@@ -568,6 +630,156 @@ export class PdfViewer implements OnDestroy {
       }));
 
       element.appendChild(highlightSpan);
+    });
+  }
+
+  /**
+   * Sets up highlight spans for text segments (parent + linked children) in 'text-segment' mode.
+   * 
+   * @param pageNumber The number of the page to set up highlight spans on.
+   */
+  private setupHighlightSpansForTextSegmentsOnPage(pageNumber: number) {
+    const iframeDocument: Document | null = this.pdfViewerIframe().nativeElement.contentDocument;
+    
+    if (iframeDocument === null) {
+      throw new Error('PDF viewer iframe document is not available.');
+    }
+    
+    const pageElement: HTMLDivElement | null = iframeDocument.querySelector(`.page[data-page-number="${pageNumber}"]`);
+
+    if (pageElement === null) {
+      throw new Error(`Page ${pageNumber} is not available in the PDF viewer.`);
+    }
+
+    // Set the tabindex of all elements that can be tabbed to -1 so that they are not keyboard focusable.
+    const keyboardFocusableElements = pageElement.querySelectorAll<HTMLElement>(`a, area, button, input, textarea,
+                                                                                 select, details,
+                                                                                 [tabindex]:not([tabindex="-1"])`);
+    keyboardFocusableElements.forEach(element => {
+      element.setAttribute('tabindex', '-1');
+    });
+
+    const segments = this.textSegmentationService.segments();
+    const parentSegmentsOnPage = segments.filter(s => s.page === pageNumber);
+    const parentSegmentIdsOnPage = new Set(parentSegmentsOnPage.map(s => s.pdfJsId));
+
+    // Remove any highlight spans from elements on this page that are not parent segments on this page
+    const existingHighlightSpans = pageElement.querySelectorAll<HTMLSpanElement>('.marked-content-highlight');
+    existingHighlightSpans.forEach(span => {
+      const parentId = (span.parentElement as HTMLElement)?.id;
+      if (!parentId || !parentSegmentIdsOnPage.has(parentId)) {
+        span.remove();
+      }
+    });
+
+    const pageClientRect = pageElement.getBoundingClientRect();
+
+    parentSegmentsOnPage.forEach(parentSegment => {
+      const parentElement = iframeDocument.getElementById(parentSegment.pdfJsId);
+      if (!parentElement || !this.isMarkedContentElementAddressable(parentElement)) {
+        return;
+      }
+
+      // Collect all marked content elements belonging to this segment that are on this page
+      const elementsToMeasure: HTMLElement[] = [parentElement];
+      for (const child of parentSegment.linkedChildren) {
+        const childElement = iframeDocument.getElementById(child.pdfJsId);
+        if (childElement && childElement.closest('.page') === pageElement) {
+          elementsToMeasure.push(childElement);
+          // Remove any highlight span on child element if present
+          const childSpan = childElement.querySelector('.marked-content-highlight');
+          if (childSpan) {
+            childSpan.remove();
+          }
+        }
+      }
+
+      let minLeft = Number.MAX_VALUE;
+      let minTop = Number.MAX_VALUE;
+      let maxRight = Number.MIN_VALUE;
+      let maxBottom = Number.MIN_VALUE;
+
+      for (const el of elementsToMeasure) {
+        for (const child of el.children) {
+          const childClientRect = (child as HTMLElement).getBoundingClientRect();
+
+          // Disregard elements with no width or height
+          if (childClientRect.width === 0 || childClientRect.height === 0) {
+            continue;
+          }
+
+          if (child.classList.contains('marked-content-highlight')) {
+            continue;
+          }
+          
+          const childLeft = parseFloat((child as HTMLElement).style.left || '0%');
+          const childTop = parseFloat((child as HTMLElement).style.top || '0%');
+
+          if (childLeft < minLeft) {
+            minLeft = childLeft;
+          }
+
+          if (childTop < minTop) {
+            minTop = childTop;
+          }
+          
+          const childWidthProportion = childClientRect.width / pageClientRect.width;
+          const childHeightProportion = childClientRect.height / pageClientRect.height;
+
+          const childRight = childLeft + (childWidthProportion * 100);
+          const childBottom = childTop + (childHeightProportion * 100);
+
+          if (childRight > maxRight) {
+            maxRight = childRight;
+          }
+
+          if (childBottom > maxBottom) {
+            maxBottom = childBottom;
+          }
+        }
+      }
+
+      // If no valid children were measured, skip creating the highlight span
+      if (minLeft === Number.MAX_VALUE) {
+        return;
+      }
+
+      let highlightSpan = parentElement.querySelector(':scope > .marked-content-highlight') as HTMLSpanElement | null;
+      if (!highlightSpan) {
+        highlightSpan = iframeDocument.createElement('span');
+
+        highlightSpan.classList.add('marked-content-highlight');
+        highlightSpan.setAttribute('role', 'presentation');
+        highlightSpan.setAttribute('tabindex', '0');
+        highlightSpan.style.position = 'absolute';
+        highlightSpan.style.outlineOffset = '-0.25rem';
+        highlightSpan.style.outline = 'none';
+        highlightSpan.style.cursor = 'pointer';
+        highlightSpan.style.zIndex = '0';
+        highlightSpan.style.backgroundColor = 'transparent';
+
+        this.unlisteners.push(this.renderer2.listen(highlightSpan, 'focus', () => {
+          this.hoveredMarkedContent.set({ pdfJsId: parentSegment.pdfJsId, page: pageNumber });
+        }));
+
+        this.unlisteners.push(this.renderer2.listen(highlightSpan, 'blur', () => {
+          this.hoveredMarkedContent.set(null);
+        }));
+
+        this.unlisteners.push(this.renderer2.listen(highlightSpan, 'keydown', (event: KeyboardEvent) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.selectedMarkedContent.set({ pdfJsId: parentSegment.pdfJsId, page: pageNumber });
+          }
+        }));
+
+        parentElement.appendChild(highlightSpan);
+      }
+
+      highlightSpan.style.top = `calc(${minTop}% - 0.5rem)`;
+      highlightSpan.style.left = `calc(${minLeft}% - 0.5rem)`;
+      highlightSpan.style.width = `calc(${maxRight - minLeft}% + 1rem)`;
+      highlightSpan.style.height = `calc(${maxBottom - minTop}% + 1rem)`;
     });
   }
 

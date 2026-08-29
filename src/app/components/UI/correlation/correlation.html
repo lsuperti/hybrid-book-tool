@@ -1,97 +1,51 @@
-<app-horizontal-split
-[defaultLeftWidth]="50"
-[resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de texto e registro de texto e de segmentos de vídeo e visualização de vídeo'"
-[resizeBarTopMargin]="'0.75rem'"
-[resizeBarBottomMargin]="'0.75rem'"
+<app-vertical-split
+[defaultTopHeight]="50"
+[resizeBarAriaLabel]="'Redimensionamento das áreas de correlação e de exibição do registro de texto e de vídeo'"
+[resizeBarLeftMargin]="'0.75rem'"
+[resizeBarRightMargin]="'0.75rem'"
 >
-  <app-vertical-split
-  left
-  [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de texto e registro de texto'"
-  [resizeBarLeftMargin]="'0.75rem'"
-  [resizeBarRightMargin]="'0.625rem'"
+  @if (mediaFilesService.textRecord().type === 'invalid') {
+    <app-warning-card top [type]="'error'" class="warning-card" [message]="'Registro de texto inválido.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+  } @else if (textSegmentationService.segments().length <= 0 && videoSegmentationService.segments().length <= 0) {
+    <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de texto nem de vídeo.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+  } @else if (textSegmentationService.segments().length <= 0) {
+    <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de texto.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+  } @else if (videoSegmentationService.segments().length <= 0) {
+    <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de vídeo.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+  } @else {
+    <!-- TODO: Implement the correlation UI. -->
+    <h1 top>[PH] The correlation UI</h1>
+  }
+  <app-horizontal-split
+  bottom
+  [defaultLeftWidth]="50"
+  [resizeBarAriaLabel]="'Redimensionamento das áreas de exibição do registro de texto e de vídeo'"
+  [resizeBarTopMargin]="'0.75rem'"
+  [resizeBarBottomMargin]="'0.75rem'"
   >
-    @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-      <app-warning-card top class="warning-card" [type]="'warning'" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'bottom']"></app-warning-card>
-    } @else {
-      <div top class="text-segments-area">
-        <div class="text-segments-container">
-          <ol class="text-segments-list">
-            @for (segment of textSegmentationService.segments(); track segment.sequentialId; let i = $index) {
-              <li class="text-segments-list-item">
-                <button class="text-segments-list-item-main-button" [attr.aria-label]="'Selecionar segmento de vídeo ' + segment.text">
-                  <p>{{ segment.text }}</p>
-                </button>
-              </li>
-            }
-          </ol>
-        </div>
+  @if (mediaFilesService.textRecord().type === 'invalid') {
+    <app-warning-card left [type]="'error'" class="warning-card" [message]="'Registro de texto inválido.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
+  } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
+    <app-warning-card left [type]="'warning'" class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
+  } @else {
+    <div left class="text-record-area">
+      <div class="text-record-container">
+        <app-pdf-viewer
+        class="pdf-viewer"
+        [src]="this.mediaFilesService.textRecord()?.url!"
+        [visible]="visible()"
+        [name]="'correlation'"
+        [highlightMode]="'text-segment'"
+        ></app-pdf-viewer>
       </div>
-    }
-    @if (mediaFilesService.textRecord().type !== 'application/pdf') {
-      <app-warning-card bottom class="warning-card" [type]="'warning'" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
-    } @else {
-      <div bottom class="text-record-area">
-        <div class="text-record-container">
-          <app-pdf-viewer
-          class="pdf-viewer"
-          [src]="this.mediaFilesService.textRecord()?.url!"
-          [visible]="visible()"
-          [name]="'correlation'"
-          ></app-pdf-viewer>
-        </div>
-      </div>
-    }
-  </app-vertical-split><app-vertical-split
-  right
-  [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos de vídeo e visualização de vídeo'"
-  [resizeBarLeftMargin]="'0.625rem'"
-  [resizeBarRightMargin]="'0.75rem'"
-  >
-    <div class="video-segments-area" top>
-      @if (mediaFilesService.mediaFiles().length <= 0) {
-        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left', 'bottom']"></app-warning-card>
-      } @else {
-        <div class="video-segments-container">
-          <ol class="video-segments-list">
-            <!--
-            STUB: We don't yet have the segment logic, so we are just displaying the media files as if each was a
-            segment, basically how they would appear if no segmentation was done.
-            -->
-            @for (segment of mediaFilesService.mediaFiles(); track segment.id; let i = $index) {
-              <li class="video-segments-list-item">
-                <button class="video-segments-list-item-main-button" [attr.aria-label]="'Selecionar segmento de vídeo ' + segment.name">
-                  <p>{{ segment.name }}</p>
-                  @if (segment.thumbnail) {
-                    <div class="video-segment-thumbnail-container">
-                      <img inert src="{{ segment.thumbnail }}" alt="Thumbnail de {{ segment.name }}" class="segment-thumbnail" />
-                    </div>
-                  } @else {
-                    <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
-                      <svg viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
-                        <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
-                      </svg>
-                    </div>
-                  }
-                </button>
-              </li>
-            }
-          </ol>
-        </div>
-      }
     </div>
-    <div bottom class="video-preview-area">
-      @if (mediaFilesService.mediaFiles().length <= 0 || mediaFilesService.mediaFiles()[0]?.url === null) {
-        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left', 'top']"></app-warning-card>
-      } @else {
-        <!--
-        STUB: The video preview will be displayed differently in the future and will align with the timeline. For
-        now, we are just displaying the video preview as a simple illustrative video element.
-        -->
-        <div class="video-preview-container">
-          <video #videoPreview controls [src]="mediaFilesService.mediaFiles()[0]?.url" class="video-preview"></video>
-        </div>
-      }
-    </div>
-  </app-vertical-split>
-</app-horizontal-split>
+  }
+  <!--
+  STUB: The video preview will be displayed differently in the future and will show the current video segment in the
+  correlation area.
+  -->
+  <div right class="video-player-container">
+    <video #videoPreview controls [src]="mediaFilesService.mediaFiles()[0]?.url" class="video-player-stub"></video>
+  </div>
+  </app-horizontal-split>
+</app-vertical-split>

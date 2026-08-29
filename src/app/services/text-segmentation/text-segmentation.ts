@@ -471,6 +471,23 @@ export class TextSegmentationService {
   }
 
   /**
+   * Finds the parent segment in the segments list from the PDF.js ID of any segment (parent or linked child).
+   * Returns null if the segment is not found.
+   * 
+   * @param pdfJsSegmentId The PDF.js ID of the segment (parent or child) to find the parent segment for.
+   * @returns The parent segment found, or null if not found.
+   */
+  public findParentSegment(pdfJsSegmentId: string): TextSegment | null {
+    const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
+    
+    if (segmentIndex.parentIndex === -1) {
+      return null;
+    }
+    
+    return this.segments()[segmentIndex.parentIndex];
+  }
+
+  /**
    * Finds a segment in the segments list from the PDF.js ID of the segment. Returns null if the segment is not found.
    * 
    * @param pdfJsSegmentId The PDF.js ID of the segment to find.

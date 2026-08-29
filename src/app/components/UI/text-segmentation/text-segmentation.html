@@ -67,35 +67,35 @@
                   </div>
                   @if (segment.excluded) {
                     <button
-                     class="segment-button"
-                     (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                     (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                     [attr.aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
-                     >
-                       <del
-                       class="segment-text"
-                       [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
-                       [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
-                       >
-                         {{ segment.text }}
-                       </del>
-                     </button>
-                   } @else {
-                     <button
-                     class="segment-button"
-                     (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                     (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                     [attr.aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
-                     >
-                       <p
-                       class="segment-text"
-                       [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
-                       [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
-                       >
-                         {{ segment.text }}
-                       </p>
-                     </button>
-                   }
+                    class="segment-button"
+                    (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    [attr.aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                    >
+                      <del
+                      class="segment-text"
+                      [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                      [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                      >
+                        {{ segment.text }}
+                      </del>
+                    </button>
+                  } @else {
+                    <button
+                    class="segment-button"
+                    (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                    [attr.aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                    >
+                      <p
+                      class="segment-text"
+                      [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                      [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                      >
+                        {{ segment.text }}
+                      </p>
+                    </button>
+                  }
                   @if (segment.excluded) {
                     <button #includeButton [attr.data-segment-id]="segment.pdfJsId" class="include-button" [attr.aria-label]="'Incluir segmento ' + segment.sequentialId" (click)="onIncludeButtonClick(segment)">
                       <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -215,6 +215,7 @@
         [src]="mediaFilesService.textRecord().url!"
         [visible]="visible()"
         [name]="'text-segmentation'"
+        [highlightMode]="'marked-content'"
         [navigateToMarkedContentInViewer]="navigateToMarkedContentInViewer()"
         (navigateToMarkedContentInParent)="onNavigateToMarkedContent($event)"
         [(hoveredMarkedContent)]="hoveredSegmentPdfJsId"
