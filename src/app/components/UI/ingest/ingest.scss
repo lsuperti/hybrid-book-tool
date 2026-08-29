@@ -80,7 +80,7 @@ $list-item-height: 3rem;
   align-items: center;
   justify-content: center;
   height: $list-item-height;
-
+  min-height: 2.75rem;
 }
 
 .media-file-item:last-child {
@@ -104,8 +104,8 @@ $list-item-height: 3rem;
 }
 
 .media-file-thumbnail-container {
-  width: $list-item-height * 1.5;
-  height: $list-item-height;
+  height: 100%;
+  aspect-ratio: 1.5/1;
   border: 0.125rem solid var(--card-bg-assent-assent-assent);
   border-radius: 0.5rem;
   display: flex;
@@ -150,8 +150,9 @@ $list-item-height: 3rem;
 }
 
 .media-file-delete-button {
-  width: calc($list-item-height * 2/3);
-  height: calc($list-item-height * 2/3);
+  height: 100%;
+  aspect-ratio: 1/1;
+  min-height: 2.75rem;
   padding: 0;
   margin: 0;
   display: flex;
@@ -159,7 +160,6 @@ $list-item-height: 3rem;
   justify-content: center;
   border: 0.125rem solid var(--card-bg-assent-assent);
   border-radius: 0.5rem;
-  margin-right: calc($list-item-height * 1/6);
   color: var(--icon-color);
   background-color: var(--card-bg);
   cursor: pointer;
@@ -167,11 +167,6 @@ $list-item-height: 3rem;
 
 .media-file-delete-button:focus-visible {
   outline: 0.125rem solid var(--primary-color);
-}
-
-.delete-icon {
-  width: calc($list-item-height * 2/3);
-  height: calc($list-item-height * 2/3);
 }
 
 .text-record-upload-area {

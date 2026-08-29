@@ -11,16 +11,17 @@
     <app-warning-card left class="warning-card" [type]="'loading-segments'" [message]="'Extraindo texto do registro de texto...'" [halfWidthMargin]="['right']"></app-warning-card>
   } @else {
     <div class="segments-container" left>
-      <ol #segmentsList class="segments-list">
+      <ol #segmentsList class="segments-list" role="list">
         @for (segment of textSegmentationService.segments(); track segment.sequentialId; let first = $first; let index = $index) {
           <li
           #segmentItem
           [attr.data-segment-id]="segment.pdfJsId"
           [attr.data-segment-page]="segment.page"
           class="parent-segment-item"
+          role="listitem"
           >
-            <ol class="segments-sublist">
-              <li class="segment parent-segment">
+            <ol class="segments-sublist" role="list">
+              <li class="segment parent-segment" role="listitem">
                 <div class="segment-bottom-background"></div>
                 @if (!first) {
                   <div
@@ -28,19 +29,19 @@
                   ></div>
                   <div class="link-button-container">
                       @if (!segment.excluded && !textSegmentationService.segments()[index - 1].excluded) {
-                      <button #linkButton [attr.data-segment-id]="segment.pdfJsId" class="link-button" (click)="onLinkButtonClick(segment)">
-                        <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,82 V 94" />
+                      <button #linkButton [attr.data-segment-id]="segment.pdfJsId" class="link-button" aria-label="Unir com o segmento anterior" (click)="onLinkButtonClick(segment)">
+                        <svg aria-hidden="true" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
                           <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="82" rx="16" ry="16" />
                           <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="6" rx="16" ry="16" />
                           <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,34 V 46" />
                           <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,71 V 82" />
                           <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round" d="M 64,57 V 46" />
+                          <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,82 V 94" />
                         </svg>
                       </button>
                     } @else {
-                      <button class="link-button" [attr.data-segment-id]="segment.pdfJsId" disabled>
-                        <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <button class="link-button" [attr.data-segment-id]="segment.pdfJsId" aria-label="Unir com o segmento anterior" disabled>
+                        <svg aria-hidden="true" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
                           <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 24,104 104,24" />
                           <path style="fill:currentColor;fill-rule:evenodd" d="M 64,2 C 52.989189,2 44,10.989189 44,22 v 8 c 0,9.64176 6.892781,17.732589 16,19.595703 v 1.433594 L 72.236328,38.792969 C 71.036136,39.915861 69.599207,40.789664 68,41.339844 V 34 a 4,4 0 0 0 -4,-4 4,4 0 0 0 -4,4 v 7.339844 C 55.3,39.722891 52,35.308997 52,30 v -8 c 0,-6.717189 5.282811,-12 12,-12 6.717189,0 12,5.282811 12,12 v 8 c 0,3.21515 -1.2104,6.102116 -3.208984,8.238281 L 84,27.029297 V 22 C 84,10.989189 75.010811,2 64,2 Z m 4,52.34375 -8,8 V 94 a 4,4 0 0 0 4,4 4,4 0 0 0 4,-4 z" />
                           <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="82" rx="16" ry="16" />
@@ -51,61 +52,61 @@
                 }
                 <div class="segment-inner-items-container">
                   <div class="up-down-buttons-container">
-                    <button #upButton [attr.data-segment-id]="segment.pdfJsId" class="up-button" (click)="first ? null : onUpButtonClick(segment)">
-                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
-                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
-                        </svg>
-                      </button>
-                      <button #downButton [attr.data-segment-id]="segment.pdfJsId" class="down-button" (click)="onDownButtonClick(segment)">
-                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
-                          <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
-                        </svg>
-                      </button>
+                    <button #upButton [attr.data-segment-id]="segment.pdfJsId" class="up-button" [attr.aria-label]="'Mover segmento ' + (segment.sequentialId + 1) + ' para cima'" (click)="first ? null : onUpButtonClick(segment)">
+                      <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
+                      </svg>
+                    </button>
+                    <button #downButton [attr.data-segment-id]="segment.pdfJsId" class="down-button" [attr.aria-label]="'Mover segmento ' + (segment.sequentialId + 1) + ' para baixo'" (click)="onDownButtonClick(segment)">
+                      <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
+                      </svg>
+                    </button>
                   </div>
                   @if (segment.excluded) {
                     <button
-                    class="segment-button"
-                    (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                    (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                    [aria-selected]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
-                    >
-                      <del
-                      class="segment-text"
-                      [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
-                      [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
-                      >
-                        {{ segment.text }}
-                      </del>
-                    </button>
-                  } @else {
-                    <button
-                    class="segment-button"
-                    (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                    (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
-                    [aria-selected]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
-                    >
-                      <p
-                      class="segment-text"
-                      [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
-                      [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
-                      >
-                        {{ segment.text }}
-                      </p>
-                    </button>
-                  }
+                     class="segment-button"
+                     (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                     (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                     [attr.aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                     >
+                       <del
+                       class="segment-text"
+                       [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                       [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                       >
+                         {{ segment.text }}
+                       </del>
+                     </button>
+                   } @else {
+                     <button
+                     class="segment-button"
+                     (click)="onSegmentButtonClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                     (dblclick)="onSegmentButtonDoubleClick({pdfJsId: segment.pdfJsId, page: segment.page})"
+                     [attr.aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                     >
+                       <p
+                       class="segment-text"
+                       [style.font-style]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                       [style.color]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && segment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                       >
+                         {{ segment.text }}
+                       </p>
+                     </button>
+                   }
                   @if (segment.excluded) {
-                    <button #includeButton [attr.data-segment-id]="segment.pdfJsId" class="include-button" (click)="onIncludeButtonClick(segment)">
-                      <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <button #includeButton [attr.data-segment-id]="segment.pdfJsId" class="include-button" [attr.aria-label]="'Incluir segmento ' + segment.sequentialId" (click)="onIncludeButtonClick(segment)">
+                      <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 256,144 V 368" />
                         <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
                       </svg>
                     </button>
                   } @else {
-                    <button #excludeButton [attr.data-segment-id]="segment.pdfJsId" class="exclude-button" (click)="onExcludeButtonClick(segment)">
-                      <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <button #excludeButton [attr.data-segment-id]="segment.pdfJsId" class="exclude-button" [attr.aria-label]="'Excluir segmento ' + segment.sequentialId" (click)="onExcludeButtonClick(segment)">
+                      <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
                         <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
                       </svg>
@@ -119,11 +120,12 @@
                 [attr.data-segment-id]="childSegment.pdfJsId"
                 [attr.data-segment-page]="childSegment.page"
                 class="segment child-segment"
+                role="listitem"
                 >
                   <div class="segment-top-background"></div>
                   <div class="link-button-container">
-                    <button #linkButton [attr.data-segment-id]="childSegment.pdfJsId" class="link-button" (click)="onLinkButtonClick(childSegment)">
-                      <svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <button #linkButton [attr.data-segment-id]="childSegment.pdfJsId" class="link-button" aria-label="Desunir do segmento anterior" (click)="onLinkButtonClick(childSegment)">
+                      <svg aria-hidden="true" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,44 V 84" />
                         <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="72" rx="16" ry="16" />
                         <rect style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" width="32" height="40" x="48" y="16" rx="16" ry="16" />
@@ -132,25 +134,25 @@
                   </div>
                   <div class="segment-inner-items-container">
                     <div class="up-down-buttons-container">
-                      <button #upButton [attr.data-segment-id]="childSegment.pdfJsId" class="up-button" (click)="onUpButtonClick(childSegment)">
-                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <button #upButton [attr.data-segment-id]="childSegment.pdfJsId" class="up-button" [attr.aria-label]="'Mover segmento ' + childSegment.sequentialId + ' para cima'" (click)="onUpButtonClick(childSegment)">
+                        <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
                         </svg>
                       </button>
-                      <button #downButton [attr.data-segment-id]="childSegment.pdfJsId" class="down-button" (click)="onDownButtonClick(childSegment)">
-                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <button #downButton [attr.data-segment-id]="childSegment.pdfJsId" class="down-button" [attr.aria-label]="'Mover segmento ' + childSegment.sequentialId + ' para baixo'" (click)="onDownButtonClick(childSegment)">
+                        <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
                         </svg>
                       </button>
                     </div>
-                    @if (childSegment.excluded) {
+                     @if (childSegment.excluded) {
                       <button
                       class="segment-button"
                       (click)="onSegmentButtonClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
                       (dblclick)="onSegmentButtonDoubleClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
-                      [aria-selected]="childSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                      [attr.aria-pressed]="childSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
                       >
                         <del
                         class="segment-text"
@@ -165,7 +167,7 @@
                       class="segment-button"
                       (click)="onSegmentButtonClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
                       (dblclick)="onSegmentButtonDoubleClick({pdfJsId: childSegment.pdfJsId, page: childSegment.page})"
-                      [aria-selected]="childSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                      [attr.aria-pressed]="childSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
                       >
                         <p
                         class="segment-text"
@@ -176,17 +178,17 @@
                         </p>
                       </button>
                     }
-                    @if (childSegment.excluded) {
-                      <button #includeButton [attr.data-segment-id]="childSegment.pdfJsId" class="include-button" (click)="onIncludeButtonClick(childSegment)">
-                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                     @if (childSegment.excluded) {
+                      <button #includeButton [attr.data-segment-id]="childSegment.pdfJsId" class="include-button" [attr.aria-label]="'Incluir segmento ' + childSegment.sequentialId" (click)="onIncludeButtonClick(childSegment)">
+                        <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 256,144 V 368" />
                           <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
                         </svg>
                       </button>
                     } @else {
-                      <button #excludeButton [attr.data-segment-id]="childSegment.pdfJsId" class="exclude-button" (click)="onExcludeButtonClick(childSegment)">
-                        <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <button #excludeButton [attr.data-segment-id]="childSegment.pdfJsId" class="exclude-button" [attr.aria-label]="'Excluir segmento ' + childSegment.sequentialId" (click)="onExcludeButtonClick(childSegment)">
+                        <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                           <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round" d="M 144,256 H 368" />
                           <circle style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" cx="256" cy="256" r="192" />
                         </svg>

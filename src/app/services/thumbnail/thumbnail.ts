@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Input, BlobSource, ALL_FORMATS, CanvasSink } from 'mediabunny';
 import { catchError, from, map, mergeMap, Observable, of } from 'rxjs';
 
@@ -6,7 +7,9 @@ import { catchError, from, map, mergeMap, Observable, of } from 'rxjs';
   providedIn: 'root'
 })
 export class Thumbnail {
-  
+  private readonly platformId = inject(PLATFORM_ID);
+  private static readonly DEFAULT_THUMBNAIL_SIZE = 128;
+
   /**
    * Generates thumbnail URLs for the given requests.
    *
@@ -20,7 +23,7 @@ export class Thumbnail {
   ): Observable<ThumbnailGenerationResult> {
     return from(requests).pipe(
       mergeMap((request) =>
-        from(this.generateThumbnail(request.file, request.thumbnailSize, request.targetTimestamp)).pipe(
+        from(this.generateThumbnail(request.file, request.targetTimestamp, request.thumbnailSize)).pipe(
           map((blob) => ({
             mediaFileId: request.mediaFileId,
             thumbnailUrl: URL.createObjectURL(blob)
@@ -47,7 +50,15 @@ export class Thumbnail {
    * @throws Will throw an error if a problem with the video stream prevents thumbnail generation, or if the thumbnail
    * could not be extracted or converted to a blob.
    */
-  private async generateThumbnail(file: File, thumbnailSize = 128, targetTimestamp = 5): Promise<Blob> {
+  private async generateThumbnail(file: File, targetTimestamp = 5, thumbnailSize = NaN): Promise<Blob> {
+    // Adjust thumbnail size to fit larger scalings if running in a browser environment and it is not specified.
+    if (isPlatformBrowser(this.platformId) && isNaN(thumbnailSize)) {
+      console.log(window.devicePixelRatio);
+      thumbnailSize = Math.floor(Thumbnail.DEFAULT_THUMBNAIL_SIZE * window.devicePixelRatio);
+    } else {
+      thumbnailSize = Thumbnail.DEFAULT_THUMBNAIL_SIZE;
+    }
+
     // Initialize Mediabunny with a local file blob source
     const input = new Input({
       source: new BlobSource(file),
@@ -68,7 +79,8 @@ export class Thumbnail {
       throw new Error('Unable to decode the video track.');
     }
 
-    // Compute width and height of the thumbnails such that the larger dimension is equal to THUMBNAIL_SIZE
+    // Compute width and height of the thumbnails such that the larger dimension is equal to the specified thumbnail
+    // size, and the smaller dimension is scaled proportionally to maintain the aspect ratio.
     const displayWidth = await videoTrack.getDisplayWidth();
     const displayHeight = await videoTrack.getDisplayHeight();
     const width = displayWidth > displayHeight

@@ -16,6 +16,10 @@
   margin: 0.25rem 0.125rem 0.25rem 0.25rem;
 }
 
+$button-size: 2.75rem;
+$spacing-between-up-down-buttons: 0.5rem;
+$inner-button-spacing: 1rem;
+
 .segments-list {
   height: 100%;
   list-style: none;
@@ -50,21 +54,21 @@
   position: absolute;
   left: -0.125rem;
   width: calc(100% + 0.125rem);
-  height: 0.9375rem;
+  height: calc($button-size/2 - 0.0625rem);
   z-index: 2;
 }
 
 .parent-segment-item .segments-sublist .parent-segment .segment-bottom-background {
   position: absolute;
   left: -0.125rem;
-  top: 0.9375rem;
+  top: calc($button-size/2 - 0.0625rem);
   width: calc(100% + 0.125rem);
   height: 100%;
   z-index: 1;
 }
 
 .parent-segment-item:first-child .segments-sublist .parent-segment .segment-bottom-background {
-  height: calc(100% + 0.9375rem);
+  height: calc(100% + $button-size/2 - 0.0625rem);
   top: 0;
 }
 
@@ -110,10 +114,6 @@
   margin-bottom: 0;
 }
 
-$button-size: 2rem;
-$spacing-between-up-down-buttons: 0.125rem;
-$inner-button-spacing: 1rem;
-
 .segment-inner-items-container {
   margin-top: 0.75rem;
   padding: 0 0.5rem 0 0.5rem;
@@ -126,7 +126,7 @@ $inner-button-spacing: 1rem;
 
 .segment-button {
   width: calc(100% - 2 * $button-size);
-  min-height: $button-size * 2 + $spacing-between-up-down-buttons;
+  min-height: calc($button-size * 2 + $spacing-between-up-down-buttons);
   background-color: transparent;
   border: none;
   padding: 0 $inner-button-spacing 0 $inner-button-spacing;
@@ -142,7 +142,7 @@ $inner-button-spacing: 1rem;
   border-radius: 0.5rem;
 }
 
-.segment-button[aria-selected="true"] .segment-text {
+.segment-button[aria-pressed="true"] .segment-text {
   color: var(--primary-color);
 }
 
@@ -150,7 +150,7 @@ $inner-button-spacing: 1rem;
   display: flex;
   align-items: center;
   text-align: justify;
-  min-height: $button-size * 2 + $spacing-between-up-down-buttons;
+  min-height: calc($button-size * 2 + $spacing-between-up-down-buttons);
 }
 
 .parent-segment-item:first-child .segments-sublist .parent-segment .segment-inner-items-container {

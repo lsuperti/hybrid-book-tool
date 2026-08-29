@@ -7,17 +7,18 @@
 </main>
 
 <nav class="tabs" role="tablist" aria-label="Abas do fluxo de trabalho">
-  <ol class="tabs-list">
-    <li class="tab">
+  <ol class="tabs-list" role="presentation">
+    <li class="tab" role="presentation">
       <button
       (click)="tabButtonClick('ingest')"
       class="tab-button ingest-button"
       role="tab"
+      aria-label="Ingestão de arquivos de mídia e registro de texto"
       title="Ingestão de arquivos de mídia e registro de texto"
       aria-selected="{{ currentTab() === 'ingest' }}"
       tabindex="0">
         <div class="icon-container">
-          <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="192" height="128" x="64" y="256" />
             <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" d="m 128,256 v -42.66666 h 192 v 128 h -64" />
             <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" d="M 192,213.33333 V 170.66666 H 384 V 298.66666 H 320" />
@@ -36,16 +37,17 @@
         </div>
       </button>
     </li>
-    <li class="tab">
+    <li class="tab" role="presentation">
       <button
       (click)="tabButtonClick('text-segmentation')"
       class="tab-button text-segmentation-button"
       role="tab"
+      aria-label="Segmentação de texto"
       title="Segmentação de texto"
       aria-selected="{{ currentTab() === 'text-segmentation' }}"
       tabindex="0">
         <div class="icon-container">
-          <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="display:inline;fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="416" height="192" x="48" y="160" />
             <path style="stroke:currentColor;stroke-width:32" d="M 256,160 V 352" />
             <path style="stroke:currentColor;stroke-width:16" d="M 80,200 H 224" />
@@ -60,16 +62,17 @@
         </div>
       </button>
     </li>
-    <li class="tab">
+    <li class="tab" role="presentation">
       <button
       (click)="tabButtonClick('video-segmentation')"
       class="tab-button video-segmentation-button"
       role="tab"
+      aria-label="Segmentação de vídeo"
       title="Segmentação de vídeo"
       aria-selected="{{ currentTab() === 'video-segmentation' }}"
       tabindex="0">
         <div class="icon-container">
-          <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="416" height="192" x="48" y="160" />
             <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" d="M 256,160 V 352" />
             <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="M 152,352 V 272" />
@@ -82,16 +85,17 @@
         </div>
       </button>
     </li>
-    <li class="tab">
+    <li class="tab" role="presentation">
       <button
       (click)="tabButtonClick('correlation')"
       class="tab-button correlation-button"
       role="tab"
+      aria-label="Correlação entre segmentos de texto e segmentos de vídeo"
       title="Correlação entre segmentos de texto e segmentos de vídeo"
       aria-selected="{{ currentTab() === 'correlation' }}"
       tabindex="0">
         <div class="icon-container">
-          <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="384" height="256" x="64" y="128" />
             <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" d="M 256,128 V 384" />
             <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="M 160,288 V 216" />
@@ -109,16 +113,17 @@
         </div>
       </button>
     </li>
-    <li class="tab">
+    <li class="tab" role="presentation">
       <button
       (click)="tabButtonClick('export')"
       class="tab-button export-button"
       role="tab"
+      aria-label="Exportação"
       title="Exportação"
       aria-selected="{{ currentTab() === 'export' }}"
       tabindex="0">
         <div class="icon-container">
-          <svg class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" d="m 378.05395,201.82826 c 26.82016,-26.82014 21.54956,-68.96002 11.31371,-79.19588 -10.23587,-10.23585 -52.37575,-15.50645 -79.1959,11.3137 l -113.13699,113.13697 67.8822,67.88219 z" />
             <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="m 327.54845,128.69537 55.75622,55.75621" />
             <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="m 230.97588,213.14196 67.88218,67.88219" />

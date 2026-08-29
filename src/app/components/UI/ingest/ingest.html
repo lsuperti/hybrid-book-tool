@@ -15,18 +15,14 @@
       <div top class="media-files-list-container">
         <ol class="media-files-list">
           @for (mediaFile of mediaFiles(); track mediaFile.id) {
-            <li
-            class="media-file-item"
-            role="listitem"
-            aria-label="{{ mediaFile.name }}"
-            >
+            <li class="media-file-item">
               @if (mediaFile.thumbnail) {
                 <div class="media-file-thumbnail-container">
                   <img inert src="{{ mediaFile.thumbnail }}" alt="Thumbnail de {{ mediaFile.name }}" class="media-file-thumbnail" />
                 </div>
               } @else {
                 <div class="media-file-thumbnail-container media-file-thumbnail-placeholder">
-                  <svg viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-hidden="true" viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
                     <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
                     <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
                   </svg>
@@ -43,7 +39,7 @@
               (click)="removeMediaFile(mediaFile.id)"
               [attr.data-media-file-id]="mediaFile.id"
               >
-                <svg class="icon delete-icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <svg aria-hidden="true" class="icon delete-icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                   <path style="fill:none;stroke:currentColor;stroke-width:42.6667;stroke-linecap:round;stroke-linejoin:round" d="M 141.1836,162.35464 H 371.632 l -37.33333,261.8112 H 178.51693 Z" />
                   <path style="fill:none;stroke:currentColor;stroke-width:42.6667;stroke-linecap:round;stroke-linejoin:round" d="M 114.10913,162.35464 H 397.89087" />
                   <rect style="fill:none;stroke:currentColor;stroke-width:42.6667;stroke-linecap:round;stroke-linejoin:round" width="108.49552" height="70.526405" x="204.06201" y="91.828255" />
@@ -64,13 +60,13 @@
       [style.height]="mediaFilesService.mediaFiles().length <= 0 ? 'calc(100% - 0.5rem)' : 'calc(100% - 0.375rem)'"
       [class.dragging-over]="draggingOverMediaFilesUploadArea()"
       >
-        <svg viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <svg aria-hidden="true" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <rect style="fill:currentColor;fill-rule:evenodd" width="256" height="32" x="0" y="200" ry="8" />
           <path style="fill:currentColor;fill-rule:evenodd;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="m 80,128 h 96 l -48,48 z" />
           <rect style="fill:currentColor;fill-rule:evenodd" width="32" height="104" x="112" y="24" ry="8" />
         </svg>
-        <p>Solte arquivos de mídia aqui ou <span #mediaFilesUploadLink class="upload-link" tabindex="0" role="button" (click)="mediaFileInput.click()">selecione arquivos</span>.</p>
-        <input type="file" #mediaFileInput multiple accept="video/*" (change)="onMediaFileSelected($event)" style="display: none;" />
+        <p>Solte arquivos de mídia aqui ou <span #mediaFilesUploadLink aria-label="Selecione arquivos de mídia para upload" class="upload-link" tabindex="0" role="button" (click)="mediaFileInput.click()">selecione arquivos</span>.</p>
+        <input type="file" #mediaFileInput multiple accept="video/*" aria-label="Selecione arquivos de mídia para upload" (change)="onMediaFileSelected($event)" style="display: none;" />
       </div>
     </app-vertical-split>
   </div>
@@ -120,13 +116,13 @@
       [style.margin-top]="this.mediaFilesService.textRecord().type === null ? '0.25rem' : '0.125rem'"
       [style.height]="this.mediaFilesService.textRecord().type === null ? 'calc(100% - 0.5rem)' : 'calc(100% - 0.375rem)'"
       [class.dragging-over]="draggingOverTextRecordUploadArea()">
-        <svg viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <svg aria-hidden="true" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <rect style="fill:currentColor;fill-rule:evenodd" width="256" height="32" x="0" y="200" ry="8" />
           <path style="fill:currentColor;fill-rule:evenodd;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="m 80,128 h 96 l -48,48 z" />
           <rect style="fill:currentColor;fill-rule:evenodd" width="32" height="104" x="112" y="24" ry="8" />
         </svg>
-        <p>{{this.mediaFilesService.textRecord().type === null ? 'Solte o registro de texto aqui ou ' : 'Para alterar o registro de texto, solte um novo registro de texto aqui ou '}} <span #textRecordUploadLink class="upload-link" tabindex="0" role="button" (click)="textRecordFileInput.click()">selecione um arquivo</span>.</p>
-        <input type="file" #textRecordFileInput accept="application/pdf" (change)="onTextRecordFileSelected($event)" style="display: none;" />
+        <p>{{this.mediaFilesService.textRecord().type === null ? 'Solte o registro de texto aqui ou ' : 'Para alterar o registro de texto, solte um novo registro de texto aqui ou '}} <span #textRecordUploadLink aria-label="Selecione o arquivo de registro de texto para upload" class="upload-link" tabindex="0" role="button" (click)="textRecordFileInput.click()">selecione um arquivo</span>.</p>
+        <input type="file" #textRecordFileInput accept="application/pdf" aria-label="Selecione o arquivo de registro de texto para upload" (change)="onTextRecordFileSelected($event)" style="display: none;" />
       </div>
     </app-vertical-split>
   </div>

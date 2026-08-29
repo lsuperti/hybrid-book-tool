@@ -14,6 +14,8 @@
   (keydown)="resizeBarKeyDown($event)"
   role="separator"
   aria-orientation="horizontal"
+  [attr.aria-valuemin]="minHeightPercentage()"
+  [attr.aria-valuemax]="100 - minHeightPercentage()"
   aria-valuenow="{{ topHeight() }}"
   aria-label="{{ resizeBarAriaLabel() }}"
   tabindex="0"></div>
