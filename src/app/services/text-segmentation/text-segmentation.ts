@@ -5,6 +5,7 @@ import { type TextContent, type TextItem, type TextMarkedContent } from 'ngx-ext
 export class TextSegmentationService {  
   public segments = signal<TextSegment[]>([]);
   public readonly status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  public static readonly SPACE_EXCLUDED_CHARACTERS = [' ', '\t', '.', ',', ';', ':', '!', '?', '-', '_', '(', ')', '[', ']', '{', '}', '"', "'", '`', '~', '@', '#', '$', '%', '^', '&', '*', '+', '=', '|', '\\', '/', '<', '>'];
   private addressableSegments = new Set<string>();
 
   /**
@@ -87,6 +88,11 @@ export class TextSegmentationService {
         // If we are in a marked content, we will add the text to the current segment text.
         } else {
           if ('str' in item && inMarkedContent) {
+            // If the first character of the item text is a space excluded character we remove the space that was added at the end of the previous item text.
+            if (TextSegmentationService.SPACE_EXCLUDED_CHARACTERS.includes(item.str[0]) && text.length > 0) {
+              text = text.slice(0, -1);
+            }
+
             text += item.str + ' ';
           }
         }
@@ -177,7 +183,7 @@ export class TextSegmentationService {
    * @param pdfJsSegmentId The PDF.js ID of the segment to be excluded.
    * @throws Will throw an error if the segment is not found.
    */
-  public excludeSegment(pdfJsSegmentId: string): void {    
+  public excludeSegment(pdfJsSegmentId: string): void {
     const segmentIndex = this.findSegmentIndex(pdfJsSegmentId);
     
     if (segmentIndex.parentIndex === -1) {
@@ -202,6 +208,7 @@ export class TextSegmentationService {
         firstChild.linkedChildren = [...firstChild.linkedChildren, ...segment.linkedChildren];
         segment.linkedChildren = [];
 
+        segment.excluded = true;
         this.segments.set([...currentSegments]);
       }
     // If the segment is a child segment, promote it to a parent segment in the next position on the parent segments list
@@ -216,10 +223,12 @@ export class TextSegmentationService {
       // Insert the child segment as a new parent segment in the next position on the parent segments list
       currentSegments.splice(segmentIndex.parentIndex + 1, 0, childSegment);
 
+      childSegment.excluded = true;
       this.segments.set([...currentSegments]);
     }
 
     segment.excluded = true;
+    this.segments.set([...this.segments()]);
   }
 
   /**
@@ -240,6 +249,7 @@ export class TextSegmentationService {
     }
     
     segment.excluded = false;
+    this.segments.set([...this.segments()]);
   }
 
   /**

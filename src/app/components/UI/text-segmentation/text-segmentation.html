@@ -12,7 +12,7 @@
   } @else {
     <div class="segments-container" left>
       <ol #segmentsList class="segments-list" role="list">
-        @for (segment of textSegmentationService.segments(); track segment.sequentialId; let first = $first; let index = $index) {
+        @for (segment of textSegmentationService.segments(); track segment.sequentialId; let first = $first; let last = $last; let index = $index) {
           <li
           #segmentItem
           [attr.data-segment-id]="segment.pdfJsId"
@@ -52,13 +52,13 @@
                 }
                 <div class="segment-inner-items-container">
                   <div class="up-down-buttons-container">
-                    <button #upButton [attr.data-segment-id]="segment.pdfJsId" class="up-button" [attr.aria-label]="'Mover segmento ' + (segment.sequentialId + 1) + ' para cima'" (click)="first ? null : onUpButtonClick(segment)">
+                    <button #upButton [attr.data-segment-id]="segment.pdfJsId" class="up-button" [attr.aria-label]="'Mover segmento ' + (segment.sequentialId + 1) + ' para cima'" (click)="first ? null : onUpButtonClick(segment)" [disabled]="first">
                       <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
                       </svg>
                     </button>
-                    <button #downButton [attr.data-segment-id]="segment.pdfJsId" class="down-button" [attr.aria-label]="'Mover segmento ' + (segment.sequentialId + 1) + ' para baixo'" (click)="onDownButtonClick(segment)">
+                    <button #downButton [attr.data-segment-id]="segment.pdfJsId" class="down-button" [attr.aria-label]="'Mover segmento ' + (segment.sequentialId + 1) + ' para baixo'" (click)="onDownButtonClick(segment)" [disabled]="last">
                       <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
                         <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />

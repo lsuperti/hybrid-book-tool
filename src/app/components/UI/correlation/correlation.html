@@ -13,8 +13,91 @@
   } @else if (videoSegmentationService.segments().length <= 0) {
     <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de vídeo.'" [halfWidthMargin]="['bottom']"></app-warning-card>
   } @else {
-    <!-- TODO: Implement the correlation UI. -->
-    <h1 top>[PH] The correlation UI</h1>
+    <div top class="correlation-container">
+      <ol #correlationList class="correlation-list" role="list">
+        @for (row of correlationRows(); track row.index; let first = $first; let last = $last) {
+          <li class="correlation-item" role="listitem">
+            <div class="correlation-text-segment-container">
+              @if (row.textSegment) {
+                <button
+                #segmentTextButton
+                class="segment-text-button"
+                (click)="onSegmentButtonClick({pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page})"
+                (dblclick)="onSegmentButtonDoubleClick({pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page})"
+                [aria-pressed]="row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                [attr.data-segment-id]="row.textSegment.pdfJsId"
+                [attr.data-segment-page]="row.textSegment.page"
+                >
+                  @if (row.textSegment.excluded) {
+                    <del
+                      class="segment-text"
+                      [style.font-style]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                      [style.color]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && row.textSegment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                    >
+                      {{ getFullText(row.textSegment) }}
+                    </del>
+                  } @else {
+                    <p
+                      class="segment-text"
+                      [style.font-style]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
+                      [style.color]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && row.textSegment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                    >
+                      {{ getFullText(row.textSegment) }}
+                    </p>
+                  }
+                </button>
+              } @else {
+                <div class="empty-segment"></div>
+              }
+            </div>
+
+            <button
+            class="correlation-video-segment-button"
+            (click)="onSegmentButtonClick(row.textSegment ? {pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page} : null)"
+            (dblclick)="onSegmentButtonDoubleClick(row.textSegment ? {pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page} : null)"
+            [disabled]="!row.videoSegment"
+            [aria-selected]="row.textSegment && row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+            tabindex="-1"
+            >
+              @if (row.videoSegment) {
+                @if (row.videoSegment.thumbnail) {
+                  <div class="video-segment-thumbnail-container">
+                    <img inert [src]="row.videoSegment.thumbnail" [alt]="'Thumbnail de ' + row.videoSegment.name" class="video-segment-thumbnail" />
+                  </div>
+                } @else {
+                  <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
+                    <svg aria-hidden="true" viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
+                      <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
+                    </svg>
+                  </div>
+                }
+                <div class="video-segment-name-container">
+                  <p class="video-segment-name">{{ row.videoSegment.name }}</p>
+                </div>
+                <div class="up-down-buttons-container">
+                  <button #upButton [attr.data-video-index]="row.index" class="up-button" [attr.aria-label]="'Mover segmento de vídeo ' + (row.index + 1) + ' para cima'" (click)="first ? null : onUpButtonClick(row.index)" [disabled]="first">
+                    <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
+                    </svg>
+                  </button>
+                  <button #downButton [attr.data-video-index]="row.index" class="down-button" [attr.aria-label]="'Mover segmento de vídeo ' + (row.index + 1) + ' para baixo'" (click)="last ? null : onDownButtonClick(row.index)" [disabled]="last">
+                    <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
+                    </svg>
+                  </button>
+                </div>
+              } @else {
+                <div class="empty-segment"></div>
+              }
+            </button>
+            <span class="correlation-splitter" aria-hidden="true"></span>
+          </li>
+        }
+      </ol>
+    </div>
   }
   <app-horizontal-split
   bottom
@@ -36,16 +119,18 @@
         [visible]="visible()"
         [name]="'correlation'"
         [highlightMode]="'text-segment'"
+        [(selectedMarkedContent)]="selectedSegmentPdfJsId"
+        [(hoveredMarkedContent)]="hoveredSegmentPdfJsId"
+        [navigateToMarkedContentInViewer]="navigateToMarkedContentInViewer()"
         ></app-pdf-viewer>
       </div>
     </div>
   }
-  <!--
-  STUB: The video preview will be displayed differently in the future and will show the current video segment in the
-  correlation area.
-  -->
   <div right class="video-player-container">
-    <video #videoPreview controls [src]="mediaFilesService.mediaFiles()[0]?.url" class="video-player-stub"></video>
+    <app-video-player
+    class="video-player"
+    [segment]="selectedVideoSegment()"
+    ></app-video-player>
   </div>
   </app-horizontal-split>
 </app-vertical-split>

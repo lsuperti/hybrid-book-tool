@@ -44,12 +44,11 @@
       @if (mediaFilesService.mediaFiles().length <= 0 || mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null) {
         <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left']"></app-warning-card>
       } @else {
-        <!--
-        STUB: The video preview will be displayed differently in the future and will align with the timeline. For
-        now, we are just displaying the video preview as a simple illustrative video element.
-        -->
         <div class="video-preview-container">
-          <video #videoPreview controls [src]="mediaFilesService.mediaFiles()[selectedSegmentIndex()].url " class="video-preview"></video>
+          <app-video-player
+          class="video-player"
+          [segment]="selectedSegment()"
+          ></app-video-player>
         </div>
       }
     </div>

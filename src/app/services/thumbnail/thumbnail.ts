@@ -78,14 +78,14 @@ export class Thumbnail {
       throw new Error('Unable to decode the video track.');
     }
 
-    // Compute width and height of the thumbnails such that the larger dimension is equal to the specified thumbnail
-    // size, and the smaller dimension is scaled proportionally to maintain the aspect ratio.
+    // Compute width and height of the thumbnails such that the smaller dimension is equal to the specified thumbnail
+    // size, and the larger dimension is scaled proportionally to maintain the aspect ratio.
     const displayWidth = await videoTrack.getDisplayWidth();
     const displayHeight = await videoTrack.getDisplayHeight();
-    const width = displayWidth > displayHeight
+    const width = displayWidth < displayHeight
       ? thumbnailSize
       : Math.floor(thumbnailSize * displayWidth / displayHeight);
-    const height = displayHeight > displayWidth
+    const height = displayHeight < displayWidth
       ? thumbnailSize
       : Math.floor(thumbnailSize * displayHeight / displayWidth);
     

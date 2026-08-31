@@ -1,0 +1,103 @@
+<div class="video-player-container">
+  <div class="video-canvas-container">
+    <canvas #canvas class="video-canvas" aria-label="Player de vídeo" role="img"></canvas>
+  </div>
+
+  <div class="controls-container">
+    <div class="progress-bar-container">
+      <input 
+        type="range" 
+        class="progress-bar"
+        [min]="playableStartTime()"
+        [max]="playableEndTime()"
+        [value]="currentTime()"
+        [attr.aria-valuenow]="currentTime()"
+        [attr.aria-valuemin]="playableStartTime()"
+        [attr.aria-valuemax]="playableEndTime()"
+        [disabled]="!isLoaded()"
+        step="0.05"
+        (mousedown)="onScrubStart()"
+        (touchstart)="onScrubStart()"
+        (keydown)="onScrubStart()"
+        (input)="onProgressChange($event)"
+        (change)="onScrubEnd()"
+        (mouseup)="onScrubEnd()"
+        (touchend)="onScrubEnd()"
+        (keyup)="onScrubEnd()"
+        aria-label="Progresso do vídeo"
+      />
+    </div>
+    
+    <div class="buttons-container">
+      <button 
+        type="button" 
+        (click)="seek(-1)" 
+        [disabled]="!isLoaded()" 
+        aria-label="Voltar 1 segundo" 
+        title="Voltar 1 segundo" 
+        class="control-button"
+      >
+        <svg class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 55.900589,73.864889 23.99994,71.345251 26.51958,39.444601" />
+          <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round" d="m 103.99994,71.345251 c -36,-48 -72,-8.016335 -72,-8.016335" />
+        </svg>
+      </button>
+      <button 
+        type="button" 
+        (click)="stepFrame('backward')" 
+        [disabled]="!isLoaded()" 
+        aria-label="Voltar 1 frame" 
+        title="Voltar 1 frame" 
+        class="control-button"
+      >
+        <svg class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 76,32 44,64 76,96" />
+        </svg>
+      </button>
+      <button 
+        type="button" 
+        (click)="togglePlay()" 
+        [disabled]="!isLoaded()" 
+        [attr.aria-label]="isPlaying() ? 'Pausar' : 'Reproduzir'" 
+        [title]="isPlaying() ? 'Pausar' : 'Reproduzir'" 
+        class="control-button"
+      >
+        @if (isPlaying()) {
+          <svg class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <rect style="fill:currentColor" width="24" height="96" x="28.28759" y="16" ry="8" />
+            <rect style="fill:currentColor" width="24" height="96" x="75.71241" y="16" ry="8" />
+          </svg>
+        } @else {
+          <svg class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="M 40.905989,24 110.18799,64 40.905989,104 Z" />
+          </svg>
+        }
+      </button>
+      <button 
+        type="button" 
+        (click)="stepFrame('forward')" 
+        [disabled]="!isLoaded()" 
+        aria-label="Avançar 1 frame" 
+        title="Avançar 1 frame" 
+        class="control-button"
+      >
+        <svg class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 52,32 84,64 52,96" />
+        </svg>
+      </button>
+      <button 
+      type="button" 
+      (click)="seek(1)" 
+      [disabled]="!isLoaded()" 
+      aria-label="Avançar 1 segundo" 
+      title="Avançar 1 segundo" 
+      class="control-button"
+      >
+        <svg class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 72.099351,73.864889 104,71.345251 101.48036,39.444601" />
+          <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round" d="m 24,71.345251 c 36,-48 72,-8.016335 72,-8.016335" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

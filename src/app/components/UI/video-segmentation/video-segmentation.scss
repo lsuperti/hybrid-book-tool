@@ -36,17 +36,29 @@ $thumbnail-height: $list-item-height - 1rem;
   align-items: center;
   justify-content: center;
   height: $list-item-height;
+  contain: layout;
 }
 
 .video-segments-list-item:last-child {
+  position: relative;
+  border-radius: 0 0 0.375rem 0.375rem;
+}
+
+.video-segments-list-item:last-child::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 0.5rem;
   border-radius: 0 0 0.5rem 0.5rem;
+  position: absolute;
+  bottom: -0.125rem;
+  left: 0;
   border-bottom: 0.125rem solid var(--card-bg-assent);
 }
 
-@container scroll-state(scrollable: top) or scroll-state(scrollable: bottom) {
-  .video-segments-list-item:last-child {
-    border-radius: 0;
-    border-bottom: none;
+@container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
+  .video-segments-list-item:last-child::after {
+    display: none;
   }
 }
 
@@ -156,11 +168,19 @@ $thumbnail-height: $list-item-height - 1rem;
 }
 
 .video-preview-container {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 0.625rem);
+  height: calc(100% - 0.625rem);
+  border: 0.125rem solid var(--card-bg-assent);
+  border-radius: 0.5rem;
+  margin: 0.25rem 0.25rem 0.25rem 0.125rem;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--card-bg);
 }
 
-.video-preview-container video {
+.video-player {
   width: 100%;
   height: 100%;
 }

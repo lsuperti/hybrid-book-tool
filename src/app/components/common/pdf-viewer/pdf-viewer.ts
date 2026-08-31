@@ -1,8 +1,6 @@
-import { Component, inject, input, output, model, signal, effect, viewChild, ElementRef, Renderer2, OnDestroy } from '@angular/core';
-import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
+import { Component, computed, inject, input, output, model, effect, viewChild, ElementRef, Renderer2, OnDestroy } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { TextSegmentationService, type PdfJsAccessibleTextSegment } from '../../../services/text-segmentation/text-segmentation';
-
-export type PdfViewerHighlightMode = 'marked-content' | 'text-segment';
 
 @Component({
   selector: 'app-pdf-viewer',
@@ -24,7 +22,6 @@ export class PdfViewer implements OnDestroy {
   public readonly selectedMarkedContent = model<PdfJsAccessibleTextSegment | null>(null);
   public readonly hoveredMarkedContent = model<PdfJsAccessibleTextSegment | null>(null);
 
-  protected readonly iframeSrc = signal<SafeResourceUrl>(this.sanitizer.bypassSecurityTrustResourceUrl('about:blank'));
   private readonly pdfViewerIframe = viewChild.required<ElementRef<HTMLIFrameElement>>('pdfViewerIframe');
   private pagesPendingSetup: Set<number> = new Set<number>();
   private renderedPages: Set<number> = new Set<number>();
@@ -33,14 +30,14 @@ export class PdfViewer implements OnDestroy {
   private pendingScrollToMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private unlisteners: (() => void)[] = [];
 
-  constructor() {
-    effect(() => {
-      const iframeUrl = new URL('pdf-viewer', document.baseURI);
-      iframeUrl.searchParams.set('pdf-viewer-src', this.src());
-      iframeUrl.searchParams.set('pdf-viewer-name', this.name());
-      this.iframeSrc.set(this.sanitizer.bypassSecurityTrustResourceUrl(iframeUrl.toString()));
-    });
+  protected readonly iframeSrc = computed(() => {
+    const iframeUrl = new URL('pdf-viewer', document.baseURI);
+    iframeUrl.searchParams.set('pdf-viewer-src', this.src());
+    iframeUrl.searchParams.set('pdf-viewer-name', this.name());
+    return this.sanitizer.bypassSecurityTrustResourceUrl(iframeUrl.toString());
+  });
 
+  constructor() {
     effect(() => {
       if (this.textSegmentationService.status() === 'success') {
         this.pagesPendingSetup.forEach(pageNumber => {
@@ -867,3 +864,5 @@ export class PdfViewer implements OnDestroy {
     this.unlisteners.forEach(unlisten => unlisten());
   }
 }
+
+export type PdfViewerHighlightMode = 'marked-content' | 'text-segment';
