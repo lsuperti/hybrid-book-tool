@@ -1,8 +1,9 @@
-<app-vertical-split
-[defaultTopHeight]="50"
+<app-split
+direction="vertical"
+[defaultSize]="50"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de correlação e de exibição do registro de texto e de vídeo'"
-[resizeBarLeftMargin]="'0.75rem'"
-[resizeBarRightMargin]="'0.75rem'"
+[resizeBarStartMargin]="'0.75rem'"
+[resizeBarEndMargin]="'0.75rem'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
     <app-warning-card
@@ -130,12 +131,13 @@
       </ol>
     </div>
   }
-  <app-horizontal-split
-  bottom
-  [defaultLeftWidth]="50"
+  <app-split
+  second
+  direction="horizontal"
+  [defaultSize]="50"
   [resizeBarAriaLabel]="'Redimensionamento das áreas de exibição do registro de texto e de vídeo'"
-  [resizeBarTopMargin]="'0.75rem'"
-  [resizeBarBottomMargin]="'0.75rem'"
+  [resizeBarStartMargin]="'0.75rem'"
+  [resizeBarEndMargin]="'0.75rem'"
   >
     @if (mediaFilesService.textRecord().type === 'invalid') {
       <app-warning-card
@@ -176,8 +178,8 @@
       [segment]="selectedVideoSegment()"
       ></app-video-player>
     </div>
-  </app-horizontal-split>
-</app-vertical-split>
+  </app-split>
+</app-split>
 <ng-template #thumbnailPlaceholder>
   <svg aria-hidden="true" viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
     <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />

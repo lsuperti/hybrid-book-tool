@@ -1,6 +1,5 @@
 import { Component, inject, signal, computed, input } from '@angular/core';
-import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
-import { VerticalSplit } from '../../layout/vertical-split/vertical-split';
+import { Split } from '../../layout/split/split';
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { VideoSegmentationService, type VideoSegment } from '../../../services/video-segmentation/video-segmentation';
@@ -8,7 +7,7 @@ import { VideoPlayer } from '../../common/video-player/video-player';
 
 @Component({
   selector: 'app-video-segmentation',
-  imports: [HorizontalSplit, VerticalSplit, WarningCard, VideoPlayer],
+  imports: [Split, WarningCard, VideoPlayer],
   templateUrl: './video-segmentation.html',
   styleUrl: './video-segmentation.scss',
 })

@@ -10,8 +10,7 @@ import {
   effect
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
-import { VerticalSplit } from '../../layout/vertical-split/vertical-split';
+import { Split } from '../../layout/split/split';
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { PdfViewerFrame } from '../../common/pdf-viewer/pdf-viewer-frame';
@@ -20,7 +19,7 @@ import { TextSegmentationService } from '../../../services/text-segmentation/tex
 
 @Component({
   selector: 'app-ingest',
-  imports: [HorizontalSplit, VerticalSplit, WarningCard, PdfViewerFrame, NgTemplateOutlet],
+  imports: [Split, WarningCard, PdfViewerFrame, NgTemplateOutlet],
   templateUrl: './ingest.html',
   styleUrl: './ingest.scss',
 })

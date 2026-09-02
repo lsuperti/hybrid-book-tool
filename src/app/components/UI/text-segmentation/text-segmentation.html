@@ -1,8 +1,9 @@
-<app-horizontal-split
+<app-split
 #horizontalSplit
+direction="horizontal"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'"
-[resizeBarTopMargin]="'0.75rem'"
-[resizeBarBottomMargin]="'0.75rem'"
+[resizeBarStartMargin]="'0.75rem'"
+[resizeBarEndMargin]="'0.75rem'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
     <app-warning-card
@@ -282,7 +283,7 @@
       </div>
     </div>
   }
-</app-horizontal-split>
+</app-split>
 <ng-template #linkedIcon>
   <svg aria-hidden="true" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
     <path style="fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="M 64,44 V 84" />

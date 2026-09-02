@@ -1,9 +1,14 @@
-<app-vertical-split [defaultTopHeight]="90" [resizeBarAriaLabel]="'Redimensionamento das áreas de linha do tempo e de segmentos e visualização de vídeo'">
-  <app-horizontal-split
-  top
+<app-split
+direction="vertical"
+[defaultSize]="90"
+[resizeBarAriaLabel]="'Redimensionamento das áreas de linha do tempo e de segmentos e visualização de vídeo'"
+>
+  <app-split
+  first
+  direction="horizontal"
   [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização de vídeo'"
-  [resizeBarTopMargin]="'0.75rem'"
-  [resizeBarBottomMargin]="'0.75rem'"
+  [resizeBarStartMargin]="'0.75rem'"
+  [resizeBarEndMargin]="'0.75rem'"
   >
     <div class="video-segments-area"left>
       @if (mediaFilesService.mediaFiles().length <= 0) {
@@ -52,6 +57,6 @@
         </div>
       }
     </div>
-  </app-horizontal-split>
-  <div tabindex="0" bottom>[PH] Linha do tempo</div>
-</app-vertical-split>
+  </app-split>
+  <div tabindex="0" second>[PH] Linha do tempo</div>
+</app-split>

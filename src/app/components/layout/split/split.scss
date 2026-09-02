@@ -1,0 +1,104 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+$resize-bar-width: 0.25rem;
+$resize-bar-grab-width: 0.5rem;
+
+.split-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  &.horizontal {
+    flex-direction: row;
+
+    > .first-area {
+      width: var(--first-size);
+      height: 100%;
+    }
+
+    > .second-area {
+      width: calc(100% - var(--first-size));
+      height: 100%;
+    }
+
+    > .resize-bar {
+      height: 100%;
+      width: $resize-bar-grab-width;
+      left: calc(var(--first-size) - $resize-bar-grab-width / 2);
+      cursor: ew-resize;
+
+      &::after {
+        height: calc(100% - var(--start-margin) - var(--end-margin));
+        width: $resize-bar-width;
+        left: calc(($resize-bar-grab-width - $resize-bar-width) / 2);
+        top: var(--start-margin);
+        transform: scaleX(0);
+      }
+
+      &:hover::after,
+      &:focus-visible::after,
+      &:active::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  &.vertical {
+    flex-direction: column;
+
+    > .first-area {
+      height: var(--first-size);
+      width: 100%;
+    }
+
+    > .second-area {
+      height: calc(100% - var(--first-size));
+      width: 100%;
+    }
+
+    > .resize-bar {
+      width: 100%;
+      height: $resize-bar-grab-width;
+      top: calc(var(--first-size) - $resize-bar-grab-width / 2);
+      cursor: ns-resize;
+
+      &::after {
+        width: calc(100% - var(--start-margin) - var(--end-margin));
+        height: $resize-bar-width;
+        top: calc(($resize-bar-grab-width - $resize-bar-width) / 2);
+        left: var(--start-margin);
+        transform: scaleY(0);
+      }
+
+      &:hover::after,
+      &:focus-visible::after,
+      &:active::after {
+        transform: scaleY(1);
+      }
+    }
+  }
+}
+
+.resize-bar {
+  position: absolute;
+  z-index: 1;
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    background-color: var(--primary-color);
+    transform-origin: center;
+    transition: transform 0.2s;
+    transition-timing-function: ease-in-out;
+  }
+}

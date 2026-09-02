@@ -1,0 +1,36 @@
+<div
+#splitContainer
+class="split-container"
+[class.horizontal]="direction() === 'horizontal'"
+[class.vertical]="direction() === 'vertical'"
+[style.--first-size.%]="isFirstCollapsed() ? 0 : isSecondCollapsed() ? 100 : size()"
+>
+  @if (isSecondCollapsed() || isCollapsedNone()) {
+    <div class="first-area">
+      <ng-content select="[first], [left], [top]"></ng-content>
+    </div>
+  }
+
+  @if (isCollapsedNone()) {
+    <div
+    class="resize-bar"
+    [style.--start-margin]="resizeBarStartMargin()"
+    [style.--end-margin]="resizeBarEndMargin()"
+    (pointerdown)="resizeBarPointerDown($event)"
+    (keydown)="resizeBarKeyDown($event)"
+    role="separator"
+    [attr.aria-orientation]="direction() === 'horizontal' ? 'vertical' : 'horizontal'"
+    [attr.aria-valuemin]="minSizePercentage()"
+    [attr.aria-valuemax]="100 - minSizePercentage()"
+    [attr.aria-valuenow]="size()"
+    [attr.aria-label]="resizeBarAriaLabel()"
+    tabindex="0"
+    ></div>
+  }
+
+  @if (isFirstCollapsed() || isCollapsedNone()) {
+    <div class="second-area">
+      <ng-content select="[second], [right], [bottom]"></ng-content>
+    </div>
+  }
+</div>
