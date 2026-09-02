@@ -5,13 +5,37 @@
 [resizeBarRightMargin]="'0.75rem'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
-    <app-warning-card top [type]="'error'" class="warning-card" [message]="'Registro de texto inválido.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+    <app-warning-card
+    top
+    class="warning-card"
+    [type]="'error'"
+    [message]="'Registro de texto inválido.'"
+    [halfWidthMargin]="['bottom']"
+    ></app-warning-card>
   } @else if (textSegmentationService.segments().length <= 0 && videoSegmentationService.segments().length <= 0) {
-    <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de texto nem de vídeo.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+    <app-warning-card
+    top
+    class="warning-card"
+    [type]="'warning'"
+    [message]="'Não há segmentos de texto nem de vídeo.'"
+    [halfWidthMargin]="['bottom']"
+    ></app-warning-card>
   } @else if (textSegmentationService.segments().length <= 0) {
-    <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de texto.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+    <app-warning-card
+    top
+    class="warning-card"
+    [type]="'warning'"
+    [message]="'Não há segmentos de texto.'"
+    [halfWidthMargin]="['bottom']"
+    ></app-warning-card>
   } @else if (videoSegmentationService.segments().length <= 0) {
-    <app-warning-card top [type]="'warning'" class="warning-card" [message]="'Não há segmentos de vídeo.'" [halfWidthMargin]="['bottom']"></app-warning-card>
+    <app-warning-card
+    top
+    class="warning-card"
+    [type]="'warning'"
+    [message]="'Não há segmentos de vídeo.'"
+    [halfWidthMargin]="['bottom']"
+    ></app-warning-card>
   } @else {
     <div top class="correlation-container">
       <ol #correlationList class="correlation-list" role="list">
@@ -22,25 +46,23 @@
                 <button
                 #segmentTextButton
                 class="segment-text-button"
-                (click)="onSegmentButtonClick({pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page})"
-                (dblclick)="onSegmentButtonDoubleClick({pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page})"
-                [aria-pressed]="row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
                 [attr.data-segment-id]="row.textSegment.pdfJsId"
                 [attr.data-segment-page]="row.textSegment.page"
+                [aria-pressed]="row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                (click)="onSegmentButtonClick(row.textSegment)"
+                (dblclick)="onSegmentButtonDoubleClick(row.textSegment)"
                 >
                   @if (row.textSegment.excluded) {
                     <del
-                      class="segment-text"
-                      [style.font-style]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
-                      [style.color]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && row.textSegment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                    class="segment-text"
+                    [class.hovered]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId"
                     >
                       {{ getFullText(row.textSegment) }}
                     </del>
                   } @else {
                     <p
-                      class="segment-text"
-                      [style.font-style]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId ? 'italic' : 'normal'"
-                      [style.color]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId && row.textSegment.pdfJsId !== selectedSegmentPdfJsId()?.pdfJsId ? 'var(--primary-assent)' : ''"
+                    class="segment-text"
+                    [class.hovered]="row.textSegment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId"
                     >
                       {{ getFullText(row.textSegment) }}
                     </p>
@@ -50,43 +72,52 @@
                 <div class="empty-segment"></div>
               }
             </div>
-
             <button
             class="correlation-video-segment-button"
-            (click)="onSegmentButtonClick(row.textSegment ? {pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page} : null)"
-            (dblclick)="onSegmentButtonDoubleClick(row.textSegment ? {pdfJsId: row.textSegment.pdfJsId, page: row.textSegment.page} : null)"
+            tabindex="-1"
             [disabled]="!row.videoSegment"
             [aria-selected]="row.textSegment && row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
-            tabindex="-1"
+            (click)="onSegmentButtonClick(row.textSegment)"
+            (dblclick)="onSegmentButtonDoubleClick(row.textSegment)"
             >
               @if (row.videoSegment) {
                 @if (row.videoSegment.thumbnail) {
                   <div class="video-segment-thumbnail-container">
-                    <img inert [src]="row.videoSegment.thumbnail" [alt]="'Thumbnail de ' + row.videoSegment.name" class="video-segment-thumbnail" />
+                    <img
+                    inert
+                    class="video-segment-thumbnail"
+                    [src]="row.videoSegment.thumbnail"
+                    [alt]="'Thumbnail de ' + row.videoSegment.name"
+                    />
                   </div>
                 } @else {
                   <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
-                    <svg aria-hidden="true" viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
-                      <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
-                    </svg>
+                    <ng-container *ngTemplateOutlet="thumbnailPlaceholder"></ng-container>
                   </div>
                 }
                 <div class="video-segment-name-container">
                   <p class="video-segment-name">{{ row.videoSegment.name }}</p>
                 </div>
                 <div class="up-down-buttons-container">
-                  <button #upButton [attr.data-video-index]="row.index" class="up-button" [attr.aria-label]="'Mover segmento de vídeo ' + (row.index + 1) + ' para cima'" (click)="first ? null : onUpButtonClick(row.index)" [disabled]="first">
-                    <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
-                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
-                    </svg>
+                  <button
+                  #upButton
+                  class="up-button"
+                  [attr.data-video-index]="row.index"
+                  [attr.aria-label]="'Mover segmento de vídeo ' + (row.index + 1) + ' para cima'"
+                  [disabled]="first"
+                  (click)="first ? null : onUpButtonClick(row.index)"
+                  >
+                    <ng-container *ngTemplateOutlet="upIcon"></ng-container>
                   </button>
-                  <button #downButton [attr.data-video-index]="row.index" class="down-button" [attr.aria-label]="'Mover segmento de vídeo ' + (row.index + 1) + ' para baixo'" (click)="last ? null : onDownButtonClick(row.index)" [disabled]="last">
-                    <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
-                      <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
-                    </svg>
+                  <button
+                  #downButton
+                  class="down-button"
+                  [attr.data-video-index]="row.index"
+                  [attr.aria-label]="'Mover segmento de vídeo ' + (row.index + 1) + ' para baixo'"
+                  [disabled]="last"
+                  (click)="last ? null : onDownButtonClick(row.index)"
+                  >
+                    <ng-container *ngTemplateOutlet="downIcon"></ng-container>
                   </button>
                 </div>
               } @else {
@@ -106,31 +137,62 @@
   [resizeBarTopMargin]="'0.75rem'"
   [resizeBarBottomMargin]="'0.75rem'"
   >
-  @if (mediaFilesService.textRecord().type === 'invalid') {
-    <app-warning-card left [type]="'error'" class="warning-card" [message]="'Registro de texto inválido.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
-  } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card left [type]="'warning'" class="warning-card" [message]="'Registro de texto não selecionado.'" [halfWidthMargin]="['right', 'top']"></app-warning-card>
-  } @else {
-    <div left class="text-record-area">
-      <div class="text-record-container">
-        <app-pdf-viewer
-        class="pdf-viewer"
-        [src]="this.mediaFilesService.textRecord()?.url!"
-        [visible]="visible()"
-        [name]="'correlation'"
-        [highlightMode]="'text-segment'"
-        [(selectedMarkedContent)]="selectedSegmentPdfJsId"
-        [(hoveredMarkedContent)]="hoveredSegmentPdfJsId"
-        [navigateToMarkedContentInViewer]="navigateToMarkedContentInViewer()"
-        ></app-pdf-viewer>
+    @if (mediaFilesService.textRecord().type === 'invalid') {
+      <app-warning-card
+      left
+      class="warning-card"
+      [type]="'error'"
+      [message]="'Registro de texto inválido.'"
+      [halfWidthMargin]="['right', 'top']"
+      ></app-warning-card>
+    } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
+      <app-warning-card
+      left
+      class="warning-card"
+      [type]="'warning'"
+      [message]="'Registro de texto não selecionado.'"
+      [halfWidthMargin]="['right', 'top']"
+      ></app-warning-card>
+    } @else {
+      <div left class="text-record-area">
+        <div class="text-record-container">
+          <app-pdf-viewer
+          class="pdf-viewer"
+          [src]="mediaFilesService.textRecord().url!"
+          [visible]="visible()"
+          [name]="'correlation'"
+          [highlightMode]="'text-segment'"
+          [navigateToMarkedContentInViewer]="navigateToMarkedContentInViewer()"
+          (navigateToMarkedContentInParent)="onNavigateToMarkedContent($event)"
+          [(selectedMarkedContent)]="selectedSegmentPdfJsId"
+          [(hoveredMarkedContent)]="hoveredSegmentPdfJsId"
+          ></app-pdf-viewer>
+        </div>
       </div>
+    }
+    <div right class="video-player-container">
+      <app-video-player
+      class="video-player"
+      [segment]="selectedVideoSegment()"
+      ></app-video-player>
     </div>
-  }
-  <div right class="video-player-container">
-    <app-video-player
-    class="video-player"
-    [segment]="selectedVideoSegment()"
-    ></app-video-player>
-  </div>
   </app-horizontal-split>
 </app-vertical-split>
+<ng-template #thumbnailPlaceholder>
+  <svg aria-hidden="true" viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
+    <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
+  </svg>
+</ng-template>
+<ng-template #upIcon>
+  <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+    <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,92 420,256" />
+  </svg>
+</ng-template>
+<ng-template #downIcon>
+  <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 256,92 V 420" />
+    <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linecap:round;stroke-linejoin:round" d="M 92,256 256,420 420,256" />
+  </svg>
+</ng-template>

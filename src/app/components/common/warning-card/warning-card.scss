@@ -9,7 +9,7 @@
   padding: 1rem;
   border-radius: 0.5rem;
   background-color: var(--card-bg);
-  border: 0.125rem solid var(--card-bg-assent);
+  border: 0.125rem solid var(--card-bg-accent);
 }
 
 .warning-card[halfWidthLeft] {
@@ -46,11 +46,11 @@
 }
 
 .warning-card.warning svg {
-  color: var(--card-bg-assent-assent-assent-assent);
+  color: var(--card-bg-accent-accent-accent-accent);
 }
 
 .warning-card.info svg {
-  color: var(--card-bg-assent-assent-assent-assent-assent);
+  color: var(--card-bg-accent-accent-accent-accent-accent);
 }
 
 .warning-card.error svg {
@@ -63,7 +63,7 @@
 }
 
 .warning-card.warning p, .warning-card.info p, .warning-card.loading-segments p {
-  color: var(--card-bg-assent-assent-assent-assent-assent);
+  color: var(--card-bg-accent-accent-accent-accent-accent);
 }
 
 .warning-card.error p {
@@ -82,3 +82,9 @@
 .loading-segments-text {
   animation: loading-segments 1s infinite alternate;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-segments-text {
+    animation: none;
+  }
+}

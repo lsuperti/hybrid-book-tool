@@ -55,7 +55,7 @@ main > * {
 }
 
 .tab:has(.tab-button[aria-selected="true"]) {
-  background-color: var(--card-bg-assent);
+  background-color: var(--card-bg-accent);
   border-bottom: 0.25rem solid var(--primary-color);
 }
 

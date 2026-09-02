@@ -1,14 +1,25 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal, PLATFORM_ID, Renderer2, OnDestroy } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  output,
+  signal,
+  PLATFORM_ID,
+  Renderer2,
+  OnDestroy
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { NgxExtendedPdfViewerModule, type PagesLoadedEvent, type TextLayerRenderedEvent } from 'ngx-extended-pdf-viewer';
+import {
+  NgxExtendedPdfViewerModule,
+  type PagesLoadedEvent,
+  type TextLayerRenderedEvent
+} from 'ngx-extended-pdf-viewer';
 
 @Component({
   selector: 'app-pdf-viewer-frame',
   templateUrl: './pdf-viewer-frame.html',
-  styleUrls: ['./pdf-viewer-frame.scss'],
-  standalone: true,
+  styleUrl: './pdf-viewer-frame.scss',
   imports: [NgxExtendedPdfViewerModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PdfViewerFrame implements OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
@@ -38,28 +49,39 @@ export class PdfViewerFrame implements OnDestroy {
     }
   }
 
-  // These methods are called when the viewer informs about its lifecycle. They send a messages to the parent window
-  // about that. Since the viewer is never loaded in the server, this method will only be called in the browser. So we
-  // don't need to check for the platform here.
+  // These methods are called when the viewer informs about its lifecycle. They send messages to the parent window
+  // about that. Since the viewer is never loaded on the server, these methods will only be called in the browser. So
+  // we do not need to check for the platform here.
+  
+  /**
+   * Handles the pagesLoaded event from the PDF viewer and notifies the parent window.
+   * 
+   * @param event The pages loaded event details.
+   */
   protected onPagesLoaded(event: PagesLoadedEvent): void {
     this.pagesLoaded.emit(event);
 
     window.parent.postMessage({
       type: 'pdf-viewer-pages-loaded',
       name: this.name(),
-      pagesCount: event.pagesCount,
+      pagesCount: event.pagesCount
     }, document.location.origin);
   }
   
+  /**
+   * Handles the textLayerRendered event from the PDF viewer and notifies the parent window.
+   * 
+   * @param event The text layer rendered event details.
+   */
   protected onTextLayerRendered(event: TextLayerRenderedEvent): void {
     window.parent.postMessage({
       type: 'pdf-viewer-text-layer-rendered',
       name: this.name(),
-      pageNumber: event.pageNumber,
+      pageNumber: event.pageNumber
     }, document.location.origin);
   }
 
   ngOnDestroy(): void {
-    this.unlisteners.forEach(unlisten => unlisten());
+    this.unlisteners.forEach((unlisten) => unlisten());
   }
 }

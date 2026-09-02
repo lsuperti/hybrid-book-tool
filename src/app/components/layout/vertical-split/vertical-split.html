@@ -1,29 +1,34 @@
-<div class="split-container" #splitContainer [style.--top-height.%]="this.collapsed() === 'top' ? 0 : this.collapsed() === 'bottom' ? 100 : this.topHeight()">
-  @if (this.collapsed() === 'bottom' || this.collapsed() === 'none') {
+<div
+#splitContainer
+class="split-container"
+[style.--top-height.%]="collapsed() === 'top' ? 0 : collapsed() === 'bottom' ? 100 : topHeight()"
+>
+  @if (collapsed() === 'bottom' || collapsed() === 'none') {
     <div class="top-area">
       <ng-content select="[top]"></ng-content>
     </div>
   }
-  
-  @if (this.collapsed() === 'none') {
-  <div
-  class="resize-bar"
-  [style.--left-margin]="resizeBarLeftMargin()"
-  [style.--right-margin]="resizeBarRightMargin()"
-  (pointerdown)="resizeBarPointerDown($event)"
-  (keydown)="resizeBarKeyDown($event)"
-  role="separator"
-  aria-orientation="horizontal"
-  [attr.aria-valuemin]="minHeightPercentage()"
-  [attr.aria-valuemax]="100 - minHeightPercentage()"
-  aria-valuenow="{{ topHeight() }}"
-  aria-label="{{ resizeBarAriaLabel() }}"
-  tabindex="0"></div>
+
+  @if (collapsed() === 'none') {
+    <div
+    class="resize-bar"
+    [style.--left-margin]="resizeBarLeftMargin()"
+    [style.--right-margin]="resizeBarRightMargin()"
+    (pointerdown)="resizeBarPointerDown($event)"
+    (keydown)="resizeBarKeyDown($event)"
+    role="separator"
+    aria-orientation="horizontal"
+    [attr.aria-valuemin]="minHeightPercentage()"
+    [attr.aria-valuemax]="100 - minHeightPercentage()"
+    [attr.aria-valuenow]="topHeight()"
+    [attr.aria-label]="resizeBarAriaLabel()"
+    tabindex="0"
+    ></div>
   }
-  
-  @if (this.collapsed() === 'top' || this.collapsed() === 'none') {
-  <div class="bottom-area">
-    <ng-content select="[bottom]"></ng-content>
-  </div>
+
+  @if (collapsed() === 'top' || collapsed() === 'none') {
+    <div class="bottom-area">
+      <ng-content select="[bottom]"></ng-content>
+    </div>
   }
 </div>

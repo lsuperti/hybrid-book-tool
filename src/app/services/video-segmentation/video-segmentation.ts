@@ -47,9 +47,9 @@ export class VideoSegmentationService {
 }
 
 export interface VideoSegment {
-  fileId: MediaFileId;
-  name: string;
-  startTime: number;
-  endTime: number;
-  thumbnail: string | null;
+  fileId: MediaFileId,
+  name: string,
+  startTime: number,
+  endTime: number,
+  thumbnail: string | null,
 }

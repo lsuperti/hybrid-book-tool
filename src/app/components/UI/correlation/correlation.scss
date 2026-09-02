@@ -10,7 +10,7 @@
 .text-record-container {
   width: calc(100% - 0.75rem);
   height: calc(100% - 0.75rem);
-  border: 0.125rem solid var(--card-bg-assent);
+  border: 0.125rem solid var(--card-bg-accent);
   margin: 0.125rem 0.125rem 0.25rem 0.25rem;
   border-radius: 0.5rem;
   display: flex;
@@ -29,7 +29,7 @@
 .video-player-container {
   width: calc(100% - 0.625rem);
   height: calc(100% - 0.625rem);
-  border: 0.125rem solid var(--card-bg-assent);
+  border: 0.125rem solid var(--card-bg-accent);
   border-radius: 0.5rem;
   margin: 0.125rem 0.25rem 0.25rem 0.125rem;
   overflow: hidden;
@@ -43,7 +43,10 @@
   width: 100%;
   height: 100%;
 }
-/* Correlation List Styles */
+
+/*
+ * Correlation List Styles.
+ */
 
 .correlation-container {
   width: calc(100% - 0.75rem);
@@ -51,7 +54,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border: 0.125rem solid var(--card-bg-assent);
+  border: 0.125rem solid var(--card-bg-accent);
   border-radius: 0.5rem;
   margin: 0.25rem 0.25rem 0.125rem 0.25rem;
   overflow: hidden;
@@ -62,7 +65,7 @@
   list-style: none;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg);
+  scrollbar-color: var(--card-bg-accent-accent-accent) var(--card-bg);
   background-color: var(--card-bg);
   container-type: scroll-state;
 }
@@ -87,7 +90,7 @@ $thumbnail-height: $button-size * 2 + $spacing-between-up-down-buttons;
   position: absolute;
   top: 0;
   left: calc(50% - 0.0625rem);
-  background-color: var(--card-bg-assent-assent-assent);
+  background-color: var(--card-bg-accent-accent-accent);
 }
 
 .correlation-item:nth-child(odd) {
@@ -95,7 +98,7 @@ $thumbnail-height: $button-size * 2 + $spacing-between-up-down-buttons;
 }
 
 .correlation-item:nth-child(even) {
-  background-color: var(--card-bg-assent);
+  background-color: var(--card-bg-accent);
 }
 
 .correlation-item:last-child {
@@ -112,7 +115,7 @@ $thumbnail-height: $button-size * 2 + $spacing-between-up-down-buttons;
   position: absolute;
   bottom: -0.125rem;
   left: 0;
-  border-bottom: 0.125rem solid var(--card-bg-assent);
+  border-bottom: 0.125rem solid var(--card-bg-accent);
 }
 
 @container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
@@ -173,21 +176,32 @@ $thumbnail-height: $button-size * 2 + $spacing-between-up-down-buttons;
   margin: 0;
 }
 
-/* Video Segment Thumbnails and Arrows */
+.segment-text.hovered {
+  font-style: italic;
+  color: var(--primary-accent);
+}
+
+.segment-text-button[aria-pressed="true"] .segment-text.hovered {
+  color: var(--primary-color);
+}
+
+/*
+ * Video Segment Thumbnails and Arrows.
+ */
 
 .video-segment-thumbnail-container {
   height: $thumbnail-height;
   aspect-ratio: 1.5/1;
-  border: 0.125rem solid var(--card-bg-assent-assent-assent);
+  border: 0.125rem solid var(--card-bg-accent-accent-accent);
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
 }
 
 .video-segment-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-assent-assent-assent);
+  outline: 0.25rem solid var(--card-bg-accent-accent-accent);
   outline-offset: -0.25rem;
-  color: var(--card-bg-assent-assent-assent);
+  color: var(--card-bg-accent-accent-accent);
   background-color: var(--card-bg);
 }
 
@@ -201,10 +215,9 @@ $thumbnail-height: $button-size * 2 + $spacing-between-up-down-buttons;
 .video-segment-thumbnail-placeholder svg {
   width: 100%;
   height: 100%;
-  color: var(--icon-color);
   border-radius: 0.1875rem;
-  color: var(--card-bg-assent-assent-assent);
-  outline: 0.375rem solid var(--card-bg-assent-assent-assent);
+  color: var(--card-bg-accent-accent-accent);
+  outline: 0.375rem solid var(--card-bg-accent-accent-accent);
   outline-offset: -0.375rem;
 }
 
@@ -231,7 +244,7 @@ $thumbnail-height: $button-size * 2 + $spacing-between-up-down-buttons;
 .up-button, .down-button {
   width: $button-size;
   height: $button-size;
-  border: 0.125rem solid var(--card-bg-assent-assent);
+  border: 0.125rem solid var(--card-bg-accent-accent);
   border-radius: 0.5rem;
   padding: 0.0625rem;
   background-color: var(--card-bg);

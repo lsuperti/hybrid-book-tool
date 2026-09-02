@@ -1,11 +1,15 @@
-<div class="split-container" #splitContainer [style.--left-width.%]="this.collapsed() === 'left' ? 0 : this.collapsed() === 'right' ? 100 : this.leftWidth()">
-  @if (this.collapsed() === 'right' || this.collapsed() === 'none') {
+<div
+#splitContainer
+class="split-container"
+[style.--left-width.%]="collapsed() === 'left' ? 0 : collapsed() === 'right' ? 100 : leftWidth()"
+>
+  @if (collapsed() === 'right' || collapsed() === 'none') {
     <div class="left-area">
       <ng-content select="[left]"></ng-content>
     </div>
   }
 
-  @if (this.collapsed() === 'none') {
+  @if (collapsed() === 'none') {
     <div
     class="resize-bar"
     [style.--top-margin]="resizeBarTopMargin()"
@@ -16,12 +20,13 @@
     aria-orientation="vertical"
     [attr.aria-valuemin]="minWidthPercentage()"
     [attr.aria-valuemax]="100 - minWidthPercentage()"
-    aria-valuenow="{{ leftWidth() }}"
-    aria-label="{{ resizeBarAriaLabel() }}"
-    tabindex="0"></div>
+    [attr.aria-valuenow]="leftWidth()"
+    [attr.aria-label]="resizeBarAriaLabel()"
+    tabindex="0"
+    ></div>
   }
 
-  @if (this.collapsed() === 'left' || this.collapsed() === 'none') {
+  @if (collapsed() === 'left' || collapsed() === 'none') {
     <div class="right-area">
       <ng-content select="[right]"></ng-content>
     </div>

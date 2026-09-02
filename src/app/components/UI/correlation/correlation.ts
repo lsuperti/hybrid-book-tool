@@ -1,22 +1,46 @@
-import { Component, inject, input, computed, signal, viewChildren, viewChild, ElementRef, afterNextRender, Injector, Renderer2, OnDestroy, effect, untracked } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  computed,
+  signal,
+  viewChildren,
+  viewChild,
+  ElementRef,
+  afterNextRender,
+  Injector,
+  Renderer2,
+  OnDestroy,
+  effect,
+  untracked
+} from '@angular/core';
+
+import { NgTemplateOutlet } from '@angular/common';
+
 import { HorizontalSplit } from '../../layout/horizontal-split/horizontal-split';
 import { VerticalSplit } from '../../layout/vertical-split/vertical-split';
 import { WarningCard } from '../../common/warning-card/warning-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
-import { TextSegmentationService, type TextSegment, type PdfJsAccessibleTextSegment } from '../../../services/text-segmentation/text-segmentation';
+
+import {
+  TextSegmentationService,
+  type TextSegment,
+  type PdfJsAccessibleTextSegment
+} from '../../../services/text-segmentation/text-segmentation';
+
 import { VideoSegmentationService, type VideoSegment } from '../../../services/video-segmentation/video-segmentation';
-import { PdfViewer } from "../../common/pdf-viewer/pdf-viewer";
+import { PdfViewer } from '../../common/pdf-viewer/pdf-viewer';
 import { VideoPlayer } from '../../common/video-player/video-player';
 
 export interface CorrelationRow {
-  textSegment: TextSegment | null;
-  videoSegment: VideoSegment | null;
-  index: number;
+  textSegment: TextSegment | null,
+  videoSegment: VideoSegment | null,
+  index: number,
 }
 
 @Component({
   selector: 'app-correlation',
-  imports: [HorizontalSplit, VerticalSplit, WarningCard, PdfViewer, VideoPlayer],
+  imports: [HorizontalSplit, VerticalSplit, WarningCard, PdfViewer, VideoPlayer, NgTemplateOutlet],
   templateUrl: './correlation.html',
   styleUrl: './correlation.scss',
 })
@@ -34,12 +58,11 @@ export class Correlation implements OnDestroy {
   protected readonly navigateToMarkedContentInViewer = signal<PdfJsAccessibleTextSegment | null>(null);
 
   private readonly segmentTextButtons = viewChildren<ElementRef<HTMLButtonElement>>('segmentTextButton');
-  private upButtons = viewChildren<ElementRef<HTMLButtonElement>>('upButton');
-  private downButtons = viewChildren<ElementRef<HTMLButtonElement>>('downButton');
+  private readonly upButtons = viewChildren<ElementRef<HTMLButtonElement>>('upButton');
+  private readonly downButtons = viewChildren<ElementRef<HTMLButtonElement>>('downButton');
   private readonly correlationList = viewChild<ElementRef<HTMLOListElement>>('correlationList');
 
   private readonly unlisteners: (() => void)[] = [];
-  private listScrollUnlistener: (() => void) | null = null;
   private mouseWasInList = false;
   private mouseX = 0;
   private mouseY = 0;
@@ -87,19 +110,16 @@ export class Correlation implements OnDestroy {
       }
     }));
 
-    effect(() => {
+    effect((onCleanup) => {
       this.mediaFilesService.textRecord();
       this.textSegmentationService.status();
 
-      if (this.listScrollUnlistener) {
-        this.listScrollUnlistener();
-        this.listScrollUnlistener = null;
-      }
-      
-      if (this.correlationList()?.nativeElement) {
-        this.listScrollUnlistener = this.renderer2.listen(this.correlationList()!.nativeElement, 'scroll', () => {
+      const list = this.correlationList();
+      if (list?.nativeElement) {
+        const unlisten = this.renderer2.listen(list.nativeElement, 'scroll', () => {
           this.hoverFromMousePosition();
         });
+        onCleanup(() => unlisten());
       }
 
       // If no segment is selected, select the first segment in the list when it becomes available.
@@ -110,18 +130,24 @@ export class Correlation implements OnDestroy {
       }
     });
 
-    effect(() => {
-      if (this.correlationList()) {
-        this.unlisteners.push(this.renderer2.listen(this.correlationList()!.nativeElement, 'mouseleave', () => {
+    // Since we are handling the highlighting of segments on mousemove events and they don't fire outside of the
+    // document or over the PDF viewer, since it is an iframe, we remove the highlight when the mouse leaves the list.
+    // It would be possible to move the mouse fast enough to leave the list and enter the iframe or leave the document
+    // without firing a mousemove event, so we need to handle that case.
+    effect((onCleanup) => {
+      const list = this.correlationList();
+      if (list) {
+        const unlisten = this.renderer2.listen(list.nativeElement, 'mouseleave', () => {
           this.hoveredSegmentPdfJsId.set(null);
           this.mouseWasInList = false;
-        }));
+        });
+        onCleanup(() => unlisten());
       }
     });
   }
 
   protected readonly correlationRows = computed(() => {
-    const textSegments = this.textSegmentationService.segments().filter(segment => !segment.excluded);
+    const textSegments = this.textSegmentationService.segments().filter((segment) => !segment.excluded);
     const videoSegments = this.videoSegmentationService.segments();
     const maxLength = Math.max(textSegments.length, videoSegments.length);
     const rows: CorrelationRow[] = [];
@@ -140,7 +166,7 @@ export class Correlation implements OnDestroy {
     const correlationRows = this.correlationRows();
 
     if (selectedTextSegment) {
-      const matchingRow = correlationRows.find(row => row.textSegment?.pdfJsId === selectedTextSegment.pdfJsId);
+      const matchingRow = correlationRows.find((row) => row.textSegment?.pdfJsId === selectedTextSegment.pdfJsId);
       if (matchingRow) {
         return matchingRow.videoSegment;
       }
@@ -161,7 +187,10 @@ export class Correlation implements OnDestroy {
     
     for (const child of segment.linkedChildren) {
       // We do not add a space if the last character of the child text is a space excluded character.
-      if (child.text.length > 0 && !TextSegmentationService.SPACE_EXCLUDED_CHARACTERS.includes(child.text[child.text.length - 1])) {
+      if (
+        child.text.length > 0 &&
+        !TextSegmentationService.SPACE_EXCLUDED_CHARACTERS.includes(child.text[child.text.length - 1])
+      ) {
         fullText += ' ' + child.text;
       } else {
         fullText += child.text;
@@ -181,7 +210,8 @@ export class Correlation implements OnDestroy {
     this.videoSegmentationService.moveSegmentUp(index);
 
     afterNextRender(() => {
-      const buttonToFocus = this.upButtons().find(button => button.nativeElement.getAttribute('data-video-index') === (index - 1).toString());
+      const buttonToFocus = this.upButtons()
+        .find((button) => button.nativeElement.getAttribute('data-video-index') === (index - 1).toString());
       if (buttonToFocus) {
         buttonToFocus.nativeElement.focus();
       }
@@ -198,7 +228,8 @@ export class Correlation implements OnDestroy {
     this.videoSegmentationService.moveSegmentDown(index);
 
     afterNextRender(() => {
-      const buttonToFocus = this.downButtons().find(button => button.nativeElement.getAttribute('data-video-index') === (index + 1).toString());
+      const buttonToFocus = this.downButtons()
+        .find((button) => button.nativeElement.getAttribute('data-video-index') === (index + 1).toString());
       if (buttonToFocus) {
         buttonToFocus.nativeElement.focus();
       }
@@ -211,11 +242,7 @@ export class Correlation implements OnDestroy {
    * @param segment The accessible PDF.js segment data representing the clicked segment.
    */
   protected onSegmentButtonClick(segment: PdfJsAccessibleTextSegment | null): void {
-    if (segment !== null) {
-      this.selectedSegmentPdfJsId.set(segment);
-    } else {
-      this.selectedSegmentPdfJsId.set(null);
-    }
+    this.selectedSegmentPdfJsId.set(segment);
   }
 
   /**
@@ -236,7 +263,7 @@ export class Correlation implements OnDestroy {
    * @param markedContent The accessible PDF.js segment data to scroll into view.
    */
   protected onNavigateToMarkedContent(markedContent: PdfJsAccessibleTextSegment): void {
-    this.segmentTextButtons().forEach(item => {
+    this.segmentTextButtons().forEach((item) => {
       if (item.nativeElement.getAttribute('data-segment-id') === markedContent.pdfJsId) {
         item.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -263,10 +290,6 @@ export class Correlation implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.unlisteners.forEach(unlisten => unlisten());
-
-    if (this.listScrollUnlistener) {
-      this.listScrollUnlistener();
-    }
+    this.unlisteners.forEach((unlisten) => unlisten());
   }
 }

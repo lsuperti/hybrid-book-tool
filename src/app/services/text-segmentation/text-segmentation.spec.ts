@@ -7,6 +7,11 @@ import { TextContent } from 'ngx-extended-pdf-viewer';
 describe('TextSegmentationService', () => {
   let service: TextSegmentationService;
 
+  /**
+   * Creates a deep clone of the mock segments data configured with sample parent-child relationships for testing.
+   * 
+   * @returns An array of `TextSegment` objects with hierarchical parent-child relationships.
+   */
   function createTestSegments(): TextSegment[] {
     const segments: TextSegment[] = structuredClone(mockSegments);
 
@@ -22,7 +27,7 @@ describe('TextSegmentationService', () => {
     segments[1].linkedChildren = [child1, child2];
     segments[4].linkedChildren = [child3];
 
-    // Remove children from top level array in reverse index order
+    // Remove children from top level array in reverse index order.
     segments.splice(5, 1);
     segments.splice(2, 2);
 
@@ -54,30 +59,32 @@ describe('TextSegmentationService', () => {
     service.toggleSegmentLinking(parent.pdfJsId);
 
     const segmentsAfter = service.segments();
-    // length should decrease by 1 because parent moved into previous' linkedChildren
+    
+    // Length should decrease by 1 because parent moved into previous' linkedChildren.
     expect(segmentsAfter.length).toBe(originalLength - 1);
 
-    // previous parent's linkedChildren should include the moved segment
-    const updatedPrev = segmentsAfter.find(s => s.pdfJsId === prev.pdfJsId) as TextSegment;
-    expect(updatedPrev.linkedChildren.some(c => c.pdfJsId === parent.pdfJsId)).toBe(true);
+    // Previous parent's linkedChildren should include the moved segment.
+    const updatedPrev = segmentsAfter.find((s) => s.pdfJsId === prev.pdfJsId) as TextSegment;
+    expect(updatedPrev.linkedChildren.some((c) => c.pdfJsId === parent.pdfJsId)).toBe(true);
   });
 
   it('toggleSegmentLinking should unlink a child into a parent segment', () => {
-    // pick a parent that has at least two children so we can take a middle child
+    // Pick a parent that has at least two children so we can take a middle child.
     const segments = service.segments();
-    const parentIdx = segments.findIndex(s => s.linkedChildren.length >= 2);
+    const parentIdx = segments.findIndex((s) => s.linkedChildren.length >= 2);
     expect(parentIdx).toBeGreaterThan(-1);
 
     const parent = segments[parentIdx];
     const child = parent.linkedChildren[0];
 
-    // unlink the first child (should be promoted into parent position at parentIdx+1)
+    // Unlink the first child (should be promoted into parent position at parentIdx + 1).
     service.toggleSegmentLinking(child.pdfJsId);
 
     const updated = service.segments();
     const promoted = updated[parentIdx + 1];
     expect(promoted.pdfJsId).toBe(child.pdfJsId);
-    // its linkedChildren should be any successor children (may be empty)
+    
+    // Its linkedChildren should be any successor children (may be empty).
     expect(promoted.linkedChildren).toBeDefined();
   });
 
@@ -89,23 +96,23 @@ describe('TextSegmentationService', () => {
 
   it('excludeSegment should promote first child when excluding a parent with children', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length > 0);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length > 0);
     expect(parentIndex).toBeGreaterThan(-1);
 
     const parent = segments[parentIndex];
     const firstChild = parent.linkedChildren[0];
-    const firstChildLinkedChildren = firstChild.linkedChildren.map(c => c.pdfJsId);
-    const remainingSiblingIds = parent.linkedChildren.slice(1).map(c => c.pdfJsId);
+    const firstChildLinkedChildren = firstChild.linkedChildren.map((c) => c.pdfJsId);
+    const remainingSiblingIds = parent.linkedChildren.slice(1).map((c) => c.pdfJsId);
 
     service.excludeSegment(parent.pdfJsId);
 
     const updated = service.segments();
-    const excludedParent = updated.find(s => s.pdfJsId === parent.pdfJsId) as TextSegment;
+    const excludedParent = updated.find((s) => s.pdfJsId === parent.pdfJsId) as TextSegment;
     const promotedChild = updated[parentIndex + 1];
     expect(excludedParent.excluded).toBe(true);
     expect(excludedParent.linkedChildren).toEqual([]);
     expect(promotedChild.pdfJsId).toBe(firstChild.pdfJsId);
-    expect(promotedChild.linkedChildren.map(c => c.pdfJsId)).toEqual([
+    expect(promotedChild.linkedChildren.map((c) => c.pdfJsId)).toEqual([
       ...firstChildLinkedChildren,
       ...remainingSiblingIds
     ]);
@@ -113,23 +120,23 @@ describe('TextSegmentationService', () => {
 
   it('excludeSegment should only mark parent as excluded when it has no children', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length === 0);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length === 0);
     expect(parentIndex).toBeGreaterThan(-1);
     const parent = segments[parentIndex];
-    const parentIdsBefore = segments.map(s => s.pdfJsId);
+    const parentIdsBefore = segments.map((s) => s.pdfJsId);
 
     service.excludeSegment(parent.pdfJsId);
 
     const updated = service.segments();
-    const parentIdsAfter = updated.map(s => s.pdfJsId);
-    const excludedParent = updated.find(s => s.pdfJsId === parent.pdfJsId) as TextSegment;
+    const parentIdsAfter = updated.map((s) => s.pdfJsId);
+    const excludedParent = updated.find((s) => s.pdfJsId === parent.pdfJsId) as TextSegment;
     expect(parentIdsAfter).toEqual(parentIdsBefore);
     expect(excludedParent.excluded).toBe(true);
   });
 
   it('excludeSegment should promote child to parent position after its parent', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length > 0);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length > 0);
     expect(parentIndex).toBeGreaterThan(-1);
     const parent = segments[parentIndex];
     const childIndex = 0;
@@ -138,28 +145,28 @@ describe('TextSegmentationService', () => {
     service.excludeSegment(child.pdfJsId);
 
     const updated = service.segments();
-    const updatedParent = updated.find(s => s.pdfJsId === parent.pdfJsId) as TextSegment;
+    const updatedParent = updated.find((s) => s.pdfJsId === parent.pdfJsId) as TextSegment;
     const promotedChild = updated[parentIndex + 1];
-    expect(updatedParent.linkedChildren.some(c => c.pdfJsId === child.pdfJsId)).toBe(false);
+    expect(updatedParent.linkedChildren.some((c) => c.pdfJsId === child.pdfJsId)).toBe(false);
     expect(promotedChild.pdfJsId).toBe(child.pdfJsId);
     expect(promotedChild.excluded).toBe(true);
   });
 
   it('includeSegment should include an excluded segment without changing segment order', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length === 0);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length === 0);
     expect(parentIndex).toBeGreaterThan(-1);
     const segment = segments[parentIndex];
 
     service.excludeSegment(segment.pdfJsId);
-    const orderAfterExclude = service.segments().map(s => s.pdfJsId);
+    const orderAfterExclude = service.segments().map((s) => s.pdfJsId);
 
     service.includeSegment(segment.pdfJsId);
 
     const updated = service.segments();
-    const included = updated.find(s => s.pdfJsId === segment.pdfJsId) as TextSegment;
+    const included = updated.find((s) => s.pdfJsId === segment.pdfJsId) as TextSegment;
     expect(included.excluded).toBe(false);
-    expect(updated.map(s => s.pdfJsId)).toEqual(orderAfterExclude);
+    expect(updated.map((s) => s.pdfJsId)).toEqual(orderAfterExclude);
   });
 
   it('moveSegmentUp should swap a parent segment with the previous parent', () => {
@@ -169,14 +176,14 @@ describe('TextSegmentationService', () => {
 
     const parent = segments[parentIndex];
     const previousParent = segments[parentIndex - 1];
-    const childOrder = parent.linkedChildren.map(c => c.pdfJsId);
+    const childOrder = parent.linkedChildren.map((c) => c.pdfJsId);
 
     service.moveSegmentUp(parent.pdfJsId);
 
     const updated = service.segments();
     expect(updated[parentIndex - 1].pdfJsId).toBe(parent.pdfJsId);
     expect(updated[parentIndex].pdfJsId).toBe(previousParent.pdfJsId);
-    expect(updated[parentIndex - 1].linkedChildren.map(c => c.pdfJsId)).toEqual(childOrder);
+    expect(updated[parentIndex - 1].linkedChildren.map((c) => c.pdfJsId)).toEqual(childOrder);
   });
 
   it('moveSegmentUp should throw when moving the first parent segment up', () => {
@@ -186,12 +193,12 @@ describe('TextSegmentationService', () => {
 
   it('moveSegmentUp should promote first child and link previous parent and siblings under it', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length > 0);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length > 0);
     expect(parentIndex).toBeGreaterThan(-1);
 
     const parent = segments[parentIndex];
     const parentId = parent.pdfJsId;
-    const originalChildren = parent.linkedChildren.map(c => c.pdfJsId);
+    const originalChildren = parent.linkedChildren.map((c) => c.pdfJsId);
     const firstChild = parent.linkedChildren[0];
 
     service.moveSegmentUp(firstChild.pdfJsId);
@@ -199,25 +206,25 @@ describe('TextSegmentationService', () => {
     const updated = service.segments();
     const promoted = updated[parentIndex];
     expect(promoted.pdfJsId).toBe(firstChild.pdfJsId);
-    expect(promoted.linkedChildren.map(c => c.pdfJsId)).toEqual([parentId, ...originalChildren.slice(1)]);
+    expect(promoted.linkedChildren.map((c) => c.pdfJsId)).toEqual([parentId, ...originalChildren.slice(1)]);
   });
 
   it('moveSegmentUp should swap a non-first child with its previous sibling', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length >= 2);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length >= 2);
     expect(parentIndex).toBeGreaterThan(-1);
 
     const parent = segments[parentIndex];
     const parentId = parent.pdfJsId;
-    const originalOrder = parent.linkedChildren.map(c => c.pdfJsId);
+    const originalOrder = parent.linkedChildren.map((c) => c.pdfJsId);
     const childToMove = parent.linkedChildren[1];
 
     service.moveSegmentUp(childToMove.pdfJsId);
 
-    const updatedParent = service.segments().find(s => s.pdfJsId === parentId) as TextSegment;
+    const updatedParent = service.segments().find((s) => s.pdfJsId === parentId) as TextSegment;
     const expectedOrder = [...originalOrder];
     [expectedOrder[0], expectedOrder[1]] = [expectedOrder[1], expectedOrder[0]];
-    expect(updatedParent.linkedChildren.map(c => c.pdfJsId)).toEqual(expectedOrder);
+    expect(updatedParent.linkedChildren.map((c) => c.pdfJsId)).toEqual(expectedOrder);
   });
 
   it('moveSegmentDown should swap a parent segment with the next parent', () => {
@@ -227,42 +234,42 @@ describe('TextSegmentationService', () => {
 
     const parent = segments[parentIndex];
     const nextParent = segments[parentIndex + 1];
-    const childOrder = parent.linkedChildren.map(c => c.pdfJsId);
+    const childOrder = parent.linkedChildren.map((c) => c.pdfJsId);
 
     service.moveSegmentDown(parent.pdfJsId);
 
     const updated = service.segments();
     expect(updated[parentIndex].pdfJsId).toBe(nextParent.pdfJsId);
     expect(updated[parentIndex + 1].pdfJsId).toBe(parent.pdfJsId);
-    expect(updated[parentIndex + 1].linkedChildren.map(c => c.pdfJsId)).toEqual(childOrder);
+    expect(updated[parentIndex + 1].linkedChildren.map((c) => c.pdfJsId)).toEqual(childOrder);
   });
 
   it('moveSegmentDown should do nothing when moving the last parent segment down', () => {
     const segments = service.segments();
     const lastParent = segments[segments.length - 1];
-    const parentOrderBefore = segments.map(s => s.pdfJsId);
+    const parentOrderBefore = segments.map((s) => s.pdfJsId);
 
     service.moveSegmentDown(lastParent.pdfJsId);
 
-    expect(service.segments().map(s => s.pdfJsId)).toEqual(parentOrderBefore);
+    expect(service.segments().map((s) => s.pdfJsId)).toEqual(parentOrderBefore);
   });
 
   it('moveSegmentDown should swap a child with the next sibling when child is not last', () => {
     const segments = service.segments();
-    const parentIndex = segments.findIndex(s => s.linkedChildren.length >= 2);
+    const parentIndex = segments.findIndex((s) => s.linkedChildren.length >= 2);
     expect(parentIndex).toBeGreaterThan(-1);
 
     const parent = segments[parentIndex];
     const parentId = parent.pdfJsId;
-    const originalOrder = parent.linkedChildren.map(c => c.pdfJsId);
+    const originalOrder = parent.linkedChildren.map((c) => c.pdfJsId);
     const childToMove = parent.linkedChildren[0];
 
     service.moveSegmentDown(childToMove.pdfJsId);
 
-    const updatedParent = service.segments().find(s => s.pdfJsId === parentId) as TextSegment;
+    const updatedParent = service.segments().find((s) => s.pdfJsId === parentId) as TextSegment;
     const expectedOrder = [...originalOrder];
     [expectedOrder[0], expectedOrder[1]] = [expectedOrder[1], expectedOrder[0]];
-    expect(updatedParent.linkedChildren.map(c => c.pdfJsId)).toEqual(expectedOrder);
+    expect(updatedParent.linkedChildren.map((c) => c.pdfJsId)).toEqual(expectedOrder);
   });
 
   it('moveSegmentDown should promote last child to parent segment after the next parent', () => {
@@ -274,15 +281,42 @@ describe('TextSegmentationService', () => {
     const parentId = parent.pdfJsId;
     const lastChild = parent.linkedChildren[parent.linkedChildren.length - 1];
     const expectedNextParentId = segments[parentIndex + 1].pdfJsId;
-    const remainingChildren = parent.linkedChildren.slice(0, -1).map(c => c.pdfJsId);
+    const remainingChildren = parent.linkedChildren.slice(0, -1).map((c) => c.pdfJsId);
 
     service.moveSegmentDown(lastChild.pdfJsId);
 
     const updated = service.segments();
-    const updatedParent = updated.find(s => s.pdfJsId === parentId) as TextSegment;
+    const updatedParent = updated.find((s) => s.pdfJsId === parentId) as TextSegment;
     expect(updated[parentIndex + 1].pdfJsId).toBe(expectedNextParentId);
     expect(updated[parentIndex + 2].pdfJsId).toBe(lastChild.pdfJsId);
-    expect(updatedParent.linkedChildren.map(c => c.pdfJsId)).toEqual(remainingChildren);
+    expect(updatedParent.linkedChildren.map((c) => c.pdfJsId)).toEqual(remainingChildren);
+  });
+
+  it('moveSegmentDown should do nothing when moving the last child of the last parent', () => {
+    const lastChild: TextSegment = {
+      sequentialId: 1,
+      pdfJsId: 'c_last',
+      page: 1,
+      text: 'Child',
+      excluded: false,
+      linkedChildren: [],
+    };
+    const lastParent: TextSegment = {
+      sequentialId: 0,
+      pdfJsId: 'p_last',
+      page: 1,
+      text: 'Parent',
+      excluded: false,
+      linkedChildren: [lastChild],
+    };
+    service.segments.set([lastParent]);
+
+    service.moveSegmentDown('c_last');
+
+    const updated = service.segments();
+    expect(updated.length).toBe(1);
+    expect(updated[0].linkedChildren.length).toBe(1);
+    expect(updated[0].linkedChildren[0].pdfJsId).toBe('c_last');
   });
 
   it('operations should throw for unknown segment id', () => {
@@ -292,6 +326,41 @@ describe('TextSegmentationService', () => {
     expect(() => service.includeSegment(invalidId)).toThrow('Segment not found.');
     expect(() => service.moveSegmentUp(invalidId)).toThrow('Segment not found.');
     expect(() => service.moveSegmentDown(invalidId)).toThrow('Segment not found.');
+  });
+
+  describe('findParentSegment', () => {
+    it('should return null if segment is not found or segments list is empty', () => {
+      service.segments.set([]);
+      expect(service.findParentSegment('non-existent-id')).toBeNull();
+
+      const singleSegment: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'p1',
+        page: 1,
+        text: 'Segment 1',
+        excluded: false,
+        linkedChildren: [],
+      };
+      service.segments.set([singleSegment]);
+      expect(service.findParentSegment('unknown-id')).toBeNull();
+    });
+
+    it('should return the parent segment itself when queried with a parent segment id', () => {
+      const segments = service.segments();
+      const parent = segments[0];
+
+      const result = service.findParentSegment(parent.pdfJsId);
+      expect(result).toBe(parent);
+    });
+
+    it('should return the enclosing parent segment when queried with a child segment id', () => {
+      const segments = service.segments();
+      const parentWithChildren = segments.find((s) => s.linkedChildren.length > 0) as TextSegment;
+      const child = parentWithChildren.linkedChildren[0];
+
+      const result = service.findParentSegment(child.pdfJsId);
+      expect(result).toBe(parentWithChildren);
+    });
   });
 
   describe('nextInFlattenedList', () => {
@@ -800,6 +869,28 @@ describe('TextSegmentationService', () => {
       expect(service.isMarkedContentAnAddressableSegment('mc_p1_2')).toBe(true);
       expect(service.isMarkedContentAnAddressableSegment('mc_p2_1')).toBe(true);
       expect(service.isMarkedContentAnAddressableSegment('non_existent')).toBe(false);
+    });
+
+    it('segmentText should strip trailing space before space-excluded characters', () => {
+      service.segments.set([]);
+      const mockPage = {
+        items: [
+          { type: 'beginMarkedContentProps', id: 'mc_punct_1' },
+          { str: 'Hello' },
+          { str: '.' },
+          { str: 'How' },
+          { str: 'are' },
+          { str: 'you' },
+          { str: '?' },
+          { type: 'endMarkedContent' },
+        ]
+      };
+
+      service.segmentText([mockPage as TextContent]);
+
+      const segments = service.segments();
+      expect(segments.length).toBe(1);
+      expect(segments[0].text).toBe('Hello. How are you? ');
     });
 
     it('segmentText should recover and overwrite previous segments when called again', () => {

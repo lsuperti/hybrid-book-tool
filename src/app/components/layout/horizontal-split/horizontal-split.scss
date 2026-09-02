@@ -26,6 +26,10 @@ $resize-bar-grab-width: 0.5rem;
   z-index: 1;
 }
 
+.resize-bar:focus-visible {
+  outline: none;
+}
+
 .resize-bar::after {
   content: '';
   height: calc(100% - var(--top-margin) - var(--bottom-margin));
@@ -38,10 +42,6 @@ $resize-bar-grab-width: 0.5rem;
   transform: scaleX(0);
   transition: transform 0.2s;
   transition-timing-function: ease-in-out;
-}
-
-.resize-bar:focus-visible {
-  outline: none;
 }
 
 .resize-bar:hover::after, .resize-bar:focus-visible::after, .resize-bar:active::after {

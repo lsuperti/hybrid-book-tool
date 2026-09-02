@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PdfViewer } from './pdf-viewer';
-import { TextSegmentationService, type TextSegment, type PdfJsAccessibleTextSegment } from '../../../services/text-segmentation/text-segmentation';
+import {
+  TextSegmentationService,
+  type TextSegment,
+  type PdfJsAccessibleTextSegment
+} from '../../../services/text-segmentation/text-segmentation';
 
 describe('PdfViewer', () => {
   let component: PdfViewer;
@@ -43,7 +47,13 @@ describe('PdfViewer', () => {
     iframeDoc.body.appendChild(pageElement);
   };
 
-  const addMarkedContentToPage = (id: string, leftPercent: number, topPercent: number, widthPx: number, heightPx: number) => {
+  const addMarkedContentToPage = (
+    id: string,
+    leftPercent: number,
+    topPercent: number,
+    widthPx: number,
+    heightPx: number
+  ) => {
     const mc = iframeDoc.createElement('div');
     mc.className = 'markedContent';
     mc.id = id;
@@ -52,14 +62,24 @@ describe('PdfViewer', () => {
     span.style.left = `${leftPercent}%`;
     span.style.top = `${topPercent}%`;
     span.textContent = `Text ${id}`;
-    mockBoundingClientRect(span, { width: widthPx, height: heightPx, left: leftPercent * 10, top: topPercent * 10, right: leftPercent * 10 + widthPx, bottom: topPercent * 10 + heightPx });
+    mockBoundingClientRect(span, {
+      width: widthPx,
+      height: heightPx,
+      left: leftPercent * 10,
+      top: topPercent * 10,
+      right: leftPercent * 10 + widthPx,
+      bottom: topPercent * 10 + heightPx
+    });
 
     mc.appendChild(span);
     pageElement.appendChild(mc);
     return mc;
   };
 
-  const mockBoundingClientRect = (element: HTMLElement, rect: { width: number; height: number; left: number; top: number; right: number; bottom: number }) => {
+  const mockBoundingClientRect = (
+    element: HTMLElement,
+    rect: { width: number, height: number, left: number, top: number, right: number, bottom: number }
+  ) => {
     element.getBoundingClientRect = () => ({
       width: rect.width,
       height: rect.height,
@@ -178,7 +198,7 @@ describe('PdfViewer', () => {
       await fixture.whenStable();
 
       let emitted: PdfJsAccessibleTextSegment | null = null;
-      component.navigateToMarkedContentInParent.subscribe(event => {
+      component.navigateToMarkedContentInParent.subscribe((event) => {
         emitted = event;
       });
 
@@ -284,7 +304,7 @@ describe('PdfViewer', () => {
       await fixture.whenStable();
 
       let emitted: PdfJsAccessibleTextSegment | null = null;
-      component.navigateToMarkedContentInParent.subscribe(event => {
+      component.navigateToMarkedContentInParent.subscribe((event) => {
         emitted = event;
       });
 

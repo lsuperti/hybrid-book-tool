@@ -5,16 +5,16 @@ import * as mediabunny from 'mediabunny';
 import { signal, ComponentRef, WritableSignal } from '@angular/core';
 
 interface TestVideoPlayer {
-  isPlaying: WritableSignal<boolean>;
-  currentTime: WritableSignal<number>;
-  playableStartTime: WritableSignal<number>;
-  playableEndTime: WritableSignal<number>;
-  isLoaded: WritableSignal<boolean>;
-  mediabunnyInput: unknown;
-  videoSink: unknown;
-  togglePlay: () => void;
-  seek: (delta: number) => Promise<void>;
-  stepFrame: (direction: 'forward' | 'backward') => Promise<void>;
+  isPlaying: WritableSignal<boolean>,
+  currentTime: WritableSignal<number>,
+  playableStartTime: WritableSignal<number>,
+  playableEndTime: WritableSignal<number>,
+  isLoaded: WritableSignal<boolean>,
+  mediabunnyInput: unknown,
+  videoSink: unknown,
+  togglePlay: () => void,
+  seek: (delta: number) => Promise<void>,
+  stepFrame: (direction: 'forward' | 'backward' | 1 | -1) => Promise<void>,
 }
 
 describe('VideoPlayer', () => {
@@ -42,7 +42,8 @@ describe('VideoPlayer', () => {
       })
     });
 
-    vi.spyOn(mediabunny.Input.prototype, 'getPrimaryVideoTrack').mockResolvedValue(mockTrack as unknown as mediabunny.InputVideoTrack);
+    vi.spyOn(mediabunny.Input.prototype, 'getPrimaryVideoTrack')
+      .mockResolvedValue(mockTrack as unknown as mediabunny.InputVideoTrack);
     vi.spyOn(mediabunny.Input.prototype, 'dispose').mockImplementation(() => undefined);
 
     mockSample = {
@@ -51,7 +52,7 @@ describe('VideoPlayer', () => {
       draw: vi.fn(),
       close: vi.fn(),
       timestamp: 0,
-      duration: 1/30,
+      duration: 1 / 30,
       visibleRect: { width: 100, height: 100 }
     } as unknown as mediabunny.VideoSample;
 
@@ -140,8 +141,9 @@ describe('VideoPlayer', () => {
     
     fixture.detectChanges();
     await fixture.whenStable();
+    
     // Yield to macrotask queue for async promises to resolve
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     
     expect(mediabunny.Input.prototype.getPrimaryVideoTrack).toHaveBeenCalled();
     expect(testComponent.playableStartTime()).toBe(0);
@@ -170,7 +172,7 @@ describe('VideoPlayer', () => {
     
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     
     expect(testComponent.mediabunnyInput).toBeTruthy();
     
@@ -200,7 +202,7 @@ describe('VideoPlayer', () => {
     
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     
     expect(testComponent.isLoaded()).toBe(true);
     
@@ -226,7 +228,7 @@ describe('VideoPlayer', () => {
     expect(testComponent.currentTime()).toBe(6);
     
     await component.stepFrame(1);
-    expect(testComponent.currentTime()).toBeCloseTo(6 + 1/30, 4);
+    expect(testComponent.currentTime()).toBeCloseTo(6 + 1 / 30, 4);
     
     await component.stepFrame(-1);
     expect(testComponent.currentTime()).toBeCloseTo(6, 4);
@@ -272,14 +274,14 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(testComponent.isLoaded()).toBe(true);
 
     component.togglePlay();
 
     // Yield to let sample generator finish
-    await new Promise(r => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 20));
 
     expect(testComponent.isPlaying()).toBe(false);
     expect(testComponent.currentTime()).toBe(10);
@@ -305,7 +307,7 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     testComponent.currentTime.set(8);
     component.togglePlay();
@@ -322,7 +324,7 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(testComponent.isPlaying()).toBe(true);
     expect(testComponent.isLoaded()).toBe(true);
@@ -351,9 +353,10 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
-    testComponent.currentTime.set(5.2); // Close to start (5.0 + 0.5 = 5.5)
+    // Close to start (5.0 + 0.5 = 5.5 > 5.2, so it's within the edge threshold)
+    testComponent.currentTime.set(5.2);
     component.togglePlay();
     expect(testComponent.isPlaying()).toBe(true);
 
@@ -368,7 +371,7 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(testComponent.isPlaying()).toBe(true);
     expect(testComponent.currentTime()).toBe(5);
@@ -395,7 +398,7 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     testComponent.currentTime.set(8);
     component.togglePlay();
@@ -412,7 +415,7 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(testComponent.isPlaying()).toBe(false);
     expect(testComponent.currentTime()).toBe(5);
@@ -438,7 +441,7 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(testComponent.isPlaying()).toBe(false);
 
@@ -453,10 +456,9 @@ describe('VideoPlayer', () => {
 
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(testComponent.isPlaying()).toBe(false);
     expect(testComponent.currentTime()).toBe(5);
   });
 });
-

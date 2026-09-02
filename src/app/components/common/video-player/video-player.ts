@@ -1,4 +1,17 @@
-import { Component, input, signal, computed, effect, untracked, inject, ElementRef, viewChild, OnDestroy } from '@angular/core';
+import {
+  Component,
+  input,
+  signal,
+  computed,
+  effect,
+  untracked,
+  inject,
+  ElementRef,
+  viewChild,
+  OnDestroy
+} from '@angular/core';
+
+import { NgTemplateOutlet } from '@angular/common';
 import { VideoSegment } from '../../../services/video-segmentation/video-segmentation';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { Input, BlobSource, ALL_FORMATS, VideoSampleSink, VideoSample, EncodedPacketSink } from 'mediabunny';
@@ -7,22 +20,60 @@ import { Input, BlobSource, ALL_FORMATS, VideoSampleSink, VideoSample, EncodedPa
   selector: 'app-video-player',
   templateUrl: './video-player.html',
   styleUrl: './video-player.scss',
+  imports: [NgTemplateOutlet]
 })
 export class VideoPlayer implements OnDestroy {
   private readonly mediaFilesService = inject(MediaFiles);
 
+  /**
+   * Active video segment to display and play, or null if no segment is loaded.
+   */
   public readonly segment = input<VideoSegment | null>(null);
+
+  /**
+   * Whether playback should automatically resume when switching between overlapping segments from the same video file.
+   */
   public readonly keepPlaying = input<boolean>(true);
+
+  /**
+   * Time threshold in seconds from segment boundaries. If playback was near the segment edges, changing segments
+   * will start from the beginning of the new segment instead of resuming.
+   */
   public readonly edgeThreshold = input<number>(0.5);
 
+  /**
+   * Reference to the HTML canvas element used to render decoded video frames.
+   */
   protected readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-  
+
+  /**
+   * Signal indicating whether video playback is currently active.
+   */
   protected readonly isPlaying = signal<boolean>(false);
+
+  /**
+   * Signal containing the current playback timestamp in seconds.
+   */
   protected readonly currentTime = signal<number>(0);
+
+  /**
+   * Signal containing the start timestamp in seconds for the active segment.
+   */
   protected readonly playableStartTime = signal<number>(0);
+
+  /**
+   * Signal containing the end timestamp in seconds for the active segment.
+   */
   protected readonly playableEndTime = signal<number>(0);
+
+  /**
+   * Signal indicating whether a video segment is successfully loaded and ready for playback.
+   */
   protected readonly isLoaded = signal<boolean>(false);
 
+  /**
+   * Computed duration in seconds of the active segment.
+   */
   public readonly duration = computed(() => this.playableEndTime() - this.playableStartTime());
 
   private mediabunnyInput: Input | null = null;
@@ -31,13 +82,16 @@ export class VideoPlayer implements OnDestroy {
   private nominalFrameDuration = 1 / 30;
   private currentSamplesIterator: AsyncIterator<VideoSample> | null = null;
   private currentSegment: VideoSegment | null = null;
-  
+
   private playbackId = 0;
   private loadSegmentId = 0;
-  
+
   private playbackStartTime = 0;
   private playbackStartCurrentTime = 0;
-  
+
+  /**
+   * Creates an instance of VideoPlayer and registers a reactive effect to load or unload segments.
+   */
   constructor() {
     effect(() => {
       const seg = this.segment();
@@ -56,7 +110,7 @@ export class VideoPlayer implements OnDestroy {
    * Angular lifecycle hook that runs when the component is destroyed.
    * Performs cleanup of playback and decoding resources.
    */
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.cleanup();
   }
 
@@ -64,7 +118,7 @@ export class VideoPlayer implements OnDestroy {
    * Cleans up decoding resources, releases active iterators and input instances,
    * cancels pending frame renders, clears canvas, and resets playback state.
    */
-  private cleanup() {
+  private cleanup(): void {
     this.isPlaying.set(false);
     this.isLoaded.set(false);
     this.playbackId++;
@@ -72,7 +126,7 @@ export class VideoPlayer implements OnDestroy {
     this.playableStartTime.set(0);
     this.playableEndTime.set(0);
     this.currentTime.set(0);
-    
+
     if (this.currentSamplesIterator) {
       const it = this.currentSamplesIterator;
       this.currentSamplesIterator = null;
@@ -107,10 +161,10 @@ export class VideoPlayer implements OnDestroy {
   /**
    * Loads a new video segment, creates an input decoding source, retrieves video track metadata, configures segment
    * boundaries, and initializes or resumes playback based on configuration.
-   * 
+   *
    * @param segment The video segment to load.
    */
-  private async loadSegment(segment: VideoSegment) {
+  private async loadSegment(segment: VideoSegment): Promise<void> {
     const prevSegment = this.currentSegment;
     const wasPlaying = this.isPlaying();
     const prevTime = this.currentTime();
@@ -118,40 +172,42 @@ export class VideoPlayer implements OnDestroy {
 
     this.cleanup();
     const id = ++this.loadSegmentId;
-    
+
     const mediaFiles = this.mediaFilesService.mediaFiles();
-    const fileRecord = mediaFiles.find(f => f.id === segment.fileId);
-    
-    if (!fileRecord) return;
-    
+    const fileRecord = mediaFiles.find((f) => f.id === segment.fileId);
+
+    if (!fileRecord) {
+      return;
+    }
+
     const inputObj = new Input({
       formats: ALL_FORMATS,
       source: new BlobSource(fileRecord.file)
     });
-    
+
     try {
       const videoTrack = await inputObj.getPrimaryVideoTrack();
       if (!videoTrack) {
         inputObj.dispose();
         return;
       }
-      
+
       if (this.loadSegmentId !== id) {
         inputObj.dispose();
         return;
       }
-      
+
       this.mediabunnyInput = inputObj;
-      
+
       const firstTs = await videoTrack.getFirstTimestamp();
       const duration = await videoTrack.computeDuration();
-      
+
       if (this.loadSegmentId !== id) {
         this.mediabunnyInput.dispose();
         this.mediabunnyInput = null;
         return;
       }
-      
+
       const newStartTime = segment.startTime === -Infinity ? (firstTs ?? 0) : segment.startTime;
       const newEndTime = segment.endTime === Infinity ? (duration ?? 0) : segment.endTime;
 
@@ -193,20 +249,27 @@ export class VideoPlayer implements OnDestroy {
       }
     } catch (_e) {
       inputObj.dispose();
+      if (this.mediabunnyInput === inputObj) {
+        this.mediabunnyInput = null;
+      }
     }
   }
-  
+
   /**
    * Fetches and draws a single decoded video frame at the specified timestamp onto the canvas.
-   * 
+   *
    * @param time The timestamp in seconds of the frame to render.
    */
-  private async renderFrameAtTime(time: number) {
-    if (!this.videoSink || !this.canvas()) return;
+  private async renderFrameAtTime(time: number): Promise<void> {
+    if (!this.videoSink || !this.canvas()) {
+      return;
+    }
     const canvasEl = this.canvas().nativeElement;
     const ctx = canvasEl.getContext('2d');
-    if (!ctx) return;
-    
+    if (!ctx) {
+      return;
+    }
+
     try {
       const sample = await this.videoSink.getSample(time);
       if (sample) {
@@ -230,12 +293,14 @@ export class VideoPlayer implements OnDestroy {
    * Toggles playback between playing and paused states.
    * Rewinds to the beginning of the playable segment if toggled while at or past the end.
    */
-  public togglePlay() {
-    if (!this.isLoaded()) return;
+  public togglePlay(): void {
+    if (!this.isLoaded()) {
+      return;
+    }
 
     if (this.isPlaying()) {
       this.isPlaying.set(false);
-      this.playbackId++; // Stops the current loop
+      this.playbackId++;
     } else {
       if (this.currentTime() >= this.playableEndTime()) {
         this.currentTime.set(this.playableStartTime());
@@ -245,14 +310,14 @@ export class VideoPlayer implements OnDestroy {
       this.playLoop(this.playbackId);
     }
   }
-  
+
   /**
    * Runs the continuous decoding and rendering playback loop synchronized with real time for a given playback session
    * ID.
-   * 
+   *
    * @param id The unique ID of the playback session to prevent stale loops from running concurrently.
    */
-  private async playLoop(id: number) {
+  private async playLoop(id: number): Promise<void> {
     if (!this.videoSink || !this.canvas()) {
       if (this.playbackId === id) {
         this.isPlaying.set(false);
@@ -267,7 +332,7 @@ export class VideoPlayer implements OnDestroy {
       }
       return;
     }
-    
+
     this.playbackStartTime = performance.now();
     this.playbackStartCurrentTime = this.currentTime();
 
@@ -302,7 +367,7 @@ export class VideoPlayer implements OnDestroy {
         const waitTime = targetTime - performance.now();
 
         if (waitTime > 0) {
-          await new Promise(r => setTimeout(r, waitTime));
+          await new Promise((r) => setTimeout(r, waitTime));
         }
 
         if (this.currentTime() >= this.playableEndTime()) {
@@ -330,20 +395,27 @@ export class VideoPlayer implements OnDestroy {
   /**
    * Seeks forward or backward by the specified time delta (clamped to the playable segment boundaries) and renders the
    * frame at the new position.
-   * 
+   *
    * @param delta The time offset in seconds to adjust the current position by (positive for forward, negative for
    * backward).
    */
-  public async seek(delta: number) {
-    if (!this.isLoaded()) return;
+  public async seek(delta: number): Promise<void> {
+    if (!this.isLoaded()) {
+      return;
+    }
 
     const wasPlaying = this.isPlaying();
     this.isPlaying.set(false);
     this.playbackId++;
-    
-    this.currentTime.set(Math.max(this.playableStartTime(), Math.min(this.playableEndTime(), this.currentTime() + delta)));
+
+    this.currentTime.set(
+      Math.max(
+        this.playableStartTime(),
+        Math.min(this.playableEndTime(), this.currentTime() + delta)
+      )
+    );
     await this.renderFrameAtTime(this.currentTime());
-    
+
     if (wasPlaying) {
       this.isPlaying.set(true);
       this.playLoop(this.playbackId);
@@ -353,11 +425,13 @@ export class VideoPlayer implements OnDestroy {
   /**
    * Steps forward or backward by a single frame using exact packet presentation timestamps
    * from the video track, falling back to estimated frame rate metrics if packet lookup is unavailable.
-   * 
+   *
    * @param direction `'forward'` / `1` to step forward one frame, or `'backward'` / `-1` to step backward one frame.
    */
-  public async stepFrame(direction: 'forward' | 'backward' | 1 | -1) {
-    if (!this.isLoaded()) return;
+  public async stepFrame(direction: 'forward' | 'backward' | 1 | -1): Promise<void> {
+    if (!this.isLoaded()) {
+      return;
+    }
 
     const dir = direction === 'forward' || direction === 1 ? 1 : -1;
 
@@ -403,7 +477,7 @@ export class VideoPlayer implements OnDestroy {
     this.currentTime.set(clampedTime);
     await this.renderFrameAtTime(this.currentTime());
   }
-  
+
   private scrubWasPlaying = false;
   private isScrubbing = false;
   private pendingRenderTime: number | null = null;
@@ -413,8 +487,10 @@ export class VideoPlayer implements OnDestroy {
    * Handles the start of a scrubbing action (slider drag or keyboard interaction) by recording the previous playback
    * state and pausing playback.
    */
-  protected onScrubStart() {
-    if (!this.isLoaded() || this.isScrubbing) return;
+  protected onScrubStart(): void {
+    if (!this.isLoaded() || this.isScrubbing) {
+      return;
+    }
     this.isScrubbing = true;
     this.scrubWasPlaying = this.isPlaying();
     this.isPlaying.set(false);
@@ -424,8 +500,10 @@ export class VideoPlayer implements OnDestroy {
   /**
    * Handles the end of a scrubbing action, resuming playback if the video was actively playing prior to scrubbing.
    */
-  protected onScrubEnd() {
-    if (!this.isScrubbing) return;
+  protected onScrubEnd(): void {
+    if (!this.isScrubbing) {
+      return;
+    }
     this.isScrubbing = false;
     if (this.scrubWasPlaying) {
       if (this.currentTime() >= this.playableEndTime()) {
@@ -438,11 +516,13 @@ export class VideoPlayer implements OnDestroy {
 
   /**
    * Handles progress slider input events by updating the current playback time and queuing a throttled frame render.
-   * 
+   *
    * @param event The DOM input event triggered by changing the progress range slider.
    */
-  protected onProgressChange(event: Event) {
-    if (!this.isLoaded()) return;
+  protected onProgressChange(event: Event): void {
+    if (!this.isLoaded()) {
+      return;
+    }
 
     if (!this.isScrubbing) {
       this.onScrubStart();
@@ -450,10 +530,10 @@ export class VideoPlayer implements OnDestroy {
 
     const inputElement = event.target as HTMLInputElement;
     const value = Number(inputElement.value);
-    
+
     this.currentTime.set(value);
     this.pendingRenderTime = value;
-    
+
     if (!this.isRenderingFrame) {
       this.processPendingRenders();
     }
@@ -463,8 +543,10 @@ export class VideoPlayer implements OnDestroy {
    * Processes and drains queued frame rendering requests sequentially, discarding intermediate frames when rapid
    * scrubbing requests occur.
    */
-  private async processPendingRenders() {
-    if (!this.videoSink || !this.canvas()) return;
+  private async processPendingRenders(): Promise<void> {
+    if (!this.videoSink || !this.canvas()) {
+      return;
+    }
     this.isRenderingFrame = true;
 
     while (this.pendingRenderTime !== null) {

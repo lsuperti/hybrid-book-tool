@@ -6,15 +6,15 @@
   align-items: center;
   justify-content: center;
   margin: 0.25rem;
-  border: 0.125rem dashed var(--card-bg-assent-assent-assent);
+  border: 0.125rem dashed var(--card-bg-accent-accent-accent);
   border-radius: 0.5rem;
   padding: 2rem;
   transition: background-color 0.3s, border-color 0.3s;
 }
 
 .upload-area.dragging-over {
-  background-color: var(--card-bg-assent);
-  border-color: var(--card-bg-assent-assent-assent-assent);
+  background-color: var(--card-bg-accent);
+  border-color: var(--card-bg-accent-accent-accent-accent);
 }
 
 .upload-area p {
@@ -24,6 +24,10 @@
 }
 
 .upload-area .upload-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
   color: var(--primary-color);
   text-decoration: underline;
   user-select: none;
@@ -59,7 +63,7 @@ $list-item-height: 3rem;
   width: calc(100% - 0.625rem);
   height: calc(100% - 0.625rem);
   margin: 0.25rem 0.125rem 0.125rem 0.25rem;
-  border: 0.125rem solid var(--card-bg-assent);
+  border: 0.125rem solid var(--card-bg-accent);
   border-radius: 0.5rem;
   overflow: hidden;
 }
@@ -69,7 +73,7 @@ $list-item-height: 3rem;
   height: 100%;
   list-style: none;
   overflow-y: auto;
-  scrollbar-color: var(--card-bg-assent-assent-assent) var(--card-bg);
+  scrollbar-color: var(--card-bg-accent-accent-accent) var(--card-bg);
   background-color: var(--card-bg);
   container-type: scroll-state;
 }
@@ -98,7 +102,7 @@ $list-item-height: 3rem;
   position: absolute;
   bottom: -0.125rem;
   left: 0;
-  border-bottom: 0.125rem solid var(--card-bg-assent);
+  border-bottom: 0.125rem solid var(--card-bg-accent);
 }
 
 @container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
@@ -112,21 +116,22 @@ $list-item-height: 3rem;
 }
 
 .media-file-item:nth-child(even) {
-  background-color: var(--card-bg-assent);
+  background-color: var(--card-bg-accent);
 }
 
 .media-file-thumbnail-container {
   height: 100%;
   aspect-ratio: 1.5/1;
-  border: 0.125rem solid var(--card-bg-assent-assent-assent);
+  border: 0.125rem solid var(--card-bg-accent-accent-accent);
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
 }
 
 .media-file-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-assent-assent-assent); outline-offset: -0.25rem;
-  color: var(--card-bg-assent-assent-assent);
+  outline: 0.25rem solid var(--card-bg-accent-accent-accent);
+  outline-offset: -0.25rem;
+  color: var(--card-bg-accent-accent-accent);
   background-color: var(--card-bg);
 }
 
@@ -170,7 +175,7 @@ $list-item-height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0.125rem solid var(--card-bg-assent-assent);
+  border: 0.125rem solid var(--card-bg-accent-accent);
   border-radius: 0.5rem;
   color: var(--icon-color);
   background-color: var(--card-bg);
@@ -203,7 +208,7 @@ $list-item-height: 3rem;
   width: calc(100% - 0.5rem);
   height: calc(100% - 0.625rem);
   margin: 0.25rem 0.25rem 0.125rem 0.125rem;
-  border: 0.125rem solid var(--card-bg-assent);
+  border: 0.125rem solid var(--card-bg-accent);
   border-radius: 0.5rem;
 }
 
@@ -216,32 +221,12 @@ $list-item-height: 3rem;
   position: relative;
 }
 
-.text-record-invalid-message {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.25rem;
-  margin: 0.25rem 0.25rem 0.125rem 0.125rem;
-  color: var(--error-color);
-  background-color: var(--card-bg);
-  border: 0.125rem solid var(--card-bg-assent);
-  border-radius: 0.5rem;
-}
-
-.text-record-invalid-message svg {
-  width: 10rem;
-  margin-bottom: 2rem;
-}
-
 app-vertical-split {
   width: 100%;
   height: 100%;
 }
 
+.error-card,
 .info-card {
   width: 100%;
   height: 100%;

@@ -1,12 +1,28 @@
-import { Component, computed, inject, input, output, model, effect, viewChild, ElementRef, Renderer2, OnDestroy } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  model,
+  effect,
+  viewChild,
+  ElementRef,
+  Renderer2,
+  OnDestroy
+} from '@angular/core';
+
 import { DomSanitizer } from '@angular/platform-browser';
-import { TextSegmentationService, type PdfJsAccessibleTextSegment } from '../../../services/text-segmentation/text-segmentation';
+
+import {
+  TextSegmentationService,
+  type PdfJsAccessibleTextSegment
+} from '../../../services/text-segmentation/text-segmentation';
 
 @Component({
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-viewer.html',
-  styleUrls: ['./pdf-viewer.scss'],
-  standalone: true
+  styleUrl: './pdf-viewer.scss'
 })
 export class PdfViewer implements OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
@@ -23,12 +39,12 @@ export class PdfViewer implements OnDestroy {
   public readonly hoveredMarkedContent = model<PdfJsAccessibleTextSegment | null>(null);
 
   private readonly pdfViewerIframe = viewChild.required<ElementRef<HTMLIFrameElement>>('pdfViewerIframe');
-  private pagesPendingSetup: Set<number> = new Set<number>();
-  private renderedPages: Set<number> = new Set<number>();
+  private readonly pagesPendingSetup = new Set<number>();
+  private readonly renderedPages = new Set<number>();
   private previousSelectedMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private previousHoveredMarkedContent: PdfJsAccessibleTextSegment | null = null;
   private pendingScrollToMarkedContent: PdfJsAccessibleTextSegment | null = null;
-  private unlisteners: (() => void)[] = [];
+  private readonly unlisteners: (() => void)[] = [];
 
   protected readonly iframeSrc = computed(() => {
     const iframeUrl = new URL('pdf-viewer', document.baseURI);
@@ -40,7 +56,7 @@ export class PdfViewer implements OnDestroy {
   constructor() {
     effect(() => {
       if (this.textSegmentationService.status() === 'success') {
-        this.pagesPendingSetup.forEach(pageNumber => {
+        this.pagesPendingSetup.forEach((pageNumber) => {
           this.setupHighlightSpansOnPage(pageNumber);
           this.styleCursorOnPage(pageNumber);
         });
@@ -49,14 +65,14 @@ export class PdfViewer implements OnDestroy {
     });
 
     effect(() => {
-      // In 'text-segment' mode, highlight spans must update when segment linking changes in TextSegmentationService
+      // In 'text-segment' mode, highlight spans must update when segment linking changes in TextSegmentationService.
       this.textSegmentationService.segments();
       if (this.highlightMode() === 'text-segment' && this.textSegmentationService.status() === 'success') {
-        this.renderedPages.forEach(pageNumber => {
+        this.renderedPages.forEach((pageNumber) => {
           this.setupHighlightSpansForTextSegmentsOnPage(pageNumber);
         });
 
-        // Re-apply active highlights if they were affected
+        // Re-apply active highlights if they were affected.
         const selected = this.selectedMarkedContent();
         if (selected) {
           this.updateSelectionHighlight(selected, true);
@@ -75,7 +91,8 @@ export class PdfViewer implements OnDestroy {
 
     effect(() => {
       const hovered = this.hoveredMarkedContent();
-      // Track selectedMarkedContent as well so that hover highlight updates when selection changes
+      
+      // Track selectedMarkedContent as well so that hover highlight updates when selection changes.
       this.selectedMarkedContent();
 
       this.updateHoverHighlight(hovered);
@@ -102,8 +119,8 @@ export class PdfViewer implements OnDestroy {
           
           // We can't determine whether an element is addressable until the text segmentation service has finished
           // segmenting the text. So we need to wait for the service to finish the segmentation before setting up
-          // keyboard focus/highlights and styling the cursor on the page. So we add the page number to the list of pages
-          // pending setup; when the service finishes the segmentation, we setup and style all pending pages.
+          // keyboard focus/highlights and styling the cursor on the page. So we add the page number to the list of
+          // pages pending setup; when the service finishes the segmentation, we setup and style all pending pages.
           if (this.textSegmentationService.status() === 'success') {
             this.setupHighlightSpansOnPage(pageNumber);
             this.styleCursorOnPage(pageNumber);
@@ -111,7 +128,7 @@ export class PdfViewer implements OnDestroy {
             this.pagesPendingSetup.add(pageNumber);
           }
 
-          // Apply active highlights for this page if they are now ready
+          // Apply active highlights for this page if they are now ready.
           const selected = this.selectedMarkedContent();
           if (selected && selected.page === pageNumber) {
             this.updateSelectionHighlight(selected);
@@ -161,7 +178,9 @@ export class PdfViewer implements OnDestroy {
     }
     
     const page: HTMLDivElement | null = iframeDocument.querySelector(`.page[data-page-number="${markedContent.page}"]`);
-    const previous: PdfJsAccessibleTextSegment | null = type === 'select' ? this.previousSelectedMarkedContent : this.previousHoveredMarkedContent;
+    const previous: PdfJsAccessibleTextSegment | null = type === 'select'
+      ? this.previousSelectedMarkedContent
+      : this.previousHoveredMarkedContent;
 
     if (page === null) {
       throw new Error(`Page ${markedContent.page} is not available in the PDF viewer.`);
@@ -177,7 +196,9 @@ export class PdfViewer implements OnDestroy {
     const markedContentElement: HTMLElement | null = iframeDocument.getElementById(markedContent.pdfJsId);
     const highlightSpan = markedContentElement?.querySelector('.marked-content-highlight') as HTMLSpanElement | null;
     if (highlightSpan) {
-      highlightSpan.style.outline = `0.25rem solid ${type === 'select' ? 'var(--primary-color)' : 'var(--primary-assent)'}`;
+      highlightSpan.style.outline = `0.25rem solid ${type === 'select'
+        ? 'var(--primary-color)'
+        : 'var(--primary-accent)'}`;
       highlightSpan.style.zIndex = type === 'select' ? '1' : '2';
     }
 
@@ -200,7 +221,8 @@ export class PdfViewer implements OnDestroy {
       throw new Error('PDF viewer iframe document is not available.');
     }
     
-    const highlightSpan = iframeDocument.getElementById(markedContent.pdfJsId)?.querySelector('.marked-content-highlight') as HTMLSpanElement | null;
+    const highlightSpan = iframeDocument.getElementById(markedContent.pdfJsId)
+      ?.querySelector('.marked-content-highlight') as HTMLSpanElement | null;
     if (highlightSpan) {
       highlightSpan.style.outline = 'none';
       highlightSpan.style.zIndex = '0';
@@ -220,11 +242,18 @@ export class PdfViewer implements OnDestroy {
     }
 
     if (this.previousSelectedMarkedContent) {
-      if (forceUpdate || !selected || (this.previousSelectedMarkedContent.pdfJsId !== selected.pdfJsId || this.previousSelectedMarkedContent.page !== selected.page)) {
+      if (
+        forceUpdate ||
+        !selected ||
+        (
+          this.previousSelectedMarkedContent.pdfJsId !== selected.pdfJsId ||
+          this.previousSelectedMarkedContent.page !== selected.page
+        )
+      ) {
         try {
           this.removeMarkedContentHighlight(this.previousSelectedMarkedContent);
         } catch (_e) {
-          // Ignore if page/element is not found
+          // Ignore if page/element is not found.
         }
         this.previousSelectedMarkedContent = null;
       }
@@ -233,14 +262,15 @@ export class PdfViewer implements OnDestroy {
     if (selected) {
       const page = iframeDocument.querySelector(`.page[data-page-number="${selected.page}"]`);
       if (page) {
-        // If the hovered element is the same as the selected element, remove the hover highlight first
-        if (this.previousHoveredMarkedContent &&
-            this.previousHoveredMarkedContent.pdfJsId === selected.pdfJsId &&
-            this.previousHoveredMarkedContent.page === selected.page) {
+        // If the hovered element is the same as the selected element, remove the hover highlight first.
+        if (
+          this.previousHoveredMarkedContent &&
+          this.previousHoveredMarkedContent.pdfJsId === selected.pdfJsId &&
+          this.previousHoveredMarkedContent.page === selected.page) {
           try {
             this.removeMarkedContentHighlight(this.previousHoveredMarkedContent);
           } catch (_e) {
-            // Ignore
+            // Ignore.
           }
           this.previousHoveredMarkedContent = null;
         }
@@ -248,7 +278,7 @@ export class PdfViewer implements OnDestroy {
         try {
           this.highlightMarkedContent(selected, 'select');
         } catch (_e) {
-          // Ignore
+          // Ignore.
         }
       }
     }
@@ -270,18 +300,18 @@ export class PdfViewer implements OnDestroy {
 
     if (this.previousHoveredMarkedContent) {
       const isSelected = selected &&
-                         selected.pdfJsId === this.previousHoveredMarkedContent.pdfJsId &&
-                         selected.page === this.previousHoveredMarkedContent.page;
+        selected.pdfJsId === this.previousHoveredMarkedContent.pdfJsId &&
+        selected.page === this.previousHoveredMarkedContent.page;
 
       const isDifferent = !hovered ||
-                          this.previousHoveredMarkedContent.pdfJsId !== hovered.pdfJsId ||
-                          this.previousHoveredMarkedContent.page !== hovered.page;
+        this.previousHoveredMarkedContent.pdfJsId !== hovered.pdfJsId ||
+        this.previousHoveredMarkedContent.page !== hovered.page;
 
-      if ( forceUpdate || isSelected || isDifferent) {
+      if (forceUpdate || isSelected || isDifferent) {
         try {
           this.removeMarkedContentHighlight(this.previousHoveredMarkedContent);
         } catch (_e) {
-          // Ignore
+          // Ignore.
         }
         this.previousHoveredMarkedContent = null;
       }
@@ -289,8 +319,8 @@ export class PdfViewer implements OnDestroy {
 
     if (hovered) {
       const isSelected = selected &&
-                         selected.pdfJsId === hovered.pdfJsId &&
-                         selected.page === hovered.page;
+        selected.pdfJsId === hovered.pdfJsId &&
+        selected.page === hovered.page;
 
       if (!isSelected) {
         const page = iframeDocument.querySelector(`.page[data-page-number="${hovered.page}"]`);
@@ -298,13 +328,19 @@ export class PdfViewer implements OnDestroy {
           try {
             this.highlightMarkedContent(hovered, 'hover');
           } catch (_e) {
-            // Ignore
+            // Ignore.
           }
         }
       }
     }
   }
 
+  /**
+   * Navigates to a marked content element in the PDF viewer, scrolling to it if the text layer is already rendered
+   * or messaging the iframe to jump to its page if not.
+   * 
+   * @param markedContent The marked content segment to navigate to.
+   */
   private navigateToMarkedContent(markedContent: PdfJsAccessibleTextSegment) {
     const iframeDocument = this.pdfViewerIframe().nativeElement.contentDocument;
 
@@ -340,6 +376,12 @@ export class PdfViewer implements OnDestroy {
     this.pendingScrollToMarkedContent = markedContent;
   }
 
+  /**
+   * Scrolls the PDF viewer iframe so that the specified marked content highlight is visible in the center of the
+   * view.
+   * 
+   * @param markedContent The marked content segment to scroll to.
+   */
   private scrollToMarkedContent(markedContent: PdfJsAccessibleTextSegment) {
     const iframeDocument = this.pdfViewerIframe().nativeElement.contentDocument;
 
@@ -348,7 +390,8 @@ export class PdfViewer implements OnDestroy {
     }
     
     const markedContentElement = iframeDocument.getElementById(markedContent.pdfJsId);
-    const markedContentHighlight = markedContentElement?.querySelector('.marked-content-highlight') as HTMLElement | null;
+    const markedContentHighlight = markedContentElement
+      ?.querySelector('.marked-content-highlight') as HTMLElement | null;
 
     if (markedContentHighlight) {
       markedContentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -460,7 +503,11 @@ export class PdfViewer implements OnDestroy {
         const parentSegment = this.textSegmentationService.findParentSegment(markedContentId);
         if (parentSegment) {
           const currentHovered = this.hoveredMarkedContent();
-          if (!currentHovered || currentHovered.pdfJsId !== parentSegment.pdfJsId || currentHovered.page !== parentSegment.page) {
+          if (
+            !currentHovered ||
+            currentHovered.pdfJsId !== parentSegment.pdfJsId ||
+            currentHovered.page !== parentSegment.page
+          ) {
             this.hoveredMarkedContent.set({ pdfJsId: parentSegment.pdfJsId, page: parentSegment.page });
           }
         }
@@ -525,22 +572,22 @@ export class PdfViewer implements OnDestroy {
     }
 
     // Set the tabindex of all elements that can be tabbed to -1 so that they are not keyboard focusable.
-    const keyboardFocusableElements = pageElement.querySelectorAll<HTMLElement>(`a, area, button, input, textarea,
-                                                                                 select, details,
-                                                                                 [tabindex]:not([tabindex="-1"])`);
-    keyboardFocusableElements.forEach(element => {
+    const keyboardFocusableElements = pageElement.querySelectorAll<HTMLElement>(
+      'a, area, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
+    );
+    keyboardFocusableElements.forEach((element) => {
       element.setAttribute('tabindex', '-1');
     });
 
     const markedContentElements = pageElement.querySelectorAll<HTMLElement>('.markedContent');
     const pageClientRect = pageElement.getBoundingClientRect();
 
-    markedContentElements.forEach(element => {
+    markedContentElements.forEach((element) => {
       if (!this.isMarkedContentElementAddressable(element)) {
         return;
       }
 
-      // Check if highlight span already exists to avoid duplicates
+      // Check if highlight span already exists to avoid duplicates.
       if (element.querySelector('.marked-content-highlight')) {
         return;
       }
@@ -553,7 +600,7 @@ export class PdfViewer implements OnDestroy {
       for (const child of element.children) {
         const childClientRect = (child as HTMLElement).getBoundingClientRect();
 
-        // Disregard elements with no width or height
+        // Disregard elements with no width or height.
         if (childClientRect.width === 0 || childClientRect.height === 0) {
           continue;
         }
@@ -588,7 +635,7 @@ export class PdfViewer implements OnDestroy {
         }
       }
 
-      // If no valid children were measured, skip creating the highlight span
+      // If no valid children were measured, skip creating the highlight span.
       if (minLeft === Number.MAX_VALUE) {
         return;
       }
@@ -649,20 +696,20 @@ export class PdfViewer implements OnDestroy {
     }
 
     // Set the tabindex of all elements that can be tabbed to -1 so that they are not keyboard focusable.
-    const keyboardFocusableElements = pageElement.querySelectorAll<HTMLElement>(`a, area, button, input, textarea,
-                                                                                 select, details,
-                                                                                 [tabindex]:not([tabindex="-1"])`);
-    keyboardFocusableElements.forEach(element => {
+    const keyboardFocusableElements = pageElement.querySelectorAll<HTMLElement>(
+      'a, area, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
+    );
+    keyboardFocusableElements.forEach((element) => {
       element.setAttribute('tabindex', '-1');
     });
 
     const segments = this.textSegmentationService.segments();
-    const parentSegmentsOnPage = segments.filter(s => s.page === pageNumber);
-    const parentSegmentIdsOnPage = new Set(parentSegmentsOnPage.map(s => s.pdfJsId));
+    const parentSegmentsOnPage = segments.filter((s) => s.page === pageNumber);
+    const parentSegmentIdsOnPage = new Set(parentSegmentsOnPage.map((s) => s.pdfJsId));
 
-    // Remove any highlight spans from elements on this page that are not parent segments on this page
+    // Remove any highlight spans from elements on this page that are not parent segments on this page.
     const existingHighlightSpans = pageElement.querySelectorAll<HTMLSpanElement>('.marked-content-highlight');
-    existingHighlightSpans.forEach(span => {
+    existingHighlightSpans.forEach((span) => {
       const parentId = (span.parentElement as HTMLElement)?.id;
       if (!parentId || !parentSegmentIdsOnPage.has(parentId)) {
         span.remove();
@@ -671,7 +718,7 @@ export class PdfViewer implements OnDestroy {
 
     const pageClientRect = pageElement.getBoundingClientRect();
 
-    parentSegmentsOnPage.forEach(parentSegment => {
+    parentSegmentsOnPage.forEach((parentSegment) => {
       const parentElement = iframeDocument.getElementById(parentSegment.pdfJsId);
       if (!parentElement || !this.isMarkedContentElementAddressable(parentElement)) {
         return;
@@ -683,7 +730,8 @@ export class PdfViewer implements OnDestroy {
         const childElement = iframeDocument.getElementById(child.pdfJsId);
         if (childElement && childElement.closest('.page') === pageElement) {
           elementsToMeasure.push(childElement);
-          // Remove any highlight span on child element if present
+          
+          // Remove any highlight span on child element if present.
           const childSpan = childElement.querySelector('.marked-content-highlight');
           if (childSpan) {
             childSpan.remove();
@@ -700,7 +748,7 @@ export class PdfViewer implements OnDestroy {
         for (const child of el.children) {
           const childClientRect = (child as HTMLElement).getBoundingClientRect();
 
-          // Disregard elements with no width or height
+          // Disregard elements with no width or height.
           if (childClientRect.width === 0 || childClientRect.height === 0) {
             continue;
           }
@@ -736,7 +784,7 @@ export class PdfViewer implements OnDestroy {
         }
       }
 
-      // If no valid children were measured, skip creating the highlight span
+      // If no valid children were measured, skip creating the highlight span.
       if (minLeft === Number.MAX_VALUE) {
         return;
       }
@@ -810,9 +858,9 @@ export class PdfViewer implements OnDestroy {
   }
   
   /**
-   * Add the pointer cursor style to all marked content elements on a page that can be clicked.
+   * Adds the pointer cursor style to all marked content elements on a page that can be clicked.
    * 
-   * @param pageNumber 
+   * @param pageNumber The number of the page on which to style the cursors.
    */
   private styleCursorOnPage(pageNumber: number) {
     const iframeDocument: Document | null = this.pdfViewerIframe().nativeElement.contentDocument;
@@ -827,7 +875,7 @@ export class PdfViewer implements OnDestroy {
       throw new Error(`Page ${pageNumber} is not available in the PDF viewer.`);
     }
 
-    pageElement.querySelectorAll('.markedContent').forEach(markedContentElement => {
+    pageElement.querySelectorAll('.markedContent').forEach((markedContentElement) => {
       if (!this.isMarkedContentElementAddressable(markedContentElement)) {
         return;
       }
@@ -857,11 +905,11 @@ export class PdfViewer implements OnDestroy {
   }
   
   /*
-   * END OF DANGER AREA
+   * END OF DANGER AREA.
    */
 
   ngOnDestroy() {
-    this.unlisteners.forEach(unlisten => unlisten());
+    this.unlisteners.forEach((unlisten) => unlisten());
   }
 }
 

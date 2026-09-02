@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Correlation } from './correlation';
 import { MediaFiles, type MediaFileId } from '../../../services/media-files/media-files';
 import { TextSegmentationService, type TextSegment } from '../../../services/text-segmentation/text-segmentation';
-import { VideoSegmentationService } from '../../../services/video-segmentation/video-segmentation';
+import { VideoSegmentationService, type VideoSegment } from '../../../services/video-segmentation/video-segmentation';
 import { By } from '@angular/platform-browser';
 import { WarningCard } from '../../common/warning-card/warning-card';
 
@@ -61,7 +61,9 @@ describe('Correlation', () => {
   it('should display warning card when only text segments are empty', () => {
     mediaFilesService.textRecord.set({ file: null, type: null, url: null });
     textSegmentationService.segments.set([]);
-    videoSegmentationService.segments.set([{ fileId: 'media-1' as MediaFileId, name: 'Video 1', startTime: 0, endTime: 10, thumbnail: null }]);
+    videoSegmentationService.segments.set([{
+      fileId: 'media-1' as MediaFileId, name: 'Video 1', startTime: 0, endTime: 10, thumbnail: null
+    }]);
     fixture.detectChanges();
 
     const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
@@ -103,12 +105,169 @@ describe('Correlation', () => {
       linkedChildren: [],
     };
     textSegmentationService.segments.set([mockTextSegment]);
-    videoSegmentationService.segments.set([{ fileId: 'media-1' as MediaFileId, name: 'Video 1', startTime: 0, endTime: 10, thumbnail: null }]);
+    videoSegmentationService.segments.set([{
+      fileId: 'media-1' as MediaFileId, name: 'Video 1', startTime: 0, endTime: 10, thumbnail: null
+    }]);
     fixture.detectChanges();
 
     const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
     const topWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('top'));
     expect(topWarningCard).toBeUndefined();
+  });
+
+  describe('Full Text Concatenation', () => {
+    it('should return segment text when linkedChildren is empty', () => {
+      const segment: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'pdfjs-0',
+        page: 1,
+        text: 'Hello world',
+        excluded: false,
+        linkedChildren: [],
+      };
+      expect(component['getFullText'](segment)).toBe('Hello world');
+    });
+
+    it('should join child texts with space when child does not end with space-excluded character', () => {
+      const child: TextSegment = {
+        sequentialId: 1,
+        pdfJsId: 'pdfjs-1',
+        page: 1,
+        text: 'there',
+        excluded: false,
+        linkedChildren: [],
+      };
+      const segment: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'pdfjs-0',
+        page: 1,
+        text: 'Hello',
+        excluded: false,
+        linkedChildren: [child],
+      };
+      expect(component['getFullText'](segment)).toBe('Hello there');
+    });
+
+    it('should not add space when previous text ends with a space-excluded character', () => {
+      const child: TextSegment = {
+        sequentialId: 1,
+        pdfJsId: 'pdfjs-1',
+        page: 1,
+        text: 'world',
+        excluded: false,
+        linkedChildren: [],
+      };
+      const segment: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'pdfjs-0',
+        page: 1,
+        text: 'Hello-',
+        excluded: false,
+        linkedChildren: [child],
+      };
+      expect(component['getFullText'](segment)).toBe('Hello- world');
+    });
+  });
+
+  describe('Segment and Video Actions', () => {
+    it('should call videoSegmentationService.moveSegmentUp when onUpButtonClick is invoked', () => {
+      const moveUpSpy = vi.spyOn(videoSegmentationService, 'moveSegmentUp');
+      component['onUpButtonClick'](2);
+      expect(moveUpSpy).toHaveBeenCalledWith(2);
+    });
+
+    it('should call videoSegmentationService.moveSegmentDown when onDownButtonClick is invoked', () => {
+      const moveDownSpy = vi.spyOn(videoSegmentationService, 'moveSegmentDown');
+      component['onDownButtonClick'](1);
+      expect(moveDownSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('should set selectedSegmentPdfJsId on onSegmentButtonClick', () => {
+      component['onSegmentButtonClick']({ pdfJsId: 'seg-1', page: 1 });
+      expect(component['selectedSegmentPdfJsId']()).toEqual({ pdfJsId: 'seg-1', page: 1 });
+
+      component['onSegmentButtonClick'](null);
+      expect(component['selectedSegmentPdfJsId']()).toBeNull();
+    });
+
+    it('should set navigateToMarkedContentInViewer on onSegmentButtonDoubleClick', () => {
+      component['onSegmentButtonDoubleClick']({ pdfJsId: 'seg-2', page: 2 });
+      expect(component['navigateToMarkedContentInViewer']()).toEqual({ pdfJsId: 'seg-2', page: 2 });
+    });
+
+    it('should scroll matching segment button into view on onNavigateToMarkedContent', () => {
+      const mockElement = document.createElement('button');
+      mockElement.setAttribute('data-segment-id', 'seg-3');
+      const scrollSpy = vi.fn();
+      mockElement.scrollIntoView = scrollSpy;
+
+      Object.defineProperty(component, 'segmentTextButtons', {
+        value: () => [{ nativeElement: mockElement }],
+      });
+
+      component['onNavigateToMarkedContent']({ pdfJsId: 'seg-3', page: 1 });
+      expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  describe('Computed Rows and Selected Video Segment', () => {
+    it('should pair text and video segments into correlationRows, filtering out excluded text segments', () => {
+      const textSeg1: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'seg-1',
+        page: 1,
+        text: 'Text 1',
+        excluded: false,
+        linkedChildren: [],
+      };
+      const textSeg2: TextSegment = {
+        sequentialId: 1,
+        pdfJsId: 'seg-2',
+        page: 1,
+        text: 'Excluded Text',
+        excluded: true,
+        linkedChildren: [],
+      };
+      const videoSeg1: VideoSegment = {
+        fileId: 'vid-1' as MediaFileId,
+        name: 'Video 1',
+        startTime: 0,
+        endTime: 5,
+        thumbnail: null,
+      };
+
+      textSegmentationService.segments.set([textSeg1, textSeg2]);
+      videoSegmentationService.segments.set([videoSeg1]);
+
+      const rows = component['correlationRows']();
+      expect(rows.length).toBe(1);
+      expect(rows[0].textSegment?.pdfJsId).toBe('seg-1');
+      expect(rows[0].videoSegment?.fileId).toBe('vid-1');
+    });
+
+    it('should compute selectedVideoSegment matching the selected text segment', () => {
+      const textSeg1: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'seg-1',
+        page: 1,
+        text: 'Text 1',
+        excluded: false,
+        linkedChildren: [],
+      };
+      const videoSeg1: VideoSegment = {
+        fileId: 'vid-1' as MediaFileId,
+        name: 'Video 1',
+        startTime: 0,
+        endTime: 5,
+        thumbnail: null,
+      };
+
+      textSegmentationService.segments.set([textSeg1]);
+      videoSegmentationService.segments.set([videoSeg1]);
+      component['selectedSegmentPdfJsId'].set({ pdfJsId: 'seg-1', page: 1 });
+
+      expect(component['selectedVideoSegment']()?.fileId).toBe('vid-1');
+    });
   });
 
   describe('Keyboard Navigation Highlight', () => {
@@ -187,4 +346,3 @@ describe('Correlation', () => {
     });
   });
 });
-

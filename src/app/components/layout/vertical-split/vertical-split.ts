@@ -1,4 +1,16 @@
-import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRender, inject, Renderer2, input, output, effect, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  linkedSignal,
+  viewChild,
+  ElementRef,
+  afterNextRender,
+  inject,
+  Renderer2,
+  input,
+  output,
+  effect,
+  OnDestroy
+} from '@angular/core';
 
 @Component({
   selector: 'app-vertical-split',
@@ -6,25 +18,30 @@ import { Component, WritableSignal, signal, viewChild, ElementRef, afterNextRend
   templateUrl: './vertical-split.html',
   styleUrl: './vertical-split.scss',
 })
-export class VerticalSplit implements OnInit, OnDestroy {
+export class VerticalSplit implements OnDestroy {
   private readonly renderer2 = inject(Renderer2);
-  
+
   public readonly defaultTopHeight = input<number>(50);
   public readonly resizeBarAriaLabel = input.required<string>();
   public readonly resizeBarLeftMargin = input<string>('0px');
   public readonly resizeBarRightMargin = input<string>('0px');
-  public readonly minHeightPercentage = input<number>(0.5);
+  public readonly minHeightPercentage = input<number>(1);
   public readonly collapsed = input<CollapsedState>('none');
   public readonly layoutChanged = output<void>();
-  
-  protected topHeight!: WritableSignal<number>;
+
+  protected readonly topHeight = linkedSignal(() => this.defaultTopHeight());
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
   private readonly unlisteners: (() => void)[] = [];
-  
+
   private isResizing = false;
   private startY = 0;
   private startTopHeight = 0;
 
+  /**
+   * Handles pointerdown event on the resize bar to initiate dragging.
+   *
+   * @param event The pointer event.
+   */
   protected resizeBarPointerDown(event: PointerEvent) {
     this.isResizing = true;
     this.startY = event.clientY;
@@ -32,28 +49,45 @@ export class VerticalSplit implements OnInit, OnDestroy {
     event.preventDefault();
   }
 
+  /**
+   * Handles keydown events on the resize bar for keyboard-based resizing.
+   *
+   * @param event The keyboard event.
+   */
   protected resizeBarKeyDown(event: KeyboardEvent) {
-    let step = 1; // Step size in percentage
-    
+    // Step size in percentage.
+    let step = 1;
+
+    // Increase step size when Ctrl key is pressed.
     if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-      step = 5; // Increase step size when Ctrl key is pressed
+      step = 5;
+    
+    // Decrease step size when Shift key is pressed.
     } else if (event.shiftKey && !event.ctrlKey && !event.metaKey) {
-      step = 0.5; // Decrease step size when Shift key is pressed
+      step = 0.5;
+    
+    // Increase step size when both Ctrl and Shift keys are pressed.
     } else if (event.ctrlKey && event.shiftKey) {
-      step = 10; // Increase step size when both Ctrl and Shift keys are pressed
+      step = 10;
     }
 
     if (event.key === 'ArrowUp') {
       this.topHeight.set(Math.max(this.topHeight() - step, this.minHeightPercentage()));
       this.layoutChanged.emit();
+      event.preventDefault();
     } else if (event.key === 'ArrowDown') {
       this.topHeight.set(Math.min(this.topHeight() + step, 100 - this.minHeightPercentage()));
       this.layoutChanged.emit();
+      event.preventDefault();
+    } else if (event.key === 'Home') {
+      this.topHeight.set(this.minHeightPercentage());
+      this.layoutChanged.emit();
+      event.preventDefault();
+    } else if (event.key === 'End') {
+      this.topHeight.set(100 - this.minHeightPercentage());
+      this.layoutChanged.emit();
+      event.preventDefault();
     }
-  }
-  
-  ngOnInit() {
-    this.topHeight = signal(this.defaultTopHeight());
   }
 
   constructor() {
@@ -62,18 +96,23 @@ export class VerticalSplit implements OnInit, OnDestroy {
         this.renderer2.listen('window', 'pointermove', (event: PointerEvent) => {
           if (this.isResizing) {
             const containerHeight = this.splitContainer()?.nativeElement.getBoundingClientRect().height || 0;
-            const deltaX = event.clientY - this.startY;
-            const newTopHeight = this.startTopHeight + (deltaX / containerHeight) * 100;
-            
-            // Ensure the new height is within the allowed range
-            if (newTopHeight >= this.minHeightPercentage() && newTopHeight <= 100 - this.minHeightPercentage()) {
-              this.topHeight.set(newTopHeight);
-              this.layoutChanged.emit();
+            if (containerHeight > 0) {
+              const deltaY = event.clientY - this.startY;
+              const newTopHeight = this.startTopHeight + (deltaY / containerHeight) * 100;
+              const clampedHeight = Math.min(
+                Math.max(newTopHeight, this.minHeightPercentage()),
+                100 - this.minHeightPercentage()
+              );
+
+              if (clampedHeight !== this.topHeight()) {
+                this.topHeight.set(clampedHeight);
+                this.layoutChanged.emit();
+              }
             }
           }
         })
       );
-      
+
       this.unlisteners.push(
         this.renderer2.listen('window', 'pointerup', () => {
           if (this.isResizing) {
@@ -90,7 +129,7 @@ export class VerticalSplit implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.unlisteners.forEach(unlistener => unlistener());
+    this.unlisteners.forEach((unlistener) => unlistener());
   }
 }
 

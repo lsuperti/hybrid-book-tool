@@ -4,7 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "node scripts/check-comments.mjs --mode=production",
     "build": "ng build",
+    "check-comments:dev": "node scripts/check-comments.mjs --mode=development",
+    "check-comments:prod": "node scripts/check-comments.mjs --mode=production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:hybrid-book-tool": "node dist/hybrid-book-tool/server/server.mjs",
@@ -32,6 +35,7 @@
     "@angular/cli": "^22.0.7",
     "@angular/compiler-cli": "^22.0.7",
     "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
     "angular-eslint": "22.1.0",
