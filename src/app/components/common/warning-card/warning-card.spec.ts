@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import { WarningCard, type WarningCardType, type Side } from './warning-card';
+import { WarningCard, type WarningCardType } from './warning-card';
 
 describe('WarningCard', () => {
   let component: WarningCard;
@@ -57,42 +57,5 @@ describe('WarningCard', () => {
         expect(svgElement.nativeElement.getAttribute('aria-hidden')).toBe('true');
       });
     }
-  });
-
-  describe('Half-Width Margin Attributes', () => {
-    it('should not set any halfWidth attributes by default when margin list is empty', () => {
-      fixture.componentRef.setInput('halfWidthMargin', []);
-      fixture.detectChanges();
-
-      const cardElement = fixture.debugElement.query(By.css('.warning-card'));
-      expect(cardElement.nativeElement.getAttribute('halfWidthLeft')).toBeNull();
-      expect(cardElement.nativeElement.getAttribute('halfWidthRight')).toBeNull();
-      expect(cardElement.nativeElement.getAttribute('halfWidthTop')).toBeNull();
-      expect(cardElement.nativeElement.getAttribute('halfWidthBottom')).toBeNull();
-    });
-
-    it('should set specified halfWidth attributes when sides are provided', () => {
-      const sides: Side[] = ['left', 'top'];
-      fixture.componentRef.setInput('halfWidthMargin', sides);
-      fixture.detectChanges();
-
-      const cardElement = fixture.debugElement.query(By.css('.warning-card'));
-      expect(cardElement.nativeElement.getAttribute('halfWidthLeft')).toBe('true');
-      expect(cardElement.nativeElement.getAttribute('halfWidthTop')).toBe('true');
-      expect(cardElement.nativeElement.getAttribute('halfWidthRight')).toBeNull();
-      expect(cardElement.nativeElement.getAttribute('halfWidthBottom')).toBeNull();
-    });
-
-    it('should set all halfWidth attributes when all four sides are provided', () => {
-      const allSides: Side[] = ['left', 'right', 'top', 'bottom'];
-      fixture.componentRef.setInput('halfWidthMargin', allSides);
-      fixture.detectChanges();
-
-      const cardElement = fixture.debugElement.query(By.css('.warning-card'));
-      expect(cardElement.nativeElement.getAttribute('halfWidthLeft')).toBe('true');
-      expect(cardElement.nativeElement.getAttribute('halfWidthRight')).toBe('true');
-      expect(cardElement.nativeElement.getAttribute('halfWidthTop')).toBe('true');
-      expect(cardElement.nativeElement.getAttribute('halfWidthBottom')).toBe('true');
-    });
   });
 });

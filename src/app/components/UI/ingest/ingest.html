@@ -1,15 +1,11 @@
 <app-split
 direction="horizontal"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de mídia e de visualização do registro de texto'"
-[resizeBarStartMargin]="'0.75rem'"
-[resizeBarEndMargin]="'0.75rem'"
 >
   <div first class="media-area">
     <app-split
     direction="vertical"
     [resizeBarAriaLabel]="'Redimensionamento da lista de arquivos de mídia e da área de upload de mídia'"
-    [resizeBarStartMargin]="'0.75rem'"
-    [resizeBarEndMargin]="'0.625rem'"
     [defaultSize]="2/3*100"
     [minSizePercentage]="10"
     [collapsed]="mediaFiles().length <= 0 ? 'first' : 'none'"
@@ -52,8 +48,6 @@ direction="horizontal"
       <div
       second
       class="media-files-upload-area upload-area"
-      [style.margin-top]="mediaFiles().length <= 0 ? '0.25rem' : '0.125rem'"
-      [style.height]="mediaFiles().length <= 0 ? 'calc(100% - 0.5rem)' : 'calc(100% - 0.375rem)'"
       [class.dragging-over]="draggingOverMediaFilesUploadArea()"
       (dragenter)="onMediaFilesDragEnter($event)"
       (dragover)="onMediaFilesDragOver($event)"
@@ -87,8 +81,6 @@ direction="horizontal"
     <app-split
     direction="vertical"
     [resizeBarAriaLabel]="'Redimensionamento da área de visualização e da área de upload do registro de texto'"
-    [resizeBarStartMargin]="'0.625rem'"
-    [resizeBarEndMargin]="'0.75rem'"
     [defaultSize]="2/3*100"
     [minSizePercentage]="10"
     [collapsed]="textRecord().type === null ? 'first' : 'none'"
@@ -114,22 +106,18 @@ direction="horizontal"
           class="error-card"
           [type]="'error'"
           [message]="'O arquivo selecionado não é um PDF válido. Por favor, selecione um arquivo PDF.'"
-          [halfWidthMargin]="['left', 'bottom']"
           ></app-warning-card>
         } @else {
           <app-warning-card
           class="info-card"
           [type]="'info'"
           [message]="'O registro de texto aparecerá aqui.'"
-          [halfWidthMargin]="['left', 'bottom']"
           ></app-warning-card>
         }
       </div>
       <div
       second
       class="text-record-upload-area upload-area"
-      [style.margin-top]="textRecord().type === null ? '0.25rem' : '0.125rem'"
-      [style.height]="textRecord().type === null ? 'calc(100% - 0.5rem)' : 'calc(100% - 0.375rem)'"
       [class.dragging-over]="draggingOverTextRecordUploadArea()"
       (dragenter)="onTextRecordDragEnter($event)"
       (dragover)="onTextRecordDragOver($event)"

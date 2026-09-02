@@ -12,11 +12,6 @@ import { NgTemplateOutlet } from '@angular/common';
 })
 export class WarningCard {
   /**
-   * Sides on which the outer margin should be halved.
-   */
-  public readonly halfWidthMargin = input<Side[]>([]);
-
-  /**
    * The message text displayed in the card.
    */
   public readonly message = input.required<string>();
@@ -26,11 +21,6 @@ export class WarningCard {
    */
   public readonly type = input.required<WarningCardType>();
 }
-
-/**
- * Sides of the card that can receive half-width margins.
- */
-export type Side = 'left' | 'right' | 'top' | 'bottom';
 
 /**
  * Supported card types and visual variants.

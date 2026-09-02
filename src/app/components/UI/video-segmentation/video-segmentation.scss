@@ -3,20 +3,16 @@
   height: 100%;
 }
 
-.warning-card {
-  width: 100%;
-  height: 100%;
-}
 
 $list-item-height: 4rem;
 $thumbnail-height: $list-item-height - 1rem;
 
 .video-segments-container {
-  width: calc(100% - 0.625rem);
-  height: calc(100% - 0.625rem);
-  margin: 0.25rem 0.125rem 0.125rem 0.25rem;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   border: 0.125rem solid var(--card-bg-accent);
-  border-radius: 0.5rem;
+  border-radius: var(--card-border-radius);
   overflow: hidden;
 }
 
@@ -113,7 +109,8 @@ $thumbnail-height: $list-item-height - 1rem;
 }
 
 .video-segment-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-accent-accent-accent); outline-offset: -0.25rem;
+  outline: 0.25rem solid var(--card-bg-accent-accent-accent);
+  outline-offset: -0.25rem;
   color: var(--card-bg-accent-accent-accent);
   background-color: var(--card-bg);
 }
@@ -128,13 +125,6 @@ $thumbnail-height: $list-item-height - 1rem;
   justify-content: center;
 }
 
-.video-segments-thumbnail svg {
-  width: 100%;
-  height: 100%;
-  color: var(--icon-color);
-  border-radius: 0.1875rem;
-}
-
 .video-segment-thumbnail-container img {
   width: 100%;
   height: 100%;
@@ -142,20 +132,7 @@ $thumbnail-height: $list-item-height - 1rem;
   border-radius: 0.125rem;
 }
 
-.video-segment-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-accent-accent-accent); outline-offset: -0.25rem;
-  color: var(--card-bg-accent-accent-accent);
-  background-color: var(--card-bg);
-}
-
-.video-segment-thumbnail-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.125rem;
-}
-
-.video-segment-thumbnail svg {
+.video-segment-thumbnail-placeholder svg {
   width: 100%;
   height: 100%;
   color: var(--icon-color);
@@ -168,19 +145,14 @@ $thumbnail-height: $list-item-height - 1rem;
 }
 
 .video-preview-container {
-  width: calc(100% - 0.625rem);
-  height: calc(100% - 0.625rem);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   border: 0.125rem solid var(--card-bg-accent);
-  border-radius: 0.5rem;
-  margin: 0.25rem 0.25rem 0.25rem 0.125rem;
+  border-radius: var(--card-border-radius);
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: var(--card-bg);
-}
-
-.video-player {
-  width: 100%;
-  height: 100%;
 }

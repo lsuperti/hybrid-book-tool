@@ -305,6 +305,7 @@ export class VideoPlayer implements OnDestroy {
       if (this.currentTime() >= this.playableEndTime()) {
         this.currentTime.set(this.playableStartTime());
       }
+      
       this.isPlaying.set(true);
       this.playbackId++;
       this.playLoop(this.playbackId);
@@ -322,14 +323,18 @@ export class VideoPlayer implements OnDestroy {
       if (this.playbackId === id) {
         this.isPlaying.set(false);
       }
+      
       return;
     }
+    
     const canvasEl = this.canvas().nativeElement;
     const ctx = canvasEl.getContext('2d');
+    
     if (!ctx) {
       if (this.playbackId === id) {
         this.isPlaying.set(false);
       }
+      
       return;
     }
 
@@ -357,6 +362,7 @@ export class VideoPlayer implements OnDestroy {
             canvasEl.width = sample.squarePixelWidth;
             canvasEl.height = sample.squarePixelHeight;
           }
+          
           sample.draw(ctx, 0, 0);
           this.currentTime.set(sample.timestamp);
         } finally {
@@ -380,10 +386,12 @@ export class VideoPlayer implements OnDestroy {
       if (this.currentSamplesIterator === iterator) {
         this.currentSamplesIterator = null;
       }
+      
       if (this.playbackId === id) {
         this.isPlaying.set(false);
         this.currentTime.set(this.playableEndTime());
       }
+      
       try {
         await iterator.return?.();
       } catch (_e) {

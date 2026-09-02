@@ -3,6 +3,8 @@
 class="split-container"
 [class.horizontal]="direction() === 'horizontal'"
 [class.vertical]="direction() === 'vertical'"
+[class.first-collapsed]="isFirstCollapsed()"
+[class.second-collapsed]="isSecondCollapsed()"
 [style.--first-size.%]="isFirstCollapsed() ? 0 : isSecondCollapsed() ? 100 : size()"
 >
   @if (isSecondCollapsed() || isCollapsedNone()) {
@@ -14,8 +16,6 @@ class="split-container"
   @if (isCollapsedNone()) {
     <div
     class="resize-bar"
-    [style.--start-margin]="resizeBarStartMargin()"
-    [style.--end-margin]="resizeBarEndMargin()"
     (pointerdown)="resizeBarPointerDown($event)"
     (keydown)="resizeBarKeyDown($event)"
     role="separator"

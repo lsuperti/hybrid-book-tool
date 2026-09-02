@@ -2,8 +2,6 @@
 #horizontalSplit
 direction="horizontal"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'"
-[resizeBarStartMargin]="'0.75rem'"
-[resizeBarEndMargin]="'0.75rem'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
     <app-warning-card
@@ -11,7 +9,6 @@ direction="horizontal"
     class="warning-card"
     [type]="'error'"
     [message]="'Registro de texto inválido.'"
-    [halfWidthMargin]="['right']"
     ></app-warning-card>
   } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
     <app-warning-card
@@ -19,7 +16,6 @@ direction="horizontal"
     class="warning-card"
     [type]="'warning'"
     [message]="'Registro de texto não selecionado.'"
-    [halfWidthMargin]="['right']"
     ></app-warning-card>
   } @else if (textSegmentationService.status() === 'loading') {
     <app-warning-card
@@ -27,7 +23,6 @@ direction="horizontal"
     class="warning-card"
     [type]="'loading-segments'"
     [message]="'Extraindo texto do registro de texto...'"
-    [halfWidthMargin]="['right']"
     ></app-warning-card>
   } @else {
     <div left class="segments-container">
@@ -255,7 +250,6 @@ direction="horizontal"
     class="warning-card"
     [type]="'error'"
     [message]="'Registro de texto inválido.'"
-    [halfWidthMargin]="['left']"
     ></app-warning-card>
   } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
     <app-warning-card
@@ -263,7 +257,6 @@ direction="horizontal"
     class="warning-card"
     [type]="'warning'"
     [message]="'Registro de texto não selecionado.'"
-    [halfWidthMargin]="['left']"
     ></app-warning-card>
   } @else {
     <div right class="text-record-area">

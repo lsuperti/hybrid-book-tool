@@ -4,7 +4,7 @@
   height: 100%;
 }
 
-$resize-bar-width: 0.25rem;
+$resize-bar-width: var(--card-spacing);
 $resize-bar-grab-width: 0.5rem;
 
 .split-container {
@@ -18,15 +18,33 @@ $resize-bar-grab-width: 0.5rem;
     flex-direction: row;
 
     > .first-area {
-      width: var(--first-size);
+      width: calc(var(--first-size) - $resize-bar-width / 2);
       height: 100%;
+      padding: var(--card-spacing) 0 var(--card-spacing) var(--card-spacing);
+      box-sizing: border-box;
     }
 
     > .second-area {
-      width: calc(100% - var(--first-size));
+      width: calc(100% - var(--first-size) - $resize-bar-width / 2);
       height: 100%;
+      padding: var(--card-spacing) var(--card-spacing) var(--card-spacing) 0;
+      box-sizing: border-box;
     }
 
+    &.first-collapsed {
+      > .second-area {
+        width: 100%;
+        padding: var(--card-spacing);
+      }
+    }
+
+    &.second-collapsed {
+      > .first-area {
+        width: 100%;
+        padding: var(--card-spacing);
+      }
+    }
+  
     > .resize-bar {
       height: 100%;
       width: $resize-bar-grab-width;
@@ -34,10 +52,10 @@ $resize-bar-grab-width: 0.5rem;
       cursor: ew-resize;
 
       &::after {
-        height: calc(100% - var(--start-margin) - var(--end-margin));
+        height: calc(100% - var(--card-spacing) * 2 - var(--card-border-radius) * 2);
         width: $resize-bar-width;
         left: calc(($resize-bar-grab-width - $resize-bar-width) / 2);
-        top: var(--start-margin);
+        top: calc(var(--card-spacing) + var(--card-border-radius));
         transform: scaleX(0);
       }
 
@@ -53,13 +71,31 @@ $resize-bar-grab-width: 0.5rem;
     flex-direction: column;
 
     > .first-area {
-      height: var(--first-size);
+      height: calc(var(--first-size) - $resize-bar-width / 2);
       width: 100%;
+      padding: var(--card-spacing) var(--card-spacing) 0 var(--card-spacing);
+      box-sizing: border-box;
     }
 
     > .second-area {
-      height: calc(100% - var(--first-size));
+      height: calc(100% - var(--first-size) - $resize-bar-width / 2);
       width: 100%;
+      padding: 0 var(--card-spacing) var(--card-spacing) var(--card-spacing);
+      box-sizing: border-box;
+    }
+
+    &.first-collapsed {
+      > .second-area {
+        height: 100%;
+        padding: var(--card-spacing);
+      }
+    }
+
+    &.second-collapsed {
+      > .first-area {
+        height: 100%;
+        padding: var(--card-spacing);
+      }
     }
 
     > .resize-bar {
@@ -69,10 +105,10 @@ $resize-bar-grab-width: 0.5rem;
       cursor: ns-resize;
 
       &::after {
-        width: calc(100% - var(--start-margin) - var(--end-margin));
+        width: calc(100% - var(--card-spacing) * 2 - var(--card-border-radius) * 2);
         height: $resize-bar-width;
         top: calc(($resize-bar-grab-width - $resize-bar-width) / 2);
-        left: var(--start-margin);
+        left: calc(var(--card-spacing) + var(--card-border-radius));
         transform: scaleY(0);
       }
 
@@ -81,6 +117,59 @@ $resize-bar-grab-width: 0.5rem;
       &:active::after {
         transform: scaleY(1);
       }
+    }
+  }
+}
+
+:host-context(.split-container) {
+  .split-container > .first-area,
+  .split-container > .second-area {
+    padding: 0;
+  }
+}
+
+:host-context(.split-container > .first-area) {
+  .split-container.horizontal > .resize-bar {
+    height: calc(100% + var(--card-spacing));
+    top: calc(var(--card-spacing) * -1);
+    
+    &::after {
+      top: calc(var(--card-border-radius) + var(--card-spacing));
+      height: calc(100% - var(--card-border-radius) * 2 - var(--card-spacing));
+    }
+  }
+
+  .split-container.vertical > .resize-bar {
+    width: calc(100% + var(--card-spacing));
+    left: calc(var(--card-spacing) * -1);
+    
+    &::after {
+      left: calc(var(--card-spacing) + var(--card-border-radius));
+      width: calc(100% - var(--card-border-radius) * 2 - var(--card-spacing));
+    }
+
+  }
+
+}
+
+:host-context(.split-container > .second-area) {
+  .split-container.horizontal > .resize-bar {
+    height: calc(100% + var(--card-spacing));
+    top: 0;
+
+    &::after {
+      top: var(--card-border-radius);
+      height: calc(100% - var(--card-border-radius) * 2 - var(--card-spacing));
+    }
+  }
+  
+  .split-container.vertical > .resize-bar {
+    width: calc(100% + var(--card-spacing));
+    left: 0;
+
+    &::after {
+      left: var(--card-border-radius);
+      width: calc(100% - var(--card-border-radius) * 2 - var(--card-spacing));
     }
   }
 }

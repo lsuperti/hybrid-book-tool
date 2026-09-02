@@ -7,10 +7,6 @@ class="warning-card"
   'loading-segments': type() === 'loading-segments'
 }"
 [attr.role]="type() === 'error' ? 'alert' : 'status'"
-[attr.halfWidthLeft]="halfWidthMargin().includes('left') ? 'true' : null"
-[attr.halfWidthRight]="halfWidthMargin().includes('right') ? 'true' : null"
-[attr.halfWidthTop]="halfWidthMargin().includes('top') ? 'true' : null"
-[attr.halfWidthBottom]="halfWidthMargin().includes('bottom') ? 'true' : null"
 >
   @switch (type()) {
     @case ('warning') {

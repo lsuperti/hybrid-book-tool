@@ -2,8 +2,6 @@
 direction="vertical"
 [defaultSize]="50"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de correlação e de exibição do registro de texto e de vídeo'"
-[resizeBarStartMargin]="'0.75rem'"
-[resizeBarEndMargin]="'0.75rem'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
     <app-warning-card
@@ -11,7 +9,6 @@ direction="vertical"
     class="warning-card"
     [type]="'error'"
     [message]="'Registro de texto inválido.'"
-    [halfWidthMargin]="['bottom']"
     ></app-warning-card>
   } @else if (textSegmentationService.segments().length <= 0 && videoSegmentationService.segments().length <= 0) {
     <app-warning-card
@@ -19,7 +16,6 @@ direction="vertical"
     class="warning-card"
     [type]="'warning'"
     [message]="'Não há segmentos de texto nem de vídeo.'"
-    [halfWidthMargin]="['bottom']"
     ></app-warning-card>
   } @else if (textSegmentationService.segments().length <= 0) {
     <app-warning-card
@@ -27,7 +23,6 @@ direction="vertical"
     class="warning-card"
     [type]="'warning'"
     [message]="'Não há segmentos de texto.'"
-    [halfWidthMargin]="['bottom']"
     ></app-warning-card>
   } @else if (videoSegmentationService.segments().length <= 0) {
     <app-warning-card
@@ -35,7 +30,6 @@ direction="vertical"
     class="warning-card"
     [type]="'warning'"
     [message]="'Não há segmentos de vídeo.'"
-    [halfWidthMargin]="['bottom']"
     ></app-warning-card>
   } @else {
     <div top class="correlation-container">
@@ -136,8 +130,6 @@ direction="vertical"
   direction="horizontal"
   [defaultSize]="50"
   [resizeBarAriaLabel]="'Redimensionamento das áreas de exibição do registro de texto e de vídeo'"
-  [resizeBarStartMargin]="'0.75rem'"
-  [resizeBarEndMargin]="'0.75rem'"
   >
     @if (mediaFilesService.textRecord().type === 'invalid') {
       <app-warning-card
@@ -145,7 +137,6 @@ direction="vertical"
       class="warning-card"
       [type]="'error'"
       [message]="'Registro de texto inválido.'"
-      [halfWidthMargin]="['right', 'top']"
       ></app-warning-card>
     } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
       <app-warning-card
@@ -153,7 +144,6 @@ direction="vertical"
       class="warning-card"
       [type]="'warning'"
       [message]="'Registro de texto não selecionado.'"
-      [halfWidthMargin]="['right', 'top']"
       ></app-warning-card>
     } @else {
       <div left class="text-record-area">
@@ -172,12 +162,21 @@ direction="vertical"
         </div>
       </div>
     }
-    <div right class="video-player-container">
-      <app-video-player
-      class="video-player"
-      [segment]="selectedVideoSegment()"
-      ></app-video-player>
-    </div>
+    @if (videoSegmentationService.segments().length <= 0) {
+      <app-warning-card
+      right
+      class="warning-card"
+      [type]="'warning'"
+      [message]="'Não há segmentos de vídeo.'"
+      ></app-warning-card>
+    } @else {
+      <div right class="video-player-container">
+        <app-video-player
+        class="video-player"
+        [segment]="selectedVideoSegment()"
+        ></app-video-player>
+      </div>
+    }
   </app-split>
 </app-split>
 <ng-template #thumbnailPlaceholder>

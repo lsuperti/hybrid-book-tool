@@ -24,8 +24,6 @@ export class Split implements OnDestroy {
   public readonly direction = input<SplitDirection>('horizontal');
   public readonly defaultSize = input<number>(50);
   public readonly resizeBarAriaLabel = input.required<string>();
-  public readonly resizeBarStartMargin = input<string>('0px');
-  public readonly resizeBarEndMargin = input<string>('0px');
   public readonly minSizePercentage = input<number>(10);
   public readonly collapsed = input<SplitCollapsedState>('none');
   public readonly layoutChanged = output<void>();

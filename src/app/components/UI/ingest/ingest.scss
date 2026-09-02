@@ -1,13 +1,15 @@
 .upload-area {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   background-color: var(--card-bg);
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0.25rem;
   border: 0.125rem dashed var(--card-bg-accent-accent-accent);
-  border-radius: 0.5rem;
+  border-radius: var(--card-border-radius);
   padding: 2rem;
   transition: background-color 0.3s, border-color 0.3s;
 }
@@ -52,19 +54,14 @@
   height: 100%;
 }
 
-.media-files-upload-area {
-  margin-right: 0.125rem;
-  box-sizing: border-box;
-}
-
 $list-item-height: 3rem;
 
 .media-files-list-container {
-  width: calc(100% - 0.625rem);
-  height: calc(100% - 0.625rem);
-  margin: 0.25rem 0.125rem 0.125rem 0.25rem;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   border: 0.125rem solid var(--card-bg-accent);
-  border-radius: 0.5rem;
+  border-radius: var(--card-border-radius);
   overflow: hidden;
 }
 
@@ -186,11 +183,6 @@ $list-item-height: 3rem;
   outline: 0.125rem solid var(--primary-color);
 }
 
-.text-record-upload-area {
-  margin-left: 0.125rem;
-  box-sizing: border-box;
-}
-
 .text-record-area-container {
   display: flex;
   flex-direction: column;
@@ -205,29 +197,19 @@ $list-item-height: 3rem;
 }
 
 .text-record-content {
-  width: calc(100% - 0.5rem);
-  height: calc(100% - 0.625rem);
-  margin: 0.25rem 0.25rem 0.125rem 0.125rem;
+  width: 100%;
+  height: 100%;
   border: 0.125rem solid var(--card-bg-accent);
-  border-radius: 0.5rem;
+  border-radius: var(--card-border-radius);
+  box-sizing: border-box;
 }
 
 .pdf-viewer {
   width: 100%;
   height: 100%;
-  border-radius: 0.375rem;
+  border-radius: calc(var(--card-border-radius) - 0.125rem);
   overflow: hidden;
   display: block;
   position: relative;
 }
 
-app-split {
-  width: 100%;
-  height: 100%;
-}
-
-.error-card,
-.info-card {
-  width: 100%;
-  height: 100%;
-}

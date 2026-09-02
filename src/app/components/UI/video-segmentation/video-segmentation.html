@@ -7,12 +7,14 @@ direction="vertical"
   first
   direction="horizontal"
   [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização de vídeo'"
-  [resizeBarStartMargin]="'0.75rem'"
-  [resizeBarEndMargin]="'0.75rem'"
   >
-    <div class="video-segments-area"left>
+    <div left class="video-segments-area">
       @if (mediaFilesService.mediaFiles().length <= 0) {
-        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['right']"></app-warning-card>
+        <app-warning-card
+        class="warning-card"
+        [type]="'warning'"
+        [message]="'Nenhum arquivo de mídia foi carregado.'"
+        ></app-warning-card>
       } @else {
         <div class="video-segments-container">
           <ol class="video-segments-list">
@@ -22,13 +24,22 @@ direction="vertical"
             -->
             @for (segment of mediaFilesService.mediaFiles(); track segment.id; let i = $index) {
               <li class="video-segments-list-item" [aria-selected]="selectedSegmentIndex() === i">
-                <button class="video-segments-list-item-main-button" (click)="onSegmentSelected(i)" [attr.aria-label]="'Selecionar segmento ' + segment.name">
+                <button
+                class="video-segments-list-item-main-button"
+                (click)="onSegmentSelected(i)"
+                [attr.aria-label]="'Selecionar segmento ' + segment.name"
+                >
                   <div class="segment-name-container">
                     <p>{{ segment.name }}</p>
                   </div>
                   @if (segment.thumbnail) {
                     <div class="video-segment-thumbnail-container">
-                      <img inert src="{{ segment.thumbnail }}" alt="Thumbnail de {{ segment.name }}" class="segment-thumbnail" />
+                      <img
+                      inert
+                      src="{{ segment.thumbnail }}"
+                      alt="Thumbnail de {{ segment.name }}"
+                      class="segment-thumbnail"
+                      />
                     </div>
                   } @else {
                     <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
@@ -46,8 +57,15 @@ direction="vertical"
       }
     </div>
     <div right class="video-preview-area">
-      @if (mediaFilesService.mediaFiles().length <= 0 || mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null) {
-        <app-warning-card class="warning-card" [type]="'warning'" [message]="'Nenhum arquivo de mídia foi carregado.'" [halfWidthMargin]="['left']"></app-warning-card>
+      @if (
+        mediaFilesService.mediaFiles().length <= 0 ||
+        mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null
+      ) {
+        <app-warning-card
+        class="warning-card"
+        [type]="'warning'"
+        [message]="'Nenhum arquivo de mídia foi carregado.'"
+        ></app-warning-card>
       } @else {
         <div class="video-preview-container">
           <app-video-player
