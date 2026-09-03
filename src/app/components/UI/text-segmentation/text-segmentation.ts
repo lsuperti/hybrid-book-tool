@@ -15,7 +15,7 @@ import {
 
 import { NgTemplateOutlet } from '@angular/common';
 import { Split } from '../../layout/split/split';
-import { WarningCard } from '../../common/warning-card/warning-card';
+import { InfoCard } from '../../common/info-card/info-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 
 import {
@@ -28,7 +28,7 @@ import { PdfViewer } from '../../common/pdf-viewer/pdf-viewer';
 
 @Component({
   selector: 'app-text-segmentation',
-  imports: [Split, WarningCard, PdfViewer, NgTemplateOutlet],
+  imports: [Split, InfoCard, PdfViewer, NgTemplateOutlet],
   templateUrl: './text-segmentation.html',
   styleUrl: './text-segmentation.scss',
 })

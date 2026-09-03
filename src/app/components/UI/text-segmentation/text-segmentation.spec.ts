@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { TextSegmentation } from './text-segmentation';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { TextSegmentationService, type TextSegment } from '../../../services/text-segmentation/text-segmentation';
-import { WarningCard } from '../../common/warning-card/warning-card';
+import { InfoCard } from '../../common/info-card/info-card';
 
 describe('TextSegmentation', () => {
   let component: TextSegmentation;
@@ -29,27 +29,27 @@ describe('TextSegmentation', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('Warning Cards', () => {
-    it('should display error warning card when text record is invalid', () => {
+  describe('Info Cards', () => {
+    it('should display error card when text record is invalid', () => {
       mediaFilesService.textRecord.set({ file: new File([], 'test.txt'), type: 'invalid', url: null });
       fixture.detectChanges();
 
-      const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-      const leftWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('left'));
-      expect(leftWarningCard).toBeTruthy();
-      expect(leftWarningCard?.componentInstance.type()).toBe('error');
-      expect(leftWarningCard?.componentInstance.message()).toBe('Registro de texto inválido.');
+      const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+      const leftInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('left'));
+      expect(leftInfoCard).toBeTruthy();
+      expect(leftInfoCard?.componentInstance.type()).toBe('error');
+      expect(leftInfoCard?.componentInstance.message()).toBe('Registro de texto inválido.');
     });
 
     it('should display warning card when text record is not selected', () => {
       mediaFilesService.textRecord.set({ file: null, type: null, url: null });
       fixture.detectChanges();
 
-      const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-      const leftWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('left'));
-      expect(leftWarningCard).toBeTruthy();
-      expect(leftWarningCard?.componentInstance.type()).toBe('warning');
-      expect(leftWarningCard?.componentInstance.message()).toBe('Registro de texto não selecionado.');
+      const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+      const leftInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('left'));
+      expect(leftInfoCard).toBeTruthy();
+      expect(leftInfoCard?.componentInstance.type()).toBe('warning');
+      expect(leftInfoCard?.componentInstance.message()).toBe('Registro de texto não selecionado.');
     });
 
     it('should display loading segments card when segmentation status is loading', () => {
@@ -57,11 +57,11 @@ describe('TextSegmentation', () => {
       textSegmentationService.status.set('loading');
       fixture.detectChanges();
 
-      const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-      const leftWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('left'));
-      expect(leftWarningCard).toBeTruthy();
-      expect(leftWarningCard?.componentInstance.type()).toBe('loading-segments');
-      expect(leftWarningCard?.componentInstance.message()).toBe('Extraindo texto do registro de texto...');
+      const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+      const leftInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('left'));
+      expect(leftInfoCard).toBeTruthy();
+      expect(leftInfoCard?.componentInstance.type()).toBe('loading-segments');
+      expect(leftInfoCard?.componentInstance.message()).toBe('Extraindo texto do registro de texto...');
     });
   });
 

@@ -5,12 +5,12 @@ import { NgTemplateOutlet } from '@angular/common';
  * A reusable warning, information, error, or loading card component.
  */
 @Component({
-  selector: 'app-warning-card',
+  selector: 'app-info-card',
   imports: [NgTemplateOutlet],
-  templateUrl: './warning-card.html',
-  styleUrl: './warning-card.scss',
+  templateUrl: './info-card.html',
+  styleUrl: './info-card.scss',
 })
-export class WarningCard {
+export class InfoCard {
   /**
    * The message text displayed in the card.
    */
@@ -19,10 +19,10 @@ export class WarningCard {
   /**
    * The visual and semantic type of the card.
    */
-  public readonly type = input.required<WarningCardType>();
+  public readonly type = input.required<InfoCardType>();
 }
 
 /**
  * Supported card types and visual variants.
  */
-export type WarningCardType = 'warning' | 'info' | 'error' | 'loading-segments';
+export type InfoCardType = 'warning' | 'info' | 'error' | 'loading-segments';

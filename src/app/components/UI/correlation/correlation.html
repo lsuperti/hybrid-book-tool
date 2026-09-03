@@ -4,35 +4,35 @@ direction="vertical"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de correlação e de exibição do registro de texto e de vídeo'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
-    <app-warning-card
+    <app-info-card
     top
-    class="warning-card"
+    class="info-card"
     [type]="'error'"
     [message]="'Registro de texto inválido.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else if (textSegmentationService.segments().length <= 0 && videoSegmentationService.segments().length <= 0) {
-    <app-warning-card
+    <app-info-card
     top
-    class="warning-card"
+    class="info-card"
     [type]="'warning'"
     [message]="'Não há segmentos de texto nem de vídeo.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else if (textSegmentationService.segments().length <= 0) {
-    <app-warning-card
+    <app-info-card
     top
-    class="warning-card"
+    class="info-card"
     [type]="'warning'"
     [message]="'Não há segmentos de texto.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else if (videoSegmentationService.segments().length <= 0) {
-    <app-warning-card
+    <app-info-card
     top
-    class="warning-card"
+    class="info-card"
     [type]="'warning'"
     [message]="'Não há segmentos de vídeo.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else {
-    <div top class="correlation-container">
+    <div top class="card correlation-container">
       <ol #correlationList class="correlation-list" role="list">
         @for (row of correlationRows(); track row.index; let first = $first; let last = $last) {
           <li class="correlation-item" role="listitem">
@@ -132,22 +132,22 @@ direction="vertical"
   [resizeBarAriaLabel]="'Redimensionamento das áreas de exibição do registro de texto e de vídeo'"
   >
     @if (mediaFilesService.textRecord().type === 'invalid') {
-      <app-warning-card
+      <app-info-card
       left
-      class="warning-card"
+      class="info-card"
       [type]="'error'"
       [message]="'Registro de texto inválido.'"
-      ></app-warning-card>
+      ></app-info-card>
     } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
-      <app-warning-card
+      <app-info-card
       left
-      class="warning-card"
+      class="info-card"
       [type]="'warning'"
       [message]="'Registro de texto não selecionado.'"
-      ></app-warning-card>
+      ></app-info-card>
     } @else {
       <div left class="text-record-area">
-        <div class="text-record-container">
+        <div class="card text-record-container">
           <app-pdf-viewer
           class="pdf-viewer"
           [src]="mediaFilesService.textRecord().url!"
@@ -163,14 +163,14 @@ direction="vertical"
       </div>
     }
     @if (videoSegmentationService.segments().length <= 0) {
-      <app-warning-card
+      <app-info-card
       right
-      class="warning-card"
+      class="info-card"
       [type]="'warning'"
       [message]="'Não há segmentos de vídeo.'"
-      ></app-warning-card>
+      ></app-info-card>
     } @else {
-      <div right class="video-player-container">
+      <div right class="card video-player-container">
         <app-video-player
         class="video-player"
         [segment]="selectedVideoSegment()"

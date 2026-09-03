@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import { WarningCard, type WarningCardType } from './warning-card';
+import { InfoCard, type InfoCardType } from './info-card';
 
-describe('WarningCard', () => {
-  let component: WarningCard;
-  let fixture: ComponentFixture<WarningCard>;
+describe('InfoCard', () => {
+  let component: InfoCard;
+  let fixture: ComponentFixture<InfoCard>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WarningCard],
+      imports: [InfoCard],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(WarningCard);
+    fixture = TestBed.createComponent(InfoCard);
     component = fixture.componentInstance;
 
     fixture.componentRef.setInput('message', 'Test warning message');
@@ -35,7 +35,7 @@ describe('WarningCard', () => {
   });
 
   describe('Card Types and Roles', () => {
-    const testCases: { type: WarningCardType, expectedRole: string, expectedClass: string }[] = [
+    const testCases: { type: InfoCardType, expectedRole: string, expectedClass: string }[] = [
       { type: 'warning', expectedRole: 'status', expectedClass: 'warning' },
       { type: 'info', expectedRole: 'status', expectedClass: 'info' },
       { type: 'error', expectedRole: 'alert', expectedClass: 'error' },
@@ -47,7 +47,7 @@ describe('WarningCard', () => {
         fixture.componentRef.setInput('type', type);
         fixture.detectChanges();
 
-        const cardElement = fixture.debugElement.query(By.css('.warning-card'));
+        const cardElement = fixture.debugElement.query(By.css('.info-card'));
         expect(cardElement).toBeTruthy();
         expect(cardElement.nativeElement.getAttribute('role')).toBe(expectedRole);
         expect(cardElement.nativeElement.classList.contains(expectedClass)).toBe(true);

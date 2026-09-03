@@ -18,7 +18,7 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 
 import { Split } from '../../layout/split/split';
-import { WarningCard } from '../../common/warning-card/warning-card';
+import { InfoCard } from '../../common/info-card/info-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 
 import {
@@ -39,7 +39,7 @@ export interface CorrelationRow {
 
 @Component({
   selector: 'app-correlation',
-  imports: [Split, WarningCard, PdfViewer, VideoPlayer, NgTemplateOutlet],
+  imports: [Split, InfoCard, PdfViewer, VideoPlayer, NgTemplateOutlet],
   templateUrl: './correlation.html',
   styleUrl: './correlation.scss',
 })

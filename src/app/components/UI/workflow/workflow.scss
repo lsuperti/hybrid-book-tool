@@ -20,17 +20,17 @@ main > * {
   justify-content: center;
   background-color: var(--card-bg);
   overflow: clip;
-}
 
-.tabs-list {
-  height: $tab-height;
-  display: flex;
-  flex-direction: row;
-  list-style-type: none;
-  
-  width: 100%;
-  @media (min-width: calc($tab-height * $number-of-tabs * 2)) {
-    width: calc(2/3 * 100%);
+  &-list {
+    height: $tab-height;
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+    width: 100%;
+
+    @media (min-width: calc($tab-height * $number-of-tabs * 2)) {
+      width: calc(2 / 3 * 100%);
+    }
   }
 }
 
@@ -39,6 +39,11 @@ main > * {
   flex-direction: row;
   flex-grow: 1;
   justify-content: center;
+
+  &:has(.tab-button[aria-selected="true"]) {
+    background-color: var(--card-bg-accent);
+    border-bottom: 0.25rem solid var(--primary-color);
+  }
 }
 
 .tab-button {
@@ -48,89 +53,47 @@ main > * {
   border: none;
   color: var(--icon-color);
   cursor: pointer;
-}
 
-.tab-button .icon-container svg {
-  height: $tab-height;
-}
+  .icon-container svg {
+    height: $tab-height;
+  }
 
-.tab:has(.tab-button[aria-selected="true"]) {
-  background-color: var(--card-bg-accent);
-  border-bottom: 0.25rem solid var(--primary-color);
-}
+  &:focus-visible {
+    outline: none;
+    display: flex;
+    justify-content: center;
 
-.tab-button:focus-visible {
-  position: relative;
-  outline: 0.25rem solid var(--primary-color);
-  border-radius: 0.5rem;
-  outline-offset: -0.625rem;
-}
+    .icon-container {
+      position: relative;
+      width: $tab-height;
+      height: $tab-height;
 
-.ingest-button:focus-visible, .correlation-button:focus-visible {
-  outline: none;
-  display: flex;
-  justify-content: center;
-}
+      &::after {
+        content: '';
+        position: absolute;
+        border: 0.25rem solid var(--primary-color);
+        border-radius: var(--button-border-radius);
+      }
+    }
+  }
 
-.ingest-button:focus-visible .icon-container, .correlation-button:focus-visible .icon-container {
-  position: relative;
-  width: $tab-height;
-  height: $tab-height;
-}
+  &.ingest-button,
+  &.correlation-button {
+    &:focus-visible .icon-container::after {
+      inset: 0.625rem 0;
+    }
+  }
 
-.ingest-button:focus-visible .icon-container::after, .correlation-button:focus-visible .icon-container::after {
-  content: "";
-  position: absolute;
-  top: 0.625rem;
-  left: 0rem;
-  right: 0rem;
-  bottom: 0.625rem;
-  border: 0.25rem solid var(--primary-color);
-  border-radius: 0.5rem;
-}
+  &.text-segmentation-button,
+  &.video-segmentation-button {
+    &:focus-visible .icon-container::after {
+      inset: 0.9375rem -0.1875rem;
+    }
+  }
 
-.text-segmentation-button:focus-visible, .video-segmentation-button:focus-visible {
-  outline: none;
-  display: flex;
-  justify-content: center;
-}
-
-.text-segmentation-button:focus-visible .icon-container, .video-segmentation-button:focus-visible .icon-container {
-  position: relative;
-  width: $tab-height;
-  height: $tab-height;
-}
-
-.text-segmentation-button:focus-visible .icon-container::after, .video-segmentation-button:focus-visible .icon-container::after {
-  content: "";
-  position: absolute;
-  top: 0.9375rem;
-  left: -0.1875rem;
-  right: -0.1875rem;
-  bottom: 0.9375rem;
-  border: 0.25rem solid var(--primary-color);
-  border-radius: 0.5rem;
-}
-
-.export-button:focus-visible {
-  outline: none;
-  display: flex;
-  justify-content: center;
-}
-
-.export-button:focus-visible .icon-container {
-  position: relative;
-  width: $tab-height;
-  height: $tab-height;
-}
-
-.export-button:focus-visible .icon-container::after {
-  content: "";
-  position: absolute;
-  top: 0.5625rem;
-  left: 0.5625rem;
-  right: 0.5625rem;
-  bottom: 0.5625rem;
-  border: 0.25rem solid var(--primary-color);
-  border-radius: 0.5rem;
+  &.export-button {
+    &:focus-visible .icon-container::after {
+      inset: 0.5625rem;
+    }
+  }
 }

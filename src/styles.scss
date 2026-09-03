@@ -13,6 +13,7 @@
   --card-bg-accent-accent-accent-accent: hsl(210, 10%, 60%);
   --card-bg-accent-accent-accent-accent-accent: hsl(210, 10%, 50%);
   --icon-color: hsl(210, 50%, 10%);
+  --icon-color-disabled: hsl(210, 20%, 60%);
   --error-color: hsl(0, 75%, 60%);
 
   --card-spacing: 0.25rem;
@@ -61,6 +62,15 @@ body {
 
 button {
   color: var(--icon-color);
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: var(--card-bg);
+  border: var(--card-border-thickness) solid var(--card-bg-accent);
+  border-radius: var(--card-border-radius);
 }
 
 ngx-extended-pdf-viewer .body, ngx-extended-pdf-viewer .pdf-viewer input, ngx-extended-pdf-viewer .pdf-viewer button, ngx-extended-pdf-viewer .pdf-viewer select {

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Split } from '../../layout/split/split';
-import { WarningCard } from '../../common/warning-card/warning-card';
+import { InfoCard } from '../../common/info-card/info-card';
 import { MediaFiles } from '../../../services/media-files/media-files';
 import { PdfViewerFrame } from '../../common/pdf-viewer/pdf-viewer-frame';
 import { PDFNotificationService, PDFPageProxy, TextContent, type IPDFViewerApplication } from 'ngx-extended-pdf-viewer';
@@ -19,7 +19,7 @@ import { TextSegmentationService } from '../../../services/text-segmentation/tex
 
 @Component({
   selector: 'app-ingest',
-  imports: [Split, WarningCard, PdfViewerFrame, NgTemplateOutlet],
+  imports: [Split, InfoCard, PdfViewerFrame, NgTemplateOutlet],
   templateUrl: './ingest.html',
   styleUrl: './ingest.scss',
 })

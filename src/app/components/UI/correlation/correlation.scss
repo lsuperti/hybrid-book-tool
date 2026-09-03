@@ -8,11 +8,6 @@
 }
 
 .text-record-container {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  border: var(--card-border-thickness) solid var(--card-bg-accent);
-  border-radius: var(--card-border-radius);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -27,33 +22,22 @@
 }
 
 .video-player-container {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  border: var(--card-border-thickness) solid var(--card-bg-accent);
-  border-radius: var(--card-border-radius);
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--card-bg);
 }
-
 
 /*
  * Correlation List Styles.
  */
 
 .correlation-container {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border: var(--card-border-thickness) solid var(--card-bg-accent);
-  border-radius: var(--card-border-radius);
   overflow: hidden;
+  container-type: inline-size;
 }
 
 .correlation-list {
@@ -63,7 +47,6 @@
   overflow-x: hidden;
   scrollbar-color: var(--card-bg-accent-accent-accent) var(--card-bg);
   background-color: var(--card-bg);
-  container-type: scroll-state;
 }
 
 $spacing-between-up-down-buttons: 0.25rem;
@@ -76,6 +59,33 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   align-items: stretch;
   min-height: calc(var(--button-size) * 2 + $spacing-between-up-down-buttons + 1rem);
   contain: layout;
+
+  &:nth-child(odd) {
+    background-color: var(--card-bg);
+  }
+
+  &:nth-child(even) {
+    background-color: var(--card-bg-accent);
+  }
+
+  &:last-child {
+    position: relative;
+    border-radius: 0 0
+      calc(var(--card-border-radius) - var(--card-border-thickness))
+      calc(var(--card-border-radius) - var(--card-border-thickness));
+
+    &::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: var(--card-border-radius);
+      border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
+      position: absolute;
+      bottom: calc(var(--card-border-thickness) * -1);
+      left: 0;
+      border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
+    }
+  }
 }
 
 .correlation-splitter {
@@ -84,58 +94,29 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   width: var(--card-border-thickness);
   position: absolute;
   top: 0;
-  left: calc(50% - calc(var(--card-border-thickness) / 2));
+  left: calc(50cqw - var(--card-border-thickness) / 2);
   background-color: var(--card-bg-accent-accent-accent);
 }
 
-.correlation-item:nth-child(odd) {
-  background-color: var(--card-bg);
-}
-
-.correlation-item:nth-child(even) {
-  background-color: var(--card-bg-accent);
-}
-
-.correlation-item:last-child {
-  position: relative;
-  border-radius: 0 0 calc(var(--card-border-radius) - var(--card-border-thickness)) calc(var(--card-border-radius) - var(--card-border-thickness));
-}
-
-.correlation-item:last-child::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: var(--card-border-radius);
-  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
-  position: absolute;
-  bottom: calc(var(--card-border-thickness) * -1);
-  left: 0;
-  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
-}
-
-@container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
-  .correlation-item:last-child::after {
-    display: none;
-  }
-}
-
 .correlation-text-segment-container {
-  width: 50%;
+  width: 50cqw;
+  flex-shrink: 0;
   display: flex;
   align-items: stretch;
 }
 
 .correlation-video-segment-button {
-  width: 50%;
+  flex: 1;
+  min-width: 0;
   background-color: transparent;
   border: none;
   display: flex;
   align-items: center;
   padding: 0.5rem;
-}
 
-.correlation-video-segment-button[aria-selected="true"] .video-segment-name-container .video-segment-name {
-  color: var(--primary-color);
+  &[aria-selected="true"] .video-segment-name-container .video-segment-name {
+    color: var(--primary-color);
+  }
 }
 
 .empty-segment {
@@ -151,33 +132,33 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   cursor: pointer;
   display: flex;
   align-items: stretch;
-}
 
-.segment-text-button:focus-visible {
-  outline: var(--button-border-thickness) solid var(--primary-color);
-  outline-offset: -0.5rem;
-  border-radius: 0.75rem;
-}
+  &:focus-visible {
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: -0.5rem;
+    border-radius: 0.75rem;
+  }
 
-.segment-text-button[aria-pressed="true"] .segment-text {
-  color: var(--primary-color);
-}
+  &[aria-pressed="true"] .segment-text {
+    color: var(--primary-color);
 
-.segment-text {
-  display: flex;
-  align-items: center;
-  text-align: justify;
-  width: 100%;
-  margin: 0;
-}
+    &.hovered {
+      color: var(--primary-color);
+    }
+  }
 
-.segment-text.hovered {
-  font-style: italic;
-  color: var(--primary-accent);
-}
+  .segment-text {
+    display: flex;
+    align-items: center;
+    text-align: justify;
+    width: 100%;
+    margin: 0;
 
-.segment-text-button[aria-pressed="true"] .segment-text.hovered {
-  color: var(--primary-color);
+    &.hovered {
+      font-style: italic;
+      color: var(--primary-accent);
+    }
+  }
 }
 
 /*
@@ -186,46 +167,46 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
 
 .video-segment-thumbnail-container {
   height: $thumbnail-height;
-  aspect-ratio: 1.5/1;
+  aspect-ratio: 1.5 / 1;
   border: var(--thumbnail-border-thickness) solid var(--card-bg-accent-accent-accent);
   border-radius: var(--thumbnail-border-radius);
   display: flex;
   align-items: center;
-}
 
-.video-segment-thumbnail-placeholder {
-  outline: 0.25rem solid var(--card-bg-accent-accent-accent);
-  outline-offset: -0.25rem;
-  color: var(--card-bg-accent-accent-accent);
-  background-color: var(--card-bg);
-}
+  &.video-segment-thumbnail-placeholder {
+    outline: 0.25rem solid var(--card-bg-accent-accent-accent);
+    outline-offset: -0.25rem;
+    color: var(--card-bg-accent-accent-accent);
+    background-color: var(--card-bg);
+  }
 
-.video-segment-thumbnail-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: calc(var(--thumbnail-border-radius) - var(--thumbnail-border-thickness));
-}
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: calc(var(--thumbnail-border-radius) - var(--thumbnail-border-thickness));
+  }
 
-.video-segment-thumbnail-placeholder svg {
-  width: 100%;
-  height: 100%;
-  border-radius: calc(var(--thumbnail-border-radius) - var(--thumbnail-border-thickness));
-  color: var(--card-bg-accent-accent-accent);
+  svg {
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--thumbnail-border-radius) - var(--thumbnail-border-thickness));
+    color: var(--card-bg-accent-accent-accent);
+  }
 }
 
 .video-segment-name-container {
-  margin: 0 0.5rem;
+  margin-inline: 0.5rem;
   overflow: hidden;
   flex-grow: 1;
-}
 
-.video-segment-name {
-  display: flex;
-  align-items: center;
-  text-align: justify;
-  min-height: 100%;
-  margin: 0;
+  .video-segment-name {
+    display: flex;
+    align-items: center;
+    text-align: justify;
+    min-height: 100%;
+    margin: 0;
+  }
 }
 
 .up-down-buttons-container {
@@ -234,7 +215,8 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   flex-direction: column;
 }
 
-.up-button, .down-button {
+.up-button,
+.down-button {
   width: var(--button-size);
   height: var(--button-size);
   border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
@@ -245,6 +227,16 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   align-items: center;
   justify-content: center;
   cursor: pointer;
+
+  &:focus-visible {
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: calc(var(--button-border-thickness) * -1);
+  }
+
+  &[disabled] {
+    color: var(--icon-color);
+    cursor: default;
+  }
 }
 
 .up-button {
@@ -253,14 +245,4 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
 
 .down-button {
   margin-top: calc($spacing-between-up-down-buttons / 2);
-}
-
-.up-button:focus-visible, .down-button:focus-visible {
-  outline: var(--button-border-thickness) solid var(--primary-color);
-  outline-offset: calc(var(--button-border-thickness) * -1);
-}
-
-.up-button[disabled], .down-button[disabled] {
-  color: var(--icon-color);
-  cursor: default;
 }

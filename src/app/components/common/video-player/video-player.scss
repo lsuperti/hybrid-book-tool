@@ -21,13 +21,13 @@ $controls-height: 4rem;
   justify-content: center;
   align-items: center;
   background-color: #000;
-}
 
-.video-canvas {
-  max-width: 100%;
-  max-height: 100%;
-  background-color: #000;
-  object-fit: contain;
+  .video-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    background-color: #000;
+    object-fit: contain;
+  }
 }
 
 .controls-container {
@@ -43,8 +43,7 @@ $controls-height: 4rem;
 .progress-bar-container {
   height: 1rem;
   width: calc(100% - 1rem);
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  padding-inline: 0.5rem;
 }
 
 .progress-bar {
@@ -69,27 +68,27 @@ $controls-height: 4rem;
   justify-content: center;
   align-items: center;
   gap: 1rem;
-}
 
-.control-button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  width: var(--button-size);
-  height: var(--button-size);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--icon-color);
-  
-  &:focus-visible {
-    outline: var(--button-border-thickness) solid var(--primary-color);
-    outline-offset: var(--button-border-thickness);
-    border-radius: 50%;
-  }
+  .control-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: var(--button-size);
+    height: var(--button-size);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--icon-color);
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    &:focus-visible {
+      outline: var(--button-border-thickness) solid var(--primary-color);
+      outline-offset: var(--button-border-thickness);
+      border-radius: 50%;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }

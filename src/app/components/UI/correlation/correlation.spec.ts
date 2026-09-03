@@ -5,7 +5,7 @@ import { MediaFiles, type MediaFileId } from '../../../services/media-files/medi
 import { TextSegmentationService, type TextSegment } from '../../../services/text-segmentation/text-segmentation';
 import { VideoSegmentationService, type VideoSegment } from '../../../services/video-segmentation/video-segmentation';
 import { By } from '@angular/platform-browser';
-import { WarningCard } from '../../common/warning-card/warning-card';
+import { InfoCard } from '../../common/info-card/info-card';
 
 describe('Correlation', () => {
   let component: Correlation;
@@ -38,11 +38,11 @@ describe('Correlation', () => {
     videoSegmentationService.segments.set([]);
     fixture.detectChanges();
 
-    const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-    const topWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('top'));
-    expect(topWarningCard).toBeTruthy();
-    expect(topWarningCard?.componentInstance.type()).toBe('error');
-    expect(topWarningCard?.componentInstance.message()).toBe('Registro de texto inválido.');
+    const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+    const topInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('top'));
+    expect(topInfoCard).toBeTruthy();
+    expect(topInfoCard?.componentInstance.type()).toBe('error');
+    expect(topInfoCard?.componentInstance.message()).toBe('Registro de texto inválido.');
   });
 
   it('should display warning card when both text and video segments are empty', () => {
@@ -51,11 +51,11 @@ describe('Correlation', () => {
     videoSegmentationService.segments.set([]);
     fixture.detectChanges();
 
-    const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-    const topWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('top'));
-    expect(topWarningCard).toBeTruthy();
-    expect(topWarningCard?.componentInstance.type()).toBe('warning');
-    expect(topWarningCard?.componentInstance.message()).toBe('Não há segmentos de texto nem de vídeo.');
+    const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+    const topInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('top'));
+    expect(topInfoCard).toBeTruthy();
+    expect(topInfoCard?.componentInstance.type()).toBe('warning');
+    expect(topInfoCard?.componentInstance.message()).toBe('Não há segmentos de texto nem de vídeo.');
   });
 
   it('should display warning card when only text segments are empty', () => {
@@ -66,11 +66,11 @@ describe('Correlation', () => {
     }]);
     fixture.detectChanges();
 
-    const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-    const topWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('top'));
-    expect(topWarningCard).toBeTruthy();
-    expect(topWarningCard?.componentInstance.type()).toBe('warning');
-    expect(topWarningCard?.componentInstance.message()).toBe('Não há segmentos de texto.');
+    const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+    const topInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('top'));
+    expect(topInfoCard).toBeTruthy();
+    expect(topInfoCard?.componentInstance.type()).toBe('warning');
+    expect(topInfoCard?.componentInstance.message()).toBe('Não há segmentos de texto.');
   });
 
   it('should display warning card when only video segments are empty', () => {
@@ -87,11 +87,11 @@ describe('Correlation', () => {
     videoSegmentationService.segments.set([]);
     fixture.detectChanges();
 
-    const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-    const topWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('top'));
-    expect(topWarningCard).toBeTruthy();
-    expect(topWarningCard?.componentInstance.type()).toBe('warning');
-    expect(topWarningCard?.componentInstance.message()).toBe('Não há segmentos de vídeo.');
+    const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+    const topInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('top'));
+    expect(topInfoCard).toBeTruthy();
+    expect(topInfoCard?.componentInstance.type()).toBe('warning');
+    expect(topInfoCard?.componentInstance.message()).toBe('Não há segmentos de vídeo.');
   });
 
   it('should not display a top warning card when both text and video segments are present', () => {
@@ -110,9 +110,9 @@ describe('Correlation', () => {
     }]);
     fixture.detectChanges();
 
-    const warningCards = fixture.debugElement.queryAll(By.directive(WarningCard));
-    const topWarningCard = warningCards.find((card) => card.nativeElement.hasAttribute('top'));
-    expect(topWarningCard).toBeUndefined();
+    const InfoCards = fixture.debugElement.queryAll(By.directive(InfoCard));
+    const topInfoCard = InfoCards.find((card) => card.nativeElement.hasAttribute('top'));
+    expect(topInfoCard).toBeUndefined();
   });
 
   describe('Full Text Concatenation', () => {

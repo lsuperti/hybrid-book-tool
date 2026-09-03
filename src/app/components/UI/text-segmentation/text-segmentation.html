@@ -4,28 +4,28 @@ direction="horizontal"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de segmentos e de visualização do registro de texto'"
 >
   @if (mediaFilesService.textRecord().type === 'invalid') {
-    <app-warning-card
+    <app-info-card
     left
-    class="warning-card"
+    class="info-card"
     [type]="'error'"
     [message]="'Registro de texto inválido.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card
+    <app-info-card
     left
-    class="warning-card"
+    class="info-card"
     [type]="'warning'"
     [message]="'Registro de texto não selecionado.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else if (textSegmentationService.status() === 'loading') {
-    <app-warning-card
+    <app-info-card
     left
-    class="warning-card"
+    class="info-card"
     [type]="'loading-segments'"
     [message]="'Extraindo texto do registro de texto...'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else {
-    <div left class="segments-container">
+    <div left class="card segments-container">
       <ol #segmentsList class="segments-list" role="list">
         @for (
           segment of textSegmentationService.segments();
@@ -245,22 +245,22 @@ direction="horizontal"
     </div>
   }
   @if (mediaFilesService.textRecord().type === 'invalid') {
-    <app-warning-card
+    <app-info-card
     right
-    class="warning-card"
+    class="info-card"
     [type]="'error'"
     [message]="'Registro de texto inválido.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
-    <app-warning-card
+    <app-info-card
     right
-    class="warning-card"
+    class="info-card"
     [type]="'warning'"
     [message]="'Registro de texto não selecionado.'"
-    ></app-warning-card>
+    ></app-info-card>
   } @else {
     <div right class="text-record-area">
-      <div class="text-record-container">
+      <div class="card text-record-container">
         <app-pdf-viewer
         #pdfViewer
         class="pdf-viewer"

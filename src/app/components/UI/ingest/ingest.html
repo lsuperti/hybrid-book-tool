@@ -10,7 +10,7 @@ direction="horizontal"
     [minSizePercentage]="10"
     [collapsed]="mediaFiles().length <= 0 ? 'first' : 'none'"
     >
-      <div first class="media-files-list-container">
+      <div first class="card media-files-list-container">
         <ol class="media-files-list">
           @for (mediaFile of mediaFiles(); track mediaFile.id) {
             <li class="media-file-item">
@@ -47,33 +47,35 @@ direction="horizontal"
       </div>
       <div
       second
-      class="media-files-upload-area upload-area"
+      class="card media-files-upload-area upload-area"
       [class.dragging-over]="draggingOverMediaFilesUploadArea()"
       (dragenter)="onMediaFilesDragEnter($event)"
       (dragover)="onMediaFilesDragOver($event)"
       (dragleave)="onMediaFilesDragLeave($event)"
       (drop)="onMediaFilesDrop($event)"
       >
-        <ng-container *ngTemplateOutlet="fileLoadIcon"></ng-container>
-        <p>
-          Solte arquivos de mídia aqui ou
-          <button
-          #mediaFilesUploadLink
-          type="button"
-          class="upload-link"
+        <div class="upload-area-content">
+          <ng-container *ngTemplateOutlet="fileLoadIcon"></ng-container>
+          <p>
+            Solte arquivos de mídia aqui ou
+            <button
+            #mediaFilesUploadLink
+            type="button"
+            class="upload-link"
+            aria-label="Selecione arquivos de mídia para upload"
+            (click)="mediaFileInput.click()"
+            >selecione arquivos</button>.
+          </p>
+          <input
+          #mediaFileInput
+          type="file"
+          multiple
+          accept="video/*"
           aria-label="Selecione arquivos de mídia para upload"
-          (click)="mediaFileInput.click()"
-          >selecione arquivos</button>.
-        </p>
-        <input
-        #mediaFileInput
-        type="file"
-        multiple
-        accept="video/*"
-        aria-label="Selecione arquivos de mídia para upload"
-        (change)="onMediaFileSelected($event)"
-        style="display: none;"
-        />
+          (change)="onMediaFileSelected($event)"
+          style="display: none;"
+          />
+        </div>
       </div>
     </app-split>
   </div>
@@ -87,7 +89,7 @@ direction="horizontal"
     >
       <div first class="text-record-container">
         @if (textRecord().type === 'application/pdf') {
-          <div #textRecordContent class="text-record-content">
+          <div #textRecordContent class="card text-record-content">
             <!-- We must have one PDF viewer that is outside the iframe created by app-pdf-viewer so that there is an
              ngx-extended-pdf-viewer component available in the DOM. This is needed to allow us to access its underlying
              PDF.js instance for the text extraction. All other PDF viewers must use the app-pdf-viewer since only one
@@ -102,51 +104,53 @@ direction="horizontal"
             ></app-pdf-viewer-frame>
           </div>
         } @else if (textRecord().type === 'invalid') {
-          <app-warning-card
+          <app-info-card
           class="error-card"
           [type]="'error'"
           [message]="'O arquivo selecionado não é um PDF válido. Por favor, selecione um arquivo PDF.'"
-          ></app-warning-card>
+          ></app-info-card>
         } @else {
-          <app-warning-card
+          <app-info-card
           class="info-card"
           [type]="'info'"
           [message]="'O registro de texto aparecerá aqui.'"
-          ></app-warning-card>
+          ></app-info-card>
         }
       </div>
       <div
       second
-      class="text-record-upload-area upload-area"
+      class="card text-record-upload-area upload-area"
       [class.dragging-over]="draggingOverTextRecordUploadArea()"
       (dragenter)="onTextRecordDragEnter($event)"
       (dragover)="onTextRecordDragOver($event)"
       (dragleave)="onTextRecordDragLeave($event)"
       (drop)="onTextRecordDrop($event)"
       >
-        <ng-container *ngTemplateOutlet="fileLoadIcon"></ng-container>
-        <p>
-          @if (textRecord().type === null) {
-            Solte o registro de texto aqui ou
-          } @else {
-            Para alterar o registro de texto, solte um novo registro de texto aqui ou
-          }
-          <button
-          #textRecordUploadLink
-          type="button"
-          class="upload-link"
+        <div class="upload-area-content">
+          <ng-container *ngTemplateOutlet="fileLoadIcon"></ng-container>
+          <p>
+            @if (textRecord().type === null) {
+              Solte o registro de texto aqui ou
+            } @else {
+              Para alterar o registro de texto, solte um novo registro de texto aqui ou
+            }
+            <button
+            #textRecordUploadLink
+            type="button"
+            class="upload-link"
+            aria-label="Selecione o arquivo de registro de texto para upload"
+            (click)="textRecordFileInput.click()"
+            >selecione um arquivo</button>.
+          </p>
+          <input
+          #textRecordFileInput
+          type="file"
+          accept="application/pdf"
           aria-label="Selecione o arquivo de registro de texto para upload"
-          (click)="textRecordFileInput.click()"
-          >selecione um arquivo</button>.
-        </p>
-        <input
-        #textRecordFileInput
-        type="file"
-        accept="application/pdf"
-        aria-label="Selecione o arquivo de registro de texto para upload"
-        (change)="onTextRecordFileSelected($event)"
-        style="display: none;"
-        />
+          (change)="onTextRecordFileSelected($event)"
+          style="display: none;"
+          />
+          </div>
       </div>
     </app-split>
   </div>

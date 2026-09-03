@@ -1,13 +1,8 @@
 .segments-container {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow-y: auto;
-  border: var(--card-border-thickness) solid var(--card-bg-accent);
-  border-radius: var(--card-border-radius);
 }
 
 $spacing-between-up-down-buttons: 0.5rem;
@@ -20,35 +15,7 @@ $inner-button-spacing: 1rem;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-color: var(--card-bg-accent-accent-accent) var(--card-bg);
-  container-type: scroll-state;
   background-color: var(--card-bg);
-}
-
-.parent-segment-item {
-  contain: layout;
-}
-
-.parent-segment-item:last-child ol li .segment-bottom-background {
-  position: relative;
-  border-radius: 0 0 calc(var(--card-border-radius) - var(--card-border-thickness)) calc(var(--card-border-radius) - var(--card-border-thickness));
-}
-
-.parent-segment-item:last-child ol li .segment-bottom-background::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: var(--card-border-radius);
-  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
-  position: absolute;
-  bottom: calc(var(--card-border-thickness) * -1);
-  left: 0;
-  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
-}
-
-@container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
-  .parent-segment-item:last-child ol li .segment-bottom-background::after {
-    display: none;
-  }
 }
 
 .parent-segment-item {
@@ -58,61 +25,98 @@ $inner-button-spacing: 1rem;
   width: 100%;
   position: relative;
   contain: layout;
-}
 
-.parent-segment-item .segments-sublist .segment .segment-top-background {
-  position: absolute;
-  left: -0.125rem;
-  width: calc(100% + 0.125rem);
-  height: calc(var(--button-size) / 2 - 0.0625rem);
-  z-index: 2;
-}
+  &:last-child ol li .segment-bottom-background {
+    position: relative;
+    border-radius: 0 0
+      calc(var(--card-border-radius) - var(--card-border-thickness))
+      calc(var(--card-border-radius) - var(--card-border-thickness));
 
-.parent-segment-item .segments-sublist .parent-segment .segment-bottom-background {
-  position: absolute;
-  left: -0.125rem;
-  top: calc(var(--button-size) / 2 - 0.0625rem);
-  width: calc(100% + 0.125rem);
-  height: 100%;
-  z-index: 1;
-}
+    &::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: var(--card-border-radius);
+      border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
+      position: absolute;
+      bottom: calc(var(--card-border-thickness) * -1);
+      left: 0;
+      border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
+    }
+  }
 
-.parent-segment-item:first-child .segments-sublist .parent-segment .segment-bottom-background {
-  height: calc(100% + var(--button-size) / 2 - 0.0625rem);
-  top: 0;
-}
+  .segments-sublist {
+    list-style: none;
+    width: 100%;
 
-.parent-segment-item:nth-child(odd) .segments-sublist .parent-segment .segment-bottom-background {
-  background-color: var(--card-bg);
-}
+    .segment .segment-top-background {
+      position: absolute;
+      left: -0.125rem;
+      width: calc(100% + 0.125rem);
+      height: calc(var(--button-size) / 2 - 0.0625rem);
+      z-index: 2;
+    }
 
-.parent-segment-item:nth-child(even) .segments-sublist .parent-segment .segment-bottom-background {
-  background-color: var(--card-bg-accent);
-}
+    .parent-segment .segment-bottom-background {
+      position: absolute;
+      left: -0.125rem;
+      top: calc(var(--button-size) / 2 - 0.0625rem);
+      width: calc(100% + 0.125rem);
+      height: 100%;
+      z-index: 1;
+    }
+  }
 
-.parent-segment-item:nth-child(odd) .segments-sublist .parent-segment .segment-top-background {
-  background-color: var(--card-bg-accent);
-}
+  &:first-child .segments-sublist .parent-segment {
+    .segment-bottom-background {
+      height: calc(100% + var(--button-size) / 2 - 0.0625rem);
+      top: 0;
+    }
 
-.parent-segment-item:nth-child(even) .segments-sublist .parent-segment .segment-top-background {
-  background-color: var(--card-bg);
-}
+    .segment-inner-items-container {
+      margin-top: 1.5rem;
+    }
+  }
 
-.parent-segment-item:nth-child(odd) .segments-sublist .child-segment .segment-top-background {
-  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
-}
+  &:nth-child(odd) .segments-sublist {
+    .parent-segment {
+      .segment-bottom-background {
+        background-color: var(--card-bg);
+      }
 
-.parent-segment-item:nth-child(even) .segments-sublist .child-segment .segment-top-background {
-  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent-accent);
-}
+      .segment-top-background {
+        background-color: var(--card-bg-accent);
+      }
+    }
 
-.segments-sublist {
-  list-style: none;
-  width: 100%;
+    .child-segment .segment-top-background {
+      border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
+    }
+  }
+
+  &:nth-child(even) .segments-sublist {
+    .parent-segment {
+      .segment-bottom-background {
+        background-color: var(--card-bg-accent);
+      }
+
+      .segment-top-background {
+        background-color: var(--card-bg);
+      }
+    }
+
+    .child-segment .segment-top-background {
+      border-bottom: var(--card-border-thickness) solid var(--card-bg-accent-accent);
+    }
+  }
 }
 
 .segment {
   padding-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .child-segment {
@@ -120,13 +124,9 @@ $inner-button-spacing: 1rem;
   position: relative;
 }
 
-.segment:last-child {
-  margin-bottom: 0;
-}
-
 .segment-inner-items-container {
   margin-top: 0.5rem;
-  padding: 0 0.5rem 0 0.5rem;
+  padding-inline: 0.5rem;
   position: relative;
   z-index: 1;
   display: flex;
@@ -139,45 +139,43 @@ $inner-button-spacing: 1rem;
   min-height: calc(var(--button-size) * 2 + $spacing-between-up-down-buttons);
   background-color: transparent;
   border: none;
-  padding: 0 $inner-button-spacing 0 $inner-button-spacing;
-}
+  padding-inline: $inner-button-spacing;
 
-.segment-button:focus-visible {
-  outline: none;
-}
+  &:focus-visible {
+    outline: none;
 
-.segment-button:focus-visible .segment-text {
-  outline: var(--button-border-thickness) solid var(--primary-color);
-  outline-offset: var(--button-border-thickness);
-  border-radius: var(--card-border-radius);
-}
+    .segment-text {
+      outline: var(--button-border-thickness) solid var(--primary-color);
+      outline-offset: var(--button-border-thickness);
+      border-radius: var(--card-border-radius);
+    }
+  }
 
-.segment-button[aria-pressed="true"] .segment-text {
-  color: var(--primary-color);
-}
+  &[aria-pressed="true"] .segment-text {
+    color: var(--primary-color);
 
-.segment-text {
-  display: flex;
-  align-items: center;
-  text-align: justify;
-  min-height: calc(var(--button-size) * 2 + $spacing-between-up-down-buttons);
-}
+    &.hovered {
+      color: var(--primary-color);
+    }
+  }
 
-.segment-text.hovered {
-  font-style: italic;
-  color: var(--primary-accent);
-}
+  .segment-text {
+    display: flex;
+    align-items: center;
+    text-align: justify;
+    min-height: calc(var(--button-size) * 2 + $spacing-between-up-down-buttons);
 
-.segment-button[aria-pressed="true"] .segment-text.hovered {
-  color: var(--primary-color);
-}
-
-.parent-segment-item:first-child .segments-sublist .parent-segment .segment-inner-items-container {
-  margin-top: 1.5rem;
+    &.hovered {
+      font-style: italic;
+      color: var(--primary-accent);
+    }
+  }
 }
 
 .include-button,
-.exclude-button {
+.exclude-button,
+.up-button,
+.down-button {
   width: var(--button-size);
   height: var(--button-size);
   border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
@@ -193,19 +191,6 @@ $inner-button-spacing: 1rem;
   width: var(--button-size);
 }
 
-.up-button,
-.down-button {
-  width: var(--button-size);
-  height: var(--button-size);
-  border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
-  border-radius: var(--button-border-radius);
-  padding: 0.0625rem;
-  background-color: var(--card-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .up-button {
   margin-bottom: calc($spacing-between-up-down-buttons / 2);
 }
@@ -217,8 +202,7 @@ $inner-button-spacing: 1rem;
 .link-button-container {
   width: var(--button-size);
   height: var(--button-size);
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline: auto;
   position: relative;
   z-index: 2;
 }
@@ -233,10 +217,10 @@ $inner-button-spacing: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-}
 
-.link-button[disabled] {
-  color: var(--icon-color);
+  &[disabled] {
+    color: var(--icon-color);
+  }
 }
 
 button:focus-visible {
@@ -254,11 +238,6 @@ button:focus-visible {
 }
 
 .text-record-container {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  border: var(--card-border-thickness) solid var(--card-bg-accent);
-  border-radius: var(--card-border-radius);
   display: flex;
   flex-direction: column;
   justify-content: center;

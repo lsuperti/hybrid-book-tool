@@ -10,13 +10,13 @@ direction="vertical"
   >
     <div left class="video-segments-area">
       @if (mediaFilesService.mediaFiles().length <= 0) {
-        <app-warning-card
-        class="warning-card"
+        <app-info-card
+        class="info-card"
         [type]="'warning'"
         [message]="'Nenhum arquivo de mídia foi carregado.'"
-        ></app-warning-card>
+        ></app-info-card>
       } @else {
-        <div class="video-segments-container">
+        <div class="card video-segments-container">
           <ol class="video-segments-list">
             <!--
             STUB: We don't yet have the segment logic, so we are just displaying the media files as if each was a
@@ -29,9 +29,6 @@ direction="vertical"
                 (click)="onSegmentSelected(i)"
                 [attr.aria-label]="'Selecionar segmento ' + segment.name"
                 >
-                  <div class="segment-name-container">
-                    <p>{{ segment.name }}</p>
-                  </div>
                   @if (segment.thumbnail) {
                     <div class="video-segment-thumbnail-container">
                       <img
@@ -49,6 +46,9 @@ direction="vertical"
                       </svg>
                     </div>
                   }
+                  <div class="segment-name-container">
+                    <p class="segment-name">{{ segment.name }}</p>
+                  </div>
                 </button>
               </li>
             }
@@ -61,13 +61,13 @@ direction="vertical"
         mediaFilesService.mediaFiles().length <= 0 ||
         mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null
       ) {
-        <app-warning-card
-        class="warning-card"
+        <app-info-card
+        class="info-card"
         [type]="'warning'"
         [message]="'Nenhum arquivo de mídia foi carregado.'"
-        ></app-warning-card>
+        ></app-info-card>
       } @else {
-        <div class="video-preview-container">
+        <div class="card video-preview-container">
           <app-video-player
           class="video-player"
           [segment]="selectedSegment()"
