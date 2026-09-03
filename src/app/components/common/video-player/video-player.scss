@@ -59,8 +59,8 @@ $controls-height: 4rem;
 
   &:focus-visible {
     border-radius: 0.25rem;
-    outline: 0.125rem solid var(--primary-color);
-    outline-offset: 0.125rem;
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: var(--button-border-thickness);
   }
 }
 
@@ -75,16 +75,16 @@ $controls-height: 4rem;
   background: transparent;
   border: none;
   cursor: pointer;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: var(--button-size);
+  height: var(--button-size);
   display: flex;
   justify-content: center;
   align-items: center;
   color: var(--icon-color);
   
   &:focus-visible {
-    outline: 0.125rem solid var(--primary-color);
-    outline-offset: 0.125rem;
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: var(--button-border-thickness);
     border-radius: 50%;
   }
 

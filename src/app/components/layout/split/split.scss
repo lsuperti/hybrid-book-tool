@@ -5,7 +5,7 @@
 }
 
 $resize-bar-width: var(--card-spacing);
-$resize-bar-grab-width: 0.5rem;
+$resize-bar-grab-width: max(0.5rem, var(--card-spacing));
 
 .split-container {
   display: flex;

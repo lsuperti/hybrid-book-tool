@@ -14,7 +14,7 @@
   padding: 1rem;
   border-radius: var(--card-border-radius);
   background-color: var(--card-bg);
-  border: 0.125rem solid var(--card-bg-accent);
+  border: var(--card-border-thickness) solid var(--card-bg-accent);
   box-sizing: border-box;
 }
 

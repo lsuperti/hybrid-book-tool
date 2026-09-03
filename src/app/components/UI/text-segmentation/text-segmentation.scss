@@ -6,11 +6,10 @@
   flex-direction: column;
   justify-content: center;
   overflow-y: auto;
-  border: 0.125rem solid var(--card-bg-accent);
+  border: var(--card-border-thickness) solid var(--card-bg-accent);
   border-radius: var(--card-border-radius);
 }
 
-$button-size: 2.75rem;
 $spacing-between-up-down-buttons: 0.5rem;
 $inner-button-spacing: 1rem;
 
@@ -31,19 +30,19 @@ $inner-button-spacing: 1rem;
 
 .parent-segment-item:last-child ol li .segment-bottom-background {
   position: relative;
-  border-radius: 0 0 0.375rem 0.375rem;
+  border-radius: 0 0 calc(var(--card-border-radius) - var(--card-border-thickness)) calc(var(--card-border-radius) - var(--card-border-thickness));
 }
 
 .parent-segment-item:last-child ol li .segment-bottom-background::after {
   content: '';
   display: block;
   width: 100%;
-  height: 0.5rem;
-  border-radius: 0 0 0.5rem 0.5rem;
+  height: var(--card-border-radius);
+  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
   position: absolute;
-  bottom: -0.125rem;
+  bottom: calc(var(--card-border-thickness) * -1);
   left: 0;
-  border-bottom: 0.125rem solid var(--card-bg-accent);
+  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
 }
 
 @container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
@@ -65,21 +64,21 @@ $inner-button-spacing: 1rem;
   position: absolute;
   left: -0.125rem;
   width: calc(100% + 0.125rem);
-  height: calc($button-size/2 - 0.0625rem);
+  height: calc(var(--button-size) / 2 - 0.0625rem);
   z-index: 2;
 }
 
 .parent-segment-item .segments-sublist .parent-segment .segment-bottom-background {
   position: absolute;
   left: -0.125rem;
-  top: calc($button-size/2 - 0.0625rem);
+  top: calc(var(--button-size) / 2 - 0.0625rem);
   width: calc(100% + 0.125rem);
   height: 100%;
   z-index: 1;
 }
 
 .parent-segment-item:first-child .segments-sublist .parent-segment .segment-bottom-background {
-  height: calc(100% + $button-size/2 - 0.0625rem);
+  height: calc(100% + var(--button-size) / 2 - 0.0625rem);
   top: 0;
 }
 
@@ -100,11 +99,11 @@ $inner-button-spacing: 1rem;
 }
 
 .parent-segment-item:nth-child(odd) .segments-sublist .child-segment .segment-top-background {
-  border-bottom: 0.125rem solid var(--card-bg-accent);
+  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
 }
 
 .parent-segment-item:nth-child(even) .segments-sublist .child-segment .segment-top-background {
-  border-bottom: 0.125rem solid var(--card-bg-accent-accent);
+  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent-accent);
 }
 
 .segments-sublist {
@@ -113,7 +112,7 @@ $inner-button-spacing: 1rem;
 }
 
 .segment {
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
 }
 
 .child-segment {
@@ -126,7 +125,7 @@ $inner-button-spacing: 1rem;
 }
 
 .segment-inner-items-container {
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   padding: 0 0.5rem 0 0.5rem;
   position: relative;
   z-index: 1;
@@ -136,8 +135,8 @@ $inner-button-spacing: 1rem;
 }
 
 .segment-button {
-  width: calc(100% - 2 * $button-size);
-  min-height: calc($button-size * 2 + $spacing-between-up-down-buttons);
+  width: calc(100% - 2 * var(--button-size));
+  min-height: calc(var(--button-size) * 2 + $spacing-between-up-down-buttons);
   background-color: transparent;
   border: none;
   padding: 0 $inner-button-spacing 0 $inner-button-spacing;
@@ -148,8 +147,8 @@ $inner-button-spacing: 1rem;
 }
 
 .segment-button:focus-visible .segment-text {
-  outline: 0.125rem solid var(--primary-color);
-  outline-offset: 0.125rem;
+  outline: var(--button-border-thickness) solid var(--primary-color);
+  outline-offset: var(--button-border-thickness);
   border-radius: var(--card-border-radius);
 }
 
@@ -161,7 +160,7 @@ $inner-button-spacing: 1rem;
   display: flex;
   align-items: center;
   text-align: justify;
-  min-height: calc($button-size * 2 + $spacing-between-up-down-buttons);
+  min-height: calc(var(--button-size) * 2 + $spacing-between-up-down-buttons);
 }
 
 .segment-text.hovered {
@@ -179,10 +178,10 @@ $inner-button-spacing: 1rem;
 
 .include-button,
 .exclude-button {
-  width: $button-size;
-  height: $button-size;
-  border: 0.125rem solid var(--card-bg-accent-accent);
-  border-radius: var(--card-border-radius);
+  width: var(--button-size);
+  height: var(--button-size);
+  border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
+  border-radius: var(--button-border-radius);
   padding: 0.0625rem;
   background-color: var(--card-bg);
   display: flex;
@@ -191,15 +190,15 @@ $inner-button-spacing: 1rem;
 }
 
 .up-down-buttons-container {
-  width: $button-size;
+  width: var(--button-size);
 }
 
 .up-button,
 .down-button {
-  width: $button-size;
-  height: $button-size;
-  border: 0.125rem solid var(--card-bg-accent-accent);
-  border-radius: var(--card-border-radius);
+  width: var(--button-size);
+  height: var(--button-size);
+  border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
+  border-radius: var(--button-border-radius);
   padding: 0.0625rem;
   background-color: var(--card-bg);
   display: flex;
@@ -216,8 +215,8 @@ $inner-button-spacing: 1rem;
 }
 
 .link-button-container {
-  width: $button-size;
-  height: $button-size;
+  width: var(--button-size);
+  height: var(--button-size);
   margin-left: auto;
   margin-right: auto;
   position: relative;
@@ -227,8 +226,8 @@ $inner-button-spacing: 1rem;
 .link-button {
   width: 100%;
   height: 100%;
-  border: 0.125rem solid var(--card-bg-accent-accent);
-  border-radius: 0.5rem;
+  border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
+  border-radius: var(--button-border-radius);
   padding: 0.0625rem;
   background-color: var(--card-bg);
   display: flex;
@@ -241,8 +240,8 @@ $inner-button-spacing: 1rem;
 }
 
 button:focus-visible {
-  outline: 0.125rem solid var(--primary-color);
-  outline-offset: -0.125rem;
+  outline: var(--button-border-thickness) solid var(--primary-color);
+  outline-offset: calc(var(--button-border-thickness) * -1);
 }
 
 .text-record-area {
@@ -258,7 +257,7 @@ button:focus-visible {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border: 0.125rem solid var(--card-bg-accent);
+  border: var(--card-border-thickness) solid var(--card-bg-accent);
   border-radius: var(--card-border-radius);
   display: flex;
   flex-direction: column;
@@ -266,7 +265,7 @@ button:focus-visible {
 }
 
 .pdf-viewer {
-  border-radius: calc(var(--card-border-radius) - 0.125rem);
+  border-radius: calc(var(--card-border-radius) - var(--card-border-thickness));
   width: 100%;
   height: 100%;
   overflow: hidden;

@@ -11,7 +11,7 @@ $thumbnail-height: $list-item-height - 1rem;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border: 0.125rem solid var(--card-bg-accent);
+  border: var(--card-border-thickness) solid var(--card-bg-accent);
   border-radius: var(--card-border-radius);
   overflow: hidden;
 }
@@ -37,19 +37,19 @@ $thumbnail-height: $list-item-height - 1rem;
 
 .video-segments-list-item:last-child {
   position: relative;
-  border-radius: 0 0 0.375rem 0.375rem;
+  border-radius: 0 0 calc(var(--card-border-radius) - var(--card-border-thickness)) calc(var(--card-border-radius) - var(--card-border-thickness));
 }
 
 .video-segments-list-item:last-child::after {
   content: '';
   display: block;
   width: 100%;
-  height: 0.5rem;
-  border-radius: 0 0 0.5rem 0.5rem;
+  height: var(--card-border-radius);
+  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
   position: absolute;
-  bottom: -0.125rem;
+  bottom: calc(var(--card-border-thickness) * -1);
   left: 0;
-  border-bottom: 0.125rem solid var(--card-bg-accent);
+  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
 }
 
 @container scroll-state(scrollable: top), scroll-state(scrollable: bottom) {
@@ -75,9 +75,9 @@ $thumbnail-height: $list-item-height - 1rem;
   position: absolute;
   width: 100%;
   height: 100%;
-  outline: 0.125rem solid var(--primary-color);
-  outline-offset: -0.125rem;
-  border-radius: 0.5rem;
+  outline: var(--button-border-thickness) solid var(--primary-color);
+  outline-offset: calc(var(--button-border-thickness) * -1);
+  border-radius: var(--button-border-radius);
 }
 
 .video-segments-list-item-main-button:focus-visible {
@@ -118,8 +118,8 @@ $thumbnail-height: $list-item-height - 1rem;
 .video-segment-thumbnail-container {
   width: $thumbnail-height * 1.5;
   height: $thumbnail-height;
-  border: 0.125rem solid var(--card-bg-accent-accent-accent);
-  border-radius: 0.25rem;
+  border: var(--thumbnail-border-thickness) solid var(--card-bg-accent-accent-accent);
+  border-radius: var(--thumbnail-border-radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,14 +129,11 @@ $thumbnail-height: $list-item-height - 1rem;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0.125rem;
+  border-radius: calc(var(--thumbnail-border-radius) - var(--thumbnail-border-thickness));
 }
 
 .video-segment-thumbnail-placeholder svg {
-  width: 100%;
-  height: 100%;
-  color: var(--icon-color);
-  border-radius: 0.1875rem;
+  border-radius: calc(var(--thumbnail-border-radius) - var(--thumbnail-border-thickness));
 }
 
 .video-preview-area {
@@ -148,7 +145,7 @@ $thumbnail-height: $list-item-height - 1rem;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border: 0.125rem solid var(--card-bg-accent);
+  border: var(--card-border-thickness) solid var(--card-bg-accent);
   border-radius: var(--card-border-radius);
   overflow: hidden;
   display: flex;
