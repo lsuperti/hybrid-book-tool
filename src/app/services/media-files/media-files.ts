@@ -1,6 +1,6 @@
 import { Service, signal, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Thumbnail, type ThumbnailGenerationResult } from '../thumbnail/thumbnail';
+import { Thumbnail, type FileThumbnailGenerationResult } from '../thumbnail/thumbnail';
 
 @Service()
 export class MediaFiles {
@@ -52,7 +52,7 @@ export class MediaFiles {
     this.mediaFiles.update((currentFiles) => [...currentFiles, ...newMediaFiles]);
 
     this.thumbnailService
-      .generateThumbnailUrls(newMediaFiles.map((mediaFile) => ({
+      .generateFileThumbnailUrls(newMediaFiles.map((mediaFile) => ({
         mediaFileId: mediaFile.id,
         file: mediaFile.file,
       })))
@@ -76,6 +76,8 @@ export class MediaFiles {
     if (mediaFileToRemove && mediaFileToRemove.url) {
       URL.revokeObjectURL(mediaFileToRemove.url);
     }
+
+    this.thumbnailService.freeFilmstripThumbnailsForFile(mediaFileId);
 
     this.mediaFiles.update((currentFiles) => currentFiles.filter((mediaFile) => mediaFile.id !== mediaFileId));
   }
@@ -112,7 +114,7 @@ export class MediaFiles {
    * @param result The result of the thumbnail generation request, sent by the `Thumbnail` service.
    * @throws Will throw an error if the thumbnail generation failed.
    */
-  private handleThumbnailGenerationResult(result: ThumbnailGenerationResult): void {
+  private handleThumbnailGenerationResult(result: FileThumbnailGenerationResult): void {
     if ('error' in result) {
       throw new Error(`Failed to generate thumbnail for media file "${result.mediaFileId}".`, { cause: result.error });
     }

@@ -6,8 +6,8 @@ import { PDFNotificationService, type IPDFViewerApplication, type TextContent } 
 import { Ingest } from './ingest';
 import {
   Thumbnail,
-  type ThumbnailGenerationRequest,
-  type ThumbnailGenerationResult
+  type FileThumbnailGenerationRequest,
+  type FileThumbnailGenerationResult
 } from '../../../services/thumbnail/thumbnail';
 import { TextSegmentationService } from '../../../services/text-segmentation/text-segmentation';
 import { MediaFiles } from '../../../services/media-files/media-files';
@@ -192,8 +192,8 @@ describe('Ingest', () => {
  * Stub service for thumbnail generation in tests.
  */
 class ThumbnailStub {
-  public readonly requests: ThumbnailGenerationRequest[][] = [];
-  public readonly results$ = new Subject<ThumbnailGenerationResult>();
+  public readonly requests: FileThumbnailGenerationRequest[][] = [];
+  public readonly results$ = new Subject<FileThumbnailGenerationResult>();
 
   /**
    * Generates thumbnail URLs for incoming requests.
@@ -202,10 +202,31 @@ class ThumbnailStub {
    * @returns Observable stream of thumbnail generation results.
    */
   public generateThumbnailUrls(
-    requests: readonly ThumbnailGenerationRequest[]
-  ): Observable<ThumbnailGenerationResult> {
+    requests: readonly FileThumbnailGenerationRequest[]
+  ): Observable<FileThumbnailGenerationResult> {
     this.requests.push([...requests]);
     return this.results$.asObservable();
+  }
+
+  /**
+   * Generates file thumbnail URLs for incoming requests.
+   *
+   * @param requests List of requests.
+   * @returns Observable stream of thumbnail generation results.
+   */
+  public generateFileThumbnailUrls(
+    requests: readonly FileThumbnailGenerationRequest[]
+  ): Observable<FileThumbnailGenerationResult> {
+    return this.generateThumbnailUrls(requests);
+  }
+
+  /**
+   * Stub method for freeing filmstrip thumbnails of a file.
+   *
+   * @param _mediaFileId The media file ID.
+   */
+  public freeFilmstripThumbnailsForFile(_mediaFileId: string): void {
+    // No-op for stub
   }
 }
 

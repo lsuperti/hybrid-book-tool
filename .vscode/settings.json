@@ -10,7 +10,8 @@
         "unlinkable",
         "unlisten",
         "unlistener",
-        "unlisteners"
+        "unlisteners",
+        "unsalvageable"
     ],
     "search.exclude": {
         "**/.agents/**": true,

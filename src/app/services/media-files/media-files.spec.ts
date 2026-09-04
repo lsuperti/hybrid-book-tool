@@ -3,7 +3,11 @@ import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { MediaFiles, type MediaFileId } from './media-files';
-import { Thumbnail, type ThumbnailGenerationRequest, type ThumbnailGenerationResult } from '../thumbnail/thumbnail';
+import {
+  Thumbnail,
+  type FileThumbnailGenerationRequest,
+  type FileThumbnailGenerationResult,
+} from '../thumbnail/thumbnail';
 
 describe('MediaFiles', () => {
   let service: MediaFiles;
@@ -171,6 +175,7 @@ describe('MediaFiles', () => {
       expect(service.mediaFiles()).toEqual([]);
       expect(revokeObjectURLSpy).toHaveBeenCalledWith(file.url);
       expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:http://localhost/thumb-1');
+      expect(thumbnailStub.freedFileIds).toContain(file.id);
     });
 
     it('should do nothing if media file ID is not found', () => {
@@ -284,19 +289,29 @@ describe('MediaFiles', () => {
  * Stub service for thumbnail generation in tests.
  */
 class ThumbnailStub {
-  public readonly requests: ThumbnailGenerationRequest[][] = [];
-  public readonly results$ = new Subject<ThumbnailGenerationResult>();
+  public readonly requests: FileThumbnailGenerationRequest[][] = [];
+  public readonly results$ = new Subject<FileThumbnailGenerationResult>();
+  public readonly freedFileIds: string[] = [];
 
   /**
-   * Generates thumbnail URLs for incoming requests.
+   * Generates file thumbnail URLs for incoming requests.
    *
    * @param requests List of requests.
    * @returns Observable stream of thumbnail generation results.
    */
-  public generateThumbnailUrls(
-    requests: readonly ThumbnailGenerationRequest[]
-  ): Observable<ThumbnailGenerationResult> {
+  public generateFileThumbnailUrls(
+    requests: readonly FileThumbnailGenerationRequest[],
+  ): Observable<FileThumbnailGenerationResult> {
     this.requests.push([...requests]);
     return this.results$.asObservable();
+  }
+
+  /**
+   * Tracks freed filmstrip thumbnails for a file.
+   *
+   * @param mediaFileId The media file ID.
+   */
+  public freeFilmstripThumbnailsForFile(mediaFileId: string): void {
+    this.freedFileIds.push(mediaFileId);
   }
 }
