@@ -6,6 +6,7 @@ import { signal, ComponentRef, WritableSignal } from '@angular/core';
 
 interface TestVideoPlayer {
   isPlaying: WritableSignal<boolean>,
+  isScrubbing: WritableSignal<boolean>,
   currentTime: WritableSignal<number>,
   playableStartTime: WritableSignal<number>,
   playableEndTime: WritableSignal<number>,
@@ -460,5 +461,93 @@ describe('VideoPlayer', () => {
 
     expect(testComponent.isPlaying()).toBe(false);
     expect(testComponent.currentTime()).toBe(5);
+  });
+
+  it('should support mode="file" playing entire media file bounds', async () => {
+    const file = new File([''], 'test.mp4', { type: 'video/mp4' });
+    mediaFilesMock.mediaFiles.set([{
+      id: 'media-123' as unknown as string,
+      file: file,
+      name: 'test.mp4',
+      url: null,
+      thumbnail: null
+    } as unknown as MediaFile]);
+
+    componentRef.setInput('mode', 'file');
+    componentRef.setInput('mediaFileId', 'media-123');
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(testComponent.playableStartTime()).toBe(0);
+    expect(testComponent.playableEndTime()).toBe(10);
+    expect(component.duration()).toBe(10);
+    expect(testComponent.isLoaded()).toBe(true);
+  });
+
+  it('should reactively start and stop playback when isPlaying signal changes externally', async () => {
+    fixture.detectChanges();
+    testComponent.videoSink = new mediabunny.VideoSampleSink(mockTrack);
+    testComponent.isLoaded.set(true);
+    testComponent.playableEndTime.set(10);
+
+    component.isPlaying.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.isPlaying()).toBe(true);
+
+    component.isPlaying.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.isPlaying()).toBe(false);
+  });
+
+  it('should pause playback on isScrubbing=true and resume on isScrubbing=false', async () => {
+    fixture.detectChanges();
+    testComponent.videoSink = new mediabunny.VideoSampleSink(mockTrack);
+    testComponent.isLoaded.set(true);
+    testComponent.playableEndTime.set(10);
+
+    component.togglePlay();
+    expect(component.isPlaying()).toBe(true);
+
+    component.isScrubbing.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.isPlaying()).toBe(false);
+
+    component.isScrubbing.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.isPlaying()).toBe(true);
+  });
+
+  it('should coalesce rapid currentTime updates and throttle rendering via requestAnimationFrame', async () => {
+    fixture.detectChanges();
+    testComponent.videoSink = new mediabunny.VideoSampleSink(mockTrack);
+    testComponent.isLoaded.set(true);
+    testComponent.playableEndTime.set(10);
+
+    const rafSpy = vi.spyOn(window, 'requestAnimationFrame');
+    rafSpy.mockClear();
+
+    component.currentTime.set(2);
+    component.currentTime.set(3);
+    component.currentTime.set(4);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // At most 1 RAF callback is scheduled while a frame is pending
+    expect(rafSpy).toHaveBeenCalledTimes(1);
+    rafSpy.mockRestore();
+  });
+
+  it('should format seconds into MM:SS correctly in formatTime', () => {
+    expect(component.formatTime(0)).toBe('00:00');
+    expect(component.formatTime(65)).toBe('01:05');
+    expect(component.formatTime(3600)).toBe('60:00');
+    expect(component.formatTime(-5)).toBe('00:00');
+    expect(component.formatTime(NaN)).toBe('00:00');
   });
 });

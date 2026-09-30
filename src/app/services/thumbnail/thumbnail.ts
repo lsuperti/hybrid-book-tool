@@ -12,6 +12,7 @@ export class Thumbnail {
   private readonly destroyRef = inject(DestroyRef, { optional: true });
 
   public static readonly DEFAULT_FILE_THUMBNAIL_SIZE = 128;
+  public static readonly DEFAULT_SEGMENT_THUMBNAIL_SIZE = 128;
   public static readonly DEFAULT_FILMSTRIP_THUMBNAIL_SIZE = 64;
   public static readonly DEFAULT_CONCURRENCY = 3;
 
@@ -31,9 +32,34 @@ export class Thumbnail {
   private readonly storedFilmstripThumbnails = new Map<string, StoredFilmstripThumbnail[]>();
 
   /**
+   * Map of cached segment thumbnails keyed by segment ID.
+   */
+  private readonly storedSegmentThumbnails = new Map<string, { mediaFileId: string, url: string }>();
+
+  /**
    * The time between thumbnails from the previous filmstrip generation request, used to detect zoom changes.
    */
   private previousTimeBetweenThumbnails: number | null = null;
+
+  /**
+   * Active Mediabunny Input being decoded for filmstrip thumbnails, tracked to support instant abortion.
+   */
+  private activeFilmstripInput: Input | null = null;
+
+  /**
+   * Promise of the currently active filmstrip generation task, used to serialize decoding pipelines.
+   */
+  private activeFilmstripTask: Promise<void> | null = null;
+
+  /**
+   * Cancellation callback for the currently active filmstrip generation task.
+   */
+  private activeFilmstripCancel: (() => void) | null = null;
+
+  /**
+   * Monotonically increasing ID of the current filmstrip generation task.
+   */
+  private activeFilmstripTaskId = 0;
 
   constructor() {
     this.destroyRef?.onDestroy(() => {
@@ -74,6 +100,112 @@ export class Thumbnail {
   }
 
   /**
+   * Generates thumbnail URLs for the given video segment requests.
+   *
+   * Each thumbnail is captured at the pristine first frame of the segment (its exact startTime).
+   *
+   * @param requests The array of segment thumbnail generation requests.
+   * @param options The options for segment thumbnail generation.
+   * @returns An `Observable` that emits the results of the segment thumbnail generation.
+   */
+  public generateSegmentThumbnailUrls(
+    requests: readonly SegmentThumbnailGenerationRequest[],
+    options?: SegmentThumbnailGenerationOptions,
+  ): Observable<SegmentThumbnailGenerationResult> {
+    return new Observable<SegmentThumbnailGenerationResult>((subscriber) => {
+      let isCancelled = false;
+      const activeInputs = new Set<Input>();
+
+      const cancelThis = () => {
+        isCancelled = true;
+        for (const input of activeInputs) {
+          try {
+            input.dispose();
+          } catch {
+            // Ignore error from aborted input
+          }
+        }
+        activeInputs.clear();
+      };
+
+      const concurrency = options?.concurrency ?? Thumbnail.DEFAULT_CONCURRENCY;
+
+      from(requests).pipe(
+        mergeMap(
+          (request) => {
+            if (isCancelled) {
+              return of<SegmentThumbnailGenerationResult>({
+                segmentId: request.segmentId,
+                mediaFileId: request.mediaFileId,
+                error: new Error('Segment thumbnail generation cancelled.'),
+              });
+            }
+            return from(
+              this.generateSegmentThumbnail(
+                request.file,
+                request.startTime,
+                request.thumbnailSize,
+                () => isCancelled,
+                (input: Input) => {
+                  if (isCancelled) {
+                    try {
+                      input.dispose();
+                    } catch {
+                      // Ignore error
+                    }
+                  } else {
+                    activeInputs.add(input);
+                  }
+                },
+                (input: Input) => {
+                  activeInputs.delete(input);
+                },
+              ),
+            ).pipe(
+              map((blob) => {
+                const url = URL.createObjectURL(blob);
+                this.storeSegmentThumbnail(request.segmentId, request.mediaFileId, url);
+                return {
+                  segmentId: request.segmentId,
+                  mediaFileId: request.mediaFileId,
+                  thumbnailUrl: url,
+                };
+              }),
+              catchError((error: unknown) => of({
+                segmentId: request.segmentId,
+                mediaFileId: request.mediaFileId,
+                error: this.normalizeError(error),
+              })),
+            );
+          },
+          concurrency,
+        ),
+      )
+        .subscribe({
+          next: (result) => {
+            if (!isCancelled) {
+              subscriber.next(result);
+            }
+          },
+          error: (err) => {
+            if (!isCancelled) {
+              subscriber.error(err);
+            }
+          },
+          complete: () => {
+            if (!isCancelled) {
+              subscriber.complete();
+            }
+          },
+        });
+
+      return () => {
+        cancelThis();
+      };
+    });
+  }
+
+  /**
    * Generates and streams filmstrip thumbnail URLs for multiple video files across specified time intervals.
    *
    * Results are emitted asynchronously as each thumbnail is generated or retrieved from cache.
@@ -90,7 +222,40 @@ export class Thumbnail {
     return new Observable<FilmstripThumbnailResult>((subscriber) => {
       let isCancelled = false;
 
-      (async () => {
+      const cancelThis = () => {
+        isCancelled = true;
+        if (this.activeFilmstripInput) {
+          try {
+            this.activeFilmstripInput.dispose();
+          } catch {
+            // Ignore error from aborted input
+          }
+          this.activeFilmstripInput = null;
+        }
+      };
+
+      // Cancel any prior active generation task
+      if (this.activeFilmstripCancel) {
+        this.activeFilmstripCancel();
+      }
+      this.activeFilmstripCancel = cancelThis;
+
+      const priorTask = this.activeFilmstripTask;
+      const currentTaskId = ++this.activeFilmstripTaskId;
+
+      const currentTask = (async () => {
+        if (priorTask) {
+          try {
+            await priorTask;
+          } catch {
+            // Ignore errors from aborted prior tasks
+          }
+        }
+
+        if (isCancelled) {
+          return;
+        }
+
         try {
           await this.processFilmstripThumbnailsRequest(request, subscriber, () => isCancelled);
           if (!isCancelled) {
@@ -100,11 +265,18 @@ export class Thumbnail {
           if (!isCancelled) {
             subscriber.error(this.normalizeError(error));
           }
+        } finally {
+          if (this.activeFilmstripTaskId === currentTaskId) {
+            this.activeFilmstripTask = null;
+            this.activeFilmstripCancel = null;
+          }
         }
       })();
 
+      this.activeFilmstripTask = currentTask;
+
       return () => {
-        isCancelled = true;
+        cancelThis();
       };
     });
   }
@@ -114,6 +286,18 @@ export class Thumbnail {
    * and resetting the recorded zoom interval.
    */
   public freeAllFilmstripThumbnails(): void {
+    if (this.activeFilmstripCancel) {
+      this.activeFilmstripCancel();
+      this.activeFilmstripCancel = null;
+    }
+    this.activeFilmstripTaskId++;
+    this.clearFilmstripCache();
+  }
+
+  /**
+   * Revokes object URLs and clears the stored filmstrip thumbnails cache.
+   */
+  private clearFilmstripCache(): void {
     for (const thumbnails of this.storedFilmstripThumbnails.values()) {
       for (const item of thumbnails) {
         URL.revokeObjectURL(item.thumbnailUrl);
@@ -140,10 +324,64 @@ export class Thumbnail {
   }
 
   /**
+   * Stores a generated segment thumbnail URL in the internal cache.
+   * If a previous thumbnail URL was stored for this segment ID, revokes the old URL first.
+   *
+   * @param segmentId The segment ID.
+   * @param mediaFileId The media file ID.
+   * @param url The object URL of the thumbnail.
+   */
+  private storeSegmentThumbnail(segmentId: string, mediaFileId: string, url: string): void {
+    const existing = this.storedSegmentThumbnails.get(segmentId);
+    if (existing) {
+      URL.revokeObjectURL(existing.url);
+    }
+    this.storedSegmentThumbnails.set(segmentId, { mediaFileId, url });
+  }
+
+  /**
+   * Frees the stored thumbnail for a specific segment.
+   *
+   * @param segmentId The ID of the segment whose thumbnail should be freed.
+   */
+  public freeSegmentThumbnail(segmentId: string): void {
+    const entry = this.storedSegmentThumbnails.get(segmentId);
+    if (entry) {
+      URL.revokeObjectURL(entry.url);
+      this.storedSegmentThumbnails.delete(segmentId);
+    }
+  }
+
+  /**
+   * Frees all stored segment thumbnails for a specific media file.
+   *
+   * @param mediaFileId The ID of the media file whose segment thumbnails should be freed.
+   */
+  public freeSegmentThumbnailsForFile(mediaFileId: string): void {
+    for (const [segmentId, entry] of this.storedSegmentThumbnails.entries()) {
+      if (entry.mediaFileId === mediaFileId) {
+        URL.revokeObjectURL(entry.url);
+        this.storedSegmentThumbnails.delete(segmentId);
+      }
+    }
+  }
+
+  /**
+   * Frees all generated segment thumbnails.
+   */
+  public freeAllSegmentThumbnails(): void {
+    for (const entry of this.storedSegmentThumbnails.values()) {
+      URL.revokeObjectURL(entry.url);
+    }
+    this.storedSegmentThumbnails.clear();
+  }
+
+  /**
    * Frees all generated thumbnails tracked by the service to be used during destruction or reset.
    */
   public freeAllThumbnails(): void {
     this.freeAllFilmstripThumbnails();
+    this.freeAllSegmentThumbnails();
   }
 
   /**
@@ -164,7 +402,7 @@ export class Thumbnail {
       isNaN(request.timeBetweenThumbnails) ||
       request.timeBetweenThumbnails <= 0
     ) {
-      this.freeAllFilmstripThumbnails();
+      this.clearFilmstripCache();
       throw new Error('Invalid timeBetweenThumbnails: must be a positive number.');
     }
 
@@ -324,23 +562,42 @@ export class Thumbnail {
     subscriber: Observer<FilmstripThumbnailResult>,
     isCancelled: () => boolean,
   ): Promise<void> {
+    if (isCancelled() || timestamps.length === 0) {
+      return;
+    }
+
     const input = new Input({
       source: new BlobSource(fileSection.file),
       formats: ALL_FORMATS,
     });
+    this.activeFilmstripInput = input;
 
     try {
-      const videoTrack = await input.getPrimaryVideoTrack();
+      if (isCancelled()) {
+        return;
+      }
 
+      const videoTrack = await input.getPrimaryVideoTrack();
+      if (isCancelled()) {
+        return;
+      }
       if (!videoTrack) {
         throw new Error('File has no video track.');
       }
 
-      if (await videoTrack.getCodec() === null) {
+      const codec = await videoTrack.getCodec();
+      if (isCancelled()) {
+        return;
+      }
+      if (codec === null) {
         throw new Error('Unsupported video codec.');
       }
 
-      if (!(await videoTrack.canDecode())) {
+      const canDecode = await videoTrack.canDecode();
+      if (isCancelled()) {
+        return;
+      }
+      if (!canDecode) {
         throw new Error('Unable to decode the video track.');
       }
 
@@ -355,6 +612,9 @@ export class Thumbnail {
 
       const firstTimestamp = await videoTrack.getFirstTimestamp();
       const lastTimestamp = await videoTrack.computeDuration();
+      if (isCancelled()) {
+        return;
+      }
       const duration = Math.max(0, lastTimestamp - firstTimestamp);
 
       const clampedTimestamps = timestamps.map((t) => (duration > 0
@@ -365,6 +625,7 @@ export class Thumbnail {
         width,
         height,
         fit: 'fill',
+        poolSize: 1,
       });
 
       let timestampIndex = 0;
@@ -377,15 +638,20 @@ export class Thumbnail {
 
           const targetTimestamp = timestamps[timestampIndex++];
           if (!wrappedCanvas) {
-            subscriber.next({
-              mediaFileId: fileSection.mediaFileId,
-              timestamp: targetTimestamp,
-              error: new Error('Failed to extract thumbnail canvas.'),
-            });
+            if (!isCancelled()) {
+              subscriber.next({
+                mediaFileId: fileSection.mediaFileId,
+                timestamp: targetTimestamp,
+                error: new Error('Failed to extract thumbnail canvas.'),
+              });
+            }
             continue;
           }
 
           const blob = await this.canvasToBlob(wrappedCanvas.canvas);
+          if (isCancelled()) {
+            break;
+          }
           if (!blob) {
             subscriber.next({
               mediaFileId: fileSection.mediaFileId,
@@ -413,6 +679,9 @@ export class Thumbnail {
 
           const targetTimestamp = timestamps[timestampIndex++];
           const wrappedCanvas = await sink.getCanvas(clampedT);
+          if (isCancelled()) {
+            break;
+          }
           if (!wrappedCanvas) {
             subscriber.next({
               mediaFileId: fileSection.mediaFileId,
@@ -423,6 +692,9 @@ export class Thumbnail {
           }
 
           const blob = await this.canvasToBlob(wrappedCanvas.canvas);
+          if (isCancelled()) {
+            break;
+          }
           if (!blob) {
             subscriber.next({
               mediaFileId: fileSection.mediaFileId,
@@ -450,7 +722,14 @@ export class Thumbnail {
         });
       }
     } finally {
-      input.dispose();
+      if (this.activeFilmstripInput === input) {
+        this.activeFilmstripInput = null;
+      }
+      try {
+        input.dispose();
+      } catch {
+        // Ignore errors from disposing already-disposed inputs
+      }
     }
   }
 
@@ -520,6 +799,7 @@ export class Thumbnail {
         width,
         height,
         fit: 'fill',
+        poolSize: 1,
       });
 
       const wrappedCanvas = await sink.getCanvas(targetTimestampMediaBunny);
@@ -536,6 +816,128 @@ export class Thumbnail {
       return blob;
     } finally {
       input.dispose();
+    }
+  }
+
+  /**
+   * Generates a single thumbnail for a video segment at its exact start timestamp.
+   *
+   * Unlike file thumbnails, segment thumbnails never skip early frames to avoid container weirdness;
+   * they extract the pristine first frame of the segment at its exact startTime.
+   *
+   * @param file The video file.
+   * @param startTime The start timestamp in seconds of the segment (relative to video start).
+   * @param thumbnailSize The desired size for the thumbnail in pixels.
+   * @param isCancelled Optional callback returning whether thumbnail generation has been cancelled.
+   * @param onInputCreated Optional callback invoked when Mediabunny Input is instantiated.
+   * @param onInputDisposed Optional callback invoked when Mediabunny Input is about to be disposed.
+   * @returns A promise that resolves to the generated thumbnail as a Blob.
+   */
+  private async generateSegmentThumbnail(
+    file: File,
+    startTime = 0,
+    thumbnailSize = NaN,
+    isCancelled?: () => boolean,
+    onInputCreated?: (input: Input) => void,
+    onInputDisposed?: (input: Input) => void,
+  ): Promise<Blob> {
+    if (isCancelled?.()) {
+      throw new Error('Segment thumbnail generation cancelled.');
+    }
+
+    thumbnailSize = this.resolveThumbnailSize(
+      isNaN(thumbnailSize) ? Thumbnail.DEFAULT_SEGMENT_THUMBNAIL_SIZE : thumbnailSize,
+    );
+
+    const input = new Input({
+      source: new BlobSource(file),
+      formats: ALL_FORMATS,
+    });
+    onInputCreated?.(input);
+
+    try {
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+
+      const videoTrack = await input.getPrimaryVideoTrack();
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+
+      if (!videoTrack) {
+        throw new Error('File has no video track.');
+      }
+
+      if (await videoTrack.getCodec() === null) {
+        throw new Error('Unsupported video codec.');
+      }
+
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+
+      if (!(await videoTrack.canDecode())) {
+        throw new Error('Unable to decode the video track.');
+      }
+
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+
+      const displayWidth = await videoTrack.getDisplayWidth();
+      const displayHeight = await videoTrack.getDisplayHeight();
+      const width = displayWidth < displayHeight
+        ? thumbnailSize
+        : Math.floor(thumbnailSize * displayWidth / displayHeight);
+      const height = displayHeight < displayWidth
+        ? thumbnailSize
+        : Math.floor(thumbnailSize * displayHeight / displayWidth);
+
+      const firstTimestamp = (await videoTrack.getFirstTimestamp()) ?? 0;
+      const lastTimestamp = (await videoTrack.computeDuration()) ?? 0;
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+      const duration = Math.max(0, lastTimestamp - firstTimestamp);
+
+      // Extract pristine first frame of the segment: exactly at firstTimestamp + startTime, clamped to track duration
+      const targetTimestamp = duration > 0
+        ? Math.min(lastTimestamp, Math.max(firstTimestamp, firstTimestamp + Math.max(0, startTime)))
+        : firstTimestamp;
+
+      const sink = new CanvasSink(videoTrack, {
+        width,
+        height,
+        fit: 'fill',
+        poolSize: 1,
+      });
+
+      const wrappedCanvas = await sink.getCanvas(targetTimestamp);
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+
+      if (!wrappedCanvas) {
+        throw new Error('Failed to extract segment thumbnail from video.');
+      }
+
+      const blob = await this.canvasToBlob(wrappedCanvas.canvas);
+      if (isCancelled?.()) {
+        throw new Error('Segment thumbnail generation cancelled.');
+      }
+      if (!blob) {
+        throw new Error('Failed to convert segment thumbnail canvas to blob.');
+      }
+
+      return blob;
+    } finally {
+      onInputDisposed?.(input);
+      try {
+        input.dispose();
+      } catch {
+        // Ignore error from already disposed input
+      }
     }
   }
 
@@ -719,3 +1121,46 @@ export interface StoredFilmstripThumbnail {
   timestamp: number,
   thumbnailUrl: string,
 }
+
+/**
+ * Represents a request to generate a segment thumbnail.
+ */
+export interface SegmentThumbnailGenerationRequest {
+  segmentId: string,
+  mediaFileId: string,
+  file: File,
+  startTime: number,
+  thumbnailSize?: number,
+}
+
+/**
+ * Options for segment thumbnail generation batch execution.
+ */
+export interface SegmentThumbnailGenerationOptions {
+  concurrency?: number,
+}
+
+/**
+ * Represents a successful segment thumbnail generation result.
+ */
+export interface SegmentThumbnailGenerationSuccess {
+  segmentId: string,
+  mediaFileId: string,
+  thumbnailUrl: string,
+}
+
+/**
+ * Represents a failed segment thumbnail generation result.
+ */
+export interface SegmentThumbnailGenerationFailure {
+  segmentId: string,
+  mediaFileId: string,
+  error: Error,
+}
+
+/**
+ * The result of a segment thumbnail generation request, either success or failure.
+ */
+export type SegmentThumbnailGenerationResult =
+  SegmentThumbnailGenerationSuccess |
+  SegmentThumbnailGenerationFailure;

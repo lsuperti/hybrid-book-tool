@@ -2,16 +2,21 @@
     "editor.tabSize": 2,
     "cSpell.words": [
         "ÆMIA",
+        "AUTOPAN",
         "IPDF",
         "mediabunny",
+        "playhead",
+        "Playhead",
         "scalings",
+        "segs",
         "sublist",
         "unhover",
         "unlinkable",
         "unlisten",
         "unlistener",
         "unlisteners",
-        "unsalvageable"
+        "unsalvageable",
+        "unseg"
     ],
     "search.exclude": {
         "**/.agents/**": true,

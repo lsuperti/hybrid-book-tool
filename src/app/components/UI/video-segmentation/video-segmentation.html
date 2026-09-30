@@ -1,6 +1,6 @@
 <app-split
 direction="vertical"
-[defaultSize]="90"
+[defaultSize]="65"
 [resizeBarAriaLabel]="'Redimensionamento das áreas de linha do tempo e de segmentos e visualização de vídeo'"
 >
   <app-split
@@ -18,22 +18,18 @@ direction="vertical"
       } @else {
         <div class="card video-segments-container">
           <ol class="video-segments-list">
-            <!--
-            STUB: We don't yet have the segment logic, so we are just displaying the media files as if each was a
-            segment, basically how they would appear if no segmentation was done.
-            -->
-            @for (segment of mediaFilesService.mediaFiles(); track segment.id; let i = $index) {
-              <li class="video-segments-list-item" [aria-selected]="selectedSegmentIndex() === i">
+            @for (segment of videoSegmentationService.segments(); track segment.id ?? $index; let i = $index) {
+              <li class="video-segments-list-item" [aria-selected]="activeSegment()?.id === segment.id">
                 <button
                 class="video-segments-list-item-main-button"
-                (click)="onSegmentSelected(i)"
+                (click)="onSegmentSelected(segment)"
                 [attr.aria-label]="'Selecionar segmento ' + segment.name"
                 >
                   @if (segment.thumbnail) {
                     <div class="video-segment-thumbnail-container">
                       <img
                       inert
-                      src="{{ segment.thumbnail }}"
+                      [src]="segment.thumbnail"
                       alt="Thumbnail de {{ segment.name }}"
                       class="segment-thumbnail"
                       />
@@ -41,7 +37,10 @@ direction="vertical"
                   } @else {
                     <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
                       <svg viewBox="0 0 576 384" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                        <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter" d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686" />
+                        <path
+                        style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:miter"
+                        d="M 11.314,372.686 192,192 288,288 384,192 l 180.686,180.686"
+                        />
                         <circle style="fill:currentColor;fill-rule:evenodd" cx="425.37299" cy="128" r="32" />
                       </svg>
                     </div>
@@ -57,10 +56,7 @@ direction="vertical"
       }
     </div>
     <div right class="video-preview-area">
-      @if (
-        mediaFilesService.mediaFiles().length <= 0 ||
-        mediaFilesService.mediaFiles()[selectedSegmentIndex()].url === null
-      ) {
+      @if (mediaFilesService.mediaFiles().length <= 0) {
         <app-info-card
         class="info-card"
         [type]="'warning'"
@@ -70,11 +66,22 @@ direction="vertical"
         <div class="card video-preview-container">
           <app-video-player
           class="video-player"
-          [segment]="selectedSegment()"
+          [mode]="'file'"
+          [(currentTime)]="currentTime"
+          [(isPlaying)]="isPlaying"
+          [(isScrubbing)]="isScrubbing"
+          [mediaFileId]="activeMediaFile()?.id ?? null"
           ></app-video-player>
         </div>
       }
     </div>
   </app-split>
-  <div tabindex="0" second>[PH] Linha do tempo</div>
+  <app-timeline
+  class="timeline card"
+  second
+  [(currentTime)]="currentTime"
+  [(isPlaying)]="isPlaying"
+  [(isScrubbing)]="isScrubbing"
+  [(activeMediaFileId)]="activeMediaFileId"
+  ></app-timeline>
 </app-split>

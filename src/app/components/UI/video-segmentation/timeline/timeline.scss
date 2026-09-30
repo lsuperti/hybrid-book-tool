@@ -1,0 +1,404 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  user-select: none;
+  overflow: hidden;
+}
+
+.timeline-component-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.timeline-header-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.125rem 1rem;
+  height: 3rem;
+  min-height: 3rem;
+  background-color: var(--card-bg-accent);
+  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent-accent);
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.timeline-header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--button-border-radius);
+  border: var(--button-border-thickness) solid transparent;
+  background-color: transparent;
+  color: var(--icon-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: var(--card-bg-accent-accent);
+  }
+
+  &:focus-visible {
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: calc(var(--button-border-thickness) * -1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.play-button {
+    color: var(--primary-color);
+  }
+
+  &.magic-button {
+    border: none;
+
+    .magic-button-content {
+      display: flex;
+      gap: 0.35rem;
+      padding-inline: 0.25rem;
+      border: var(--button-border-thickness) solid var(--card-bg-accent-accent);
+      border-radius: var(--button-border-radius);
+      align-items: center;
+      height: 2rem;
+    }
+  }
+}
+
+.magic-button-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.toolbar-divider {
+  width: 0.0625rem;
+  height: 1.5rem;
+  background-color: var(--card-bg-accent-accent-accent);
+  margin-inline: 0.25rem;
+}
+
+.timeline-time-display {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--card-border-radius);
+  border: 0.0625rem solid var(--card-bg-accent-accent);
+  height: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.time-current {
+  color: var(--primary-color);
+}
+
+.time-separator {
+  color: var(--icon-color-disabled);
+}
+
+.time-duration {
+  color: var(--text-color);
+}
+
+.timeline-track-container {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background-color: var(--card-bg);
+  scrollbar-color: var(--card-bg-accent-accent-accent) var(--card-bg);
+  user-select: none;
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.timeline-ruler {
+  position: relative;
+  height: 1.5rem;
+  border-bottom: 0.0625rem solid var(--card-bg-accent-accent);
+  background-color: var(--card-bg-accent);
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+.ruler-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0.0625rem;
+  background-color: var(--card-bg-accent-accent-accent);
+}
+
+.timeline-guide-line {
+  position: absolute;
+  left: 0;
+  height: 0.0625rem;
+  background-color: var(--card-bg-accent-accent);
+  pointer-events: none;
+  z-index: 1;
+  min-width: 100%;
+
+  &.top {
+    top: 2rem;
+  }
+
+  &.bottom {
+    bottom: 1.5rem;
+  }
+}
+
+.filmstrips-row {
+  position: absolute;
+  top: 2rem;
+  bottom: 1.5rem;
+  left: 0;
+  min-height: 3rem;
+  pointer-events: none;
+  min-width: 100%;
+}
+
+.filmstrip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.filmstrip-header {
+  height: 1.5rem;
+  flex: 0 0 1.5rem;
+  background-color: var(--primary-color);
+  color: var(--primary-contrast);
+  padding: 0 0.5rem;
+  display: flex;
+  align-items: center;
+  border-radius: 0.25rem 0.25rem 0 0;
+  overflow: hidden;
+}
+
+.filmstrip-file-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filmstrip-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background-color: var(--primary-accent);
+  overflow: hidden;
+}
+
+.filmstrip-thumbnails {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.filmstrip-thumbnail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.filmstrip-thumbnail-placeholder {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  background-color: var(--primary-accent);
+  border-right: 0.0625rem solid rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
+}
+
+.unsegmented-region {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  backdrop-filter: grayscale(50%) brightness(75%);
+  background-color: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 2;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.segment-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  border-top: 0.0625rem solid var(--primary-color);
+  border-bottom: 0.0625rem solid var(--primary-color);
+  box-sizing: border-box;
+  z-index: 3;
+  pointer-events: auto;
+
+  &.selected,
+  &.active {
+    border-color: var(--primary-accent);
+    box-shadow: inset 0 0 0 0.0625rem var(--primary-accent);
+  }
+}
+
+.segment-start-anchor {
+  position: absolute;
+  width: 0;
+  height: 0;
+  outline: none;
+  pointer-events: none;
+}
+
+.segment-content {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.segment-tab {
+  width: 0.5rem;
+  background-color: var(--primary-color);
+  cursor: ew-resize;
+  flex: 0 0 auto;
+  transition: background-color 0.15s ease, width 0.15s ease;
+
+  &:hover,
+  &:focus-visible,
+  &:active {
+    outline: none;
+    background-color: var(--primary-accent);
+    width: 0.625rem;
+  }
+
+  &.start-tab {
+    border-radius: 0 0.375rem 0.375rem 0;
+  }
+
+  &.end-tab {
+    border-radius: 0.375rem 0 0 0.375rem;
+  }
+  
+  .segment-tab-grabber {
+    position: absolute;
+    top: calc(50% - 1rem / 2);
+    width: 0.25rem;
+    height: 1rem;
+    margin: 0 auto;
+    border-radius: 0.25rem !important;
+    background-color: var(--primary-accent);
+    border-radius: 0.0625rem;
+    transform: translateX(calc(0.5rem / 2 - 0.25rem / 2));
+    transition: transform 0.15s ease, background-color 0.15s ease;
+  }
+
+  &:hover .segment-tab-grabber,
+  &:focus-visible .segment-tab-grabber,
+  &:active .segment-tab-grabber {
+    background-color: var(--primary-color);
+    transform: translateX(calc(0.625rem / 2 - 0.25rem / 2));
+  }
+}
+
+.filmstrip-bottom-border {
+  height: 0.25rem;
+  flex: 0 0 0.25rem;
+  background-color: var(--primary-color);
+  border-radius: 0 0 0.25rem 0.25rem;
+}
+
+.timeline-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1rem;
+  margin-left: -0.5rem;
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.15s ease, filter 0.15s ease;
+
+  &.ghost-mode {
+    opacity: 0.45;
+    filter: grayscale(85%);
+
+    .playhead-head {
+      border-top-color: #888888;
+    }
+
+    .playhead-line {
+      background-color: #888888;
+    }
+  }
+}
+
+.playhead-head {
+  width: 0;
+  height: 0;
+  margin: 0 auto;
+  border-left: 0.4375rem solid transparent;
+  border-right: 0.4375rem solid transparent;
+  border-top: 0.75rem solid #ff3333;
+}
+
+.playhead-line {
+  width: 0.125rem;
+  height: calc(100% - 0.75rem);
+  margin: 0 auto;
+  background-color: #ff3333;
+}
+
+.icon {
+  display: block;
+}

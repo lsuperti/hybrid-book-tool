@@ -13,6 +13,9 @@ import {
   type FilmstripThumbnailSuccess,
   type FilmstripThumbnailFailure,
   type FilmstripThumbnailResult,
+  type SegmentThumbnailGenerationRequest,
+  type SegmentThumbnailGenerationSuccess,
+  type SegmentThumbnailGenerationFailure,
 } from './thumbnail';
 
 describe('Thumbnail', () => {
@@ -605,6 +608,73 @@ describe('Thumbnail', () => {
       expect(emitted.length).toBe(2);
     });
 
+    it('should immediately dispose active Input and abort when unsubscribed early', async () => {
+      inputDisposeSpy.mockClear();
+      const fakeFile = new File(['video'], 'video.mp4', { type: 'video/mp4' });
+      const request: FilmstripThumbnailsRequest = {
+        timeBetweenThumbnails: 1,
+        files: [{ mediaFileId: 'cancel-file', file: fakeFile, startTime: 0, endTime: 10 }],
+      };
+
+      const emitted: FilmstripThumbnailResult[] = [];
+      const sub = service.generateFilmstripThumbnails(request).subscribe((res) => {
+        emitted.push(res);
+        if (emitted.length === 2) {
+          sub.unsubscribe();
+        }
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(emitted.length).toBe(2);
+      expect(inputDisposeSpy).toHaveBeenCalled();
+    });
+
+    it('should serialize overlapping requests and cancel prior active tasks', async () => {
+      inputDisposeSpy.mockClear();
+      const fakeFile = new File(['video'], 'video.mp4', { type: 'video/mp4' });
+      const req1: FilmstripThumbnailsRequest = {
+        timeBetweenThumbnails: 1,
+        files: [{ mediaFileId: 'f1', file: fakeFile, startTime: 0, endTime: 20 }],
+      };
+      const req2: FilmstripThumbnailsRequest = {
+        timeBetweenThumbnails: 2,
+        files: [{ mediaFileId: 'f2', file: fakeFile, startTime: 0, endTime: 2 }],
+      };
+
+      // Start req1, then immediately start req2 before req1 finishes
+      service.generateFilmstripThumbnails(req1).subscribe();
+      const results2 = await firstValueFrom(service.generateFilmstripThumbnails(req2).pipe(toArray()));
+
+      expect(inputDisposeSpy).toHaveBeenCalled();
+      expect(results2.length).toBe(2);
+      expect(results2.every((r) => ('thumbnailUrl' in r ? r.mediaFileId === 'f2' : false))).toBe(true);
+    });
+
+    it('should cancel active generation task when freeAllFilmstripThumbnails is called', async () => {
+      inputDisposeSpy.mockClear();
+      const fakeFile = new File(['video'], 'video.mp4', { type: 'video/mp4' });
+      const request: FilmstripThumbnailsRequest = {
+        timeBetweenThumbnails: 1,
+        files: [{ mediaFileId: 'f-free', file: fakeFile, startTime: 0, endTime: 20 }],
+      };
+
+      const emitted: FilmstripThumbnailResult[] = [];
+      service.generateFilmstripThumbnails(request).subscribe((res) => {
+        emitted.push(res);
+      });
+
+      // Let first thumbnail emit
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      service.freeAllFilmstripThumbnails();
+
+      const countAfterFree = emitted.length;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(emitted.length).toBe(countAfterFree);
+      expect(inputDisposeSpy).toHaveBeenCalled();
+    });
+
     it('should fallback to getCanvas when canvasesAtTimestamps is not defined', async () => {
       const original = mediabunny.CanvasSink.prototype.canvasesAtTimestamps;
       const sinkProto = mediabunny.CanvasSink.prototype as unknown as { canvasesAtTimestamps: unknown };
@@ -688,6 +758,116 @@ describe('Thumbnail', () => {
       revokeObjectURLSpy.mockClear();
       childInjector.destroy();
 
+      expect(revokeObjectURLSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('generateSegmentThumbnailUrls', () => {
+    it('should complete with empty result list when given empty requests', async () => {
+      const results = await firstValueFrom(service.generateSegmentThumbnailUrls([]).pipe(toArray()));
+      expect(results).toEqual([]);
+    });
+
+    it('should generate pristine segment thumbnail at exact startTime', async () => {
+      const fakeFile = new File(['dummy'], 'video.mp4', { type: 'video/mp4' });
+      const getCanvasSpy = vi.mocked(mediabunny.CanvasSink.prototype.getCanvas);
+
+      const requests: SegmentThumbnailGenerationRequest[] = [
+        {
+          segmentId: 'seg-1',
+          mediaFileId: 'mf-1',
+          file: fakeFile,
+          startTime: 0,
+        },
+      ];
+
+      const results = await firstValueFrom(service.generateSegmentThumbnailUrls(requests).pipe(toArray()));
+
+      expect(results.length).toBe(1);
+      const res = results[0] as SegmentThumbnailGenerationSuccess;
+      expect(res.segmentId).toBe('seg-1');
+      expect(res.mediaFileId).toBe('mf-1');
+      expect(res.thumbnailUrl).toBe('blob:http://localhost/thumbnail-1');
+      expect(getCanvasSpy).toHaveBeenCalledWith(0);
+    });
+
+    it('should generate segment thumbnail at non-zero startTime without heuristic offset', async () => {
+      const fakeFile = new File(['dummy'], 'video.mp4', { type: 'video/mp4' });
+      const getCanvasSpy = vi.mocked(mediabunny.CanvasSink.prototype.getCanvas);
+
+      const requests: SegmentThumbnailGenerationRequest[] = [
+        {
+          segmentId: 'seg-2',
+          mediaFileId: 'mf-1',
+          file: fakeFile,
+          startTime: 14.5,
+        },
+      ];
+
+      const results = await firstValueFrom(service.generateSegmentThumbnailUrls(requests).pipe(toArray()));
+
+      expect(results.length).toBe(1);
+      const res = results[0] as SegmentThumbnailGenerationSuccess;
+      expect(res.segmentId).toBe('seg-2');
+      expect(getCanvasSpy).toHaveBeenCalledWith(14.5);
+    });
+
+    it('should handle errors gracefully during segment thumbnail extraction', async () => {
+      vi.mocked(mockTrack.canDecode).mockResolvedValue(false);
+
+      const fakeFile = new File(['dummy'], 'bad.mp4', { type: 'video/mp4' });
+      const requests: SegmentThumbnailGenerationRequest[] = [
+        {
+          segmentId: 'seg-err',
+          mediaFileId: 'mf-bad',
+          file: fakeFile,
+          startTime: 0,
+        },
+      ];
+
+      const results = await firstValueFrom(service.generateSegmentThumbnailUrls(requests).pipe(toArray()));
+
+      expect(results.length).toBe(1);
+      const res = results[0] as SegmentThumbnailGenerationFailure;
+      expect(res.segmentId).toBe('seg-err');
+      expect(res.error).toBeDefined();
+    });
+  });
+
+  describe('segment thumbnail cleanup', () => {
+    it('should free individual segment thumbnail via freeSegmentThumbnail', async () => {
+      const fakeFile = new File(['dummy'], 'video.mp4', { type: 'video/mp4' });
+      await firstValueFrom(service.generateSegmentThumbnailUrls([
+        { segmentId: 'seg-to-free', mediaFileId: 'mf-1', file: fakeFile, startTime: 0 },
+      ]).pipe(toArray()));
+
+      revokeObjectURLSpy.mockClear();
+      service.freeSegmentThumbnail('seg-to-free');
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:http://localhost/thumbnail-1');
+    });
+
+    it('should free all segment thumbnails for a specific media file', async () => {
+      const fakeFile = new File(['dummy'], 'video.mp4', { type: 'video/mp4' });
+      await firstValueFrom(service.generateSegmentThumbnailUrls([
+        { segmentId: 'seg-a', mediaFileId: 'mf-target', file: fakeFile, startTime: 0 },
+        { segmentId: 'seg-b', mediaFileId: 'mf-target', file: fakeFile, startTime: 5 },
+        { segmentId: 'seg-other', mediaFileId: 'mf-other', file: fakeFile, startTime: 0 },
+      ]).pipe(toArray()));
+
+      revokeObjectURLSpy.mockClear();
+      service.freeSegmentThumbnailsForFile('mf-target');
+      expect(revokeObjectURLSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should free all segment thumbnails via freeAllSegmentThumbnails', async () => {
+      const fakeFile = new File(['dummy'], 'video.mp4', { type: 'video/mp4' });
+      await firstValueFrom(service.generateSegmentThumbnailUrls([
+        { segmentId: 'seg-1', mediaFileId: 'mf-1', file: fakeFile, startTime: 0 },
+        { segmentId: 'seg-2', mediaFileId: 'mf-2', file: fakeFile, startTime: 0 },
+      ]).pipe(toArray()));
+
+      revokeObjectURLSpy.mockClear();
+      service.freeAllSegmentThumbnails();
       expect(revokeObjectURLSpy).toHaveBeenCalledTimes(2);
     });
   });

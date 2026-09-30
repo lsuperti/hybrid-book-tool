@@ -147,7 +147,7 @@ export class Correlation implements OnDestroy {
 
   protected readonly correlationRows = computed(() => {
     const textSegments = this.textSegmentationService.segments().filter((segment) => !segment.excluded);
-    const videoSegments = this.videoSegmentationService.segments();
+    const videoSegments = this.videoSegmentationService.correlatedSegments();
     const maxLength = Math.max(textSegments.length, videoSegments.length);
     const rows: CorrelationRow[] = [];
     for (let i = 0; i < maxLength; i++) {

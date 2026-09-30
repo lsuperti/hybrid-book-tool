@@ -1,7 +1,7 @@
 import {
   Component,
   input,
-  signal,
+  model,
   computed,
   effect,
   untracked,
@@ -13,7 +13,7 @@ import {
 
 import { NgTemplateOutlet } from '@angular/common';
 import { VideoSegment } from '../../../services/video-segmentation/video-segmentation';
-import { MediaFiles } from '../../../services/media-files/media-files';
+import { MediaFiles, type MediaFileId } from '../../../services/media-files/media-files';
 import { Input, BlobSource, ALL_FORMATS, VideoSampleSink, VideoSample, EncodedPacketSink } from 'mediabunny';
 
 @Component({
@@ -23,12 +23,33 @@ import { Input, BlobSource, ALL_FORMATS, VideoSampleSink, VideoSample, EncodedPa
   imports: [NgTemplateOutlet]
 })
 export class VideoPlayer implements OnDestroy {
+  private static readonly DEFAULT_FPS = 30;
+  private static readonly DEFAULT_FRAME_DURATION = 1 / 30;
+  private static readonly DEFAULT_EDGE_THRESHOLD = 0.5;
+  private static readonly PLAYBACK_SEEK_THRESHOLD_SECONDS = 0.2;
+  private static readonly RENDER_TIMESTAMP_EPSILON = 1e-4;
+  private static readonly MILLISECONDS_PER_SECOND = 1000;
+  private static readonly DEFAULT_SEEK_STEP_SECONDS = 1;
+
   private readonly mediaFilesService = inject(MediaFiles);
+
+  /**
+   * Operating mode for the video player:
+   * - `'segment'`: Plays the provided `segment`, bounded by the segment's start and end timestamps.
+   * - `'file'`: Plays the media file directly (from `mediaFileId`), allowing unrestricted playback across the full
+   *   file duration.
+   */
+  public readonly mode = input<'segment' | 'file'>('segment');
 
   /**
    * Active video segment to display and play, or null if no segment is loaded.
    */
   public readonly segment = input<VideoSegment | null>(null);
+
+  /**
+   * Media file ID to play directly when not playing a specific segment.
+   */
+  public readonly mediaFileId = input<MediaFileId | null>(null);
 
   /**
    * Whether playback should automatically resume when switching between overlapping segments from the same video file.
@@ -39,7 +60,7 @@ export class VideoPlayer implements OnDestroy {
    * Time threshold in seconds from segment boundaries. If playback was near the segment edges, changing segments
    * will start from the beginning of the new segment instead of resuming.
    */
-  public readonly edgeThreshold = input<number>(0.5);
+  public readonly edgeThreshold = input<number>(VideoPlayer.DEFAULT_EDGE_THRESHOLD);
 
   /**
    * Reference to the HTML canvas element used to render decoded video frames.
@@ -49,27 +70,32 @@ export class VideoPlayer implements OnDestroy {
   /**
    * Signal indicating whether video playback is currently active.
    */
-  protected readonly isPlaying = signal<boolean>(false);
+  public readonly isPlaying = model<boolean>(false);
+
+  /**
+   * Signal indicating whether video scrubbing is actively in progress.
+   */
+  public readonly isScrubbing = model<boolean>(false);
 
   /**
    * Signal containing the current playback timestamp in seconds.
    */
-  protected readonly currentTime = signal<number>(0);
+  public readonly currentTime = model<number>(0);
 
   /**
-   * Signal containing the start timestamp in seconds for the active segment.
+   * Signal containing the start timestamp in seconds for the active segment/file.
    */
-  protected readonly playableStartTime = signal<number>(0);
+  public readonly playableStartTime = model<number>(0);
 
   /**
-   * Signal containing the end timestamp in seconds for the active segment.
+   * Signal containing the end timestamp in seconds for the active segment/file.
    */
-  protected readonly playableEndTime = signal<number>(0);
+  public readonly playableEndTime = model<number>(0);
 
   /**
    * Signal indicating whether a video segment is successfully loaded and ready for playback.
    */
-  protected readonly isLoaded = signal<boolean>(false);
+  public readonly isLoaded = model<boolean>(false);
 
   /**
    * Computed duration in seconds of the active segment.
@@ -79,28 +105,123 @@ export class VideoPlayer implements OnDestroy {
   private mediabunnyInput: Input | null = null;
   private videoSink: VideoSampleSink | null = null;
   private packetSink: EncodedPacketSink | null = null;
-  private nominalFrameDuration = 1 / 30;
+  private nominalFrameDuration = VideoPlayer.DEFAULT_FRAME_DURATION;
   private currentSamplesIterator: AsyncIterator<VideoSample> | null = null;
   private currentSegment: VideoSegment | null = null;
+  private currentLoadedFileId: MediaFileId | null = null;
 
   private playbackId = 0;
   private loadSegmentId = 0;
+  private lastRenderedTime: number | null = null;
+  private activePlaybackLoopId: number | null = null;
+  private scrubWasPlaying = false;
+  private pendingRenderTime: number | null = null;
+  private isRenderingFrame = false;
+  private renderRafId: number | null = null;
 
   private playbackStartTime = 0;
   private playbackStartCurrentTime = 0;
 
   /**
-   * Creates an instance of VideoPlayer and registers a reactive effect to load or unload segments.
+   * Creates an instance of VideoPlayer and registers reactive effects for loading media and reacting to state changes.
    */
   constructor() {
     effect(() => {
-      const seg = this.segment();
+      const mode = this.mode();
+      if (mode === 'segment') {
+        const seg = this.segment();
+        untracked(() => {
+          if (seg) {
+            void this.loadSegment(seg);
+          } else {
+            this.currentSegment = null;
+            this.currentLoadedFileId = null;
+            this.cleanup();
+          }
+        });
+      } else {
+        const directFileId = this.mediaFileId();
+        untracked(() => {
+          if (directFileId) {
+            void this.loadFile(directFileId);
+          } else {
+            this.currentSegment = null;
+            this.currentLoadedFileId = null;
+            this.cleanup();
+          }
+        });
+      }
+    });
+
+    effect(() => {
+      const playing = this.isPlaying();
       untracked(() => {
-        if (seg) {
-          this.loadSegment(seg);
+        if (playing) {
+          if (!this.isLoaded()) {
+            this.isPlaying.set(false);
+            return;
+          }
+          if (this.currentTime() >= this.playableEndTime()) {
+            this.currentTime.set(this.playableStartTime());
+          }
+          if (this.activePlaybackLoopId === null) {
+            const id = ++this.playbackId;
+            this.activePlaybackLoopId = id;
+            void this.playLoop(id);
+          }
         } else {
-          this.currentSegment = null;
-          this.cleanup();
+          this.playbackId++;
+          this.activePlaybackLoopId = null;
+        }
+      });
+    });
+
+    effect(() => {
+      const scrubbing = this.isScrubbing();
+      untracked(() => {
+        if (scrubbing) {
+          if (!this.isLoaded()) {
+            return;
+          }
+          this.scrubWasPlaying = this.isPlaying();
+          if (this.isPlaying()) {
+            this.isPlaying.set(false);
+          }
+        } else {
+          if (this.scrubWasPlaying) {
+            this.scrubWasPlaying = false;
+            if (this.currentTime() >= this.playableEndTime()) {
+              this.currentTime.set(this.playableStartTime());
+            }
+            this.isPlaying.set(true);
+          }
+        }
+      });
+    });
+
+    effect(() => {
+      const time = this.currentTime();
+      untracked(() => {
+        if (this.isLoaded()) {
+          if (this.isPlaying()) {
+            if (
+              this.lastRenderedTime === null ||
+              Math.abs(time - this.lastRenderedTime) > VideoPlayer.PLAYBACK_SEEK_THRESHOLD_SECONDS
+            ) {
+              this.playbackId++;
+              const id = this.playbackId;
+              this.activePlaybackLoopId = id;
+              void this.playLoop(id);
+            }
+          } else {
+            if (
+              this.lastRenderedTime === null ||
+              Math.abs(time - this.lastRenderedTime) > VideoPlayer.RENDER_TIMESTAMP_EPSILON
+            ) {
+              this.pendingRenderTime = time;
+              this.schedulePendingRender();
+            }
+          }
         }
       });
     });
@@ -122,7 +243,15 @@ export class VideoPlayer implements OnDestroy {
     this.isPlaying.set(false);
     this.isLoaded.set(false);
     this.playbackId++;
+    this.activePlaybackLoopId = null;
     this.pendingRenderTime = null;
+    if (this.renderRafId !== null) {
+      if (typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(this.renderRafId);
+      }
+      this.renderRafId = null;
+    }
+    this.lastRenderedTime = null;
     this.playableStartTime.set(0);
     this.playableEndTime.set(0);
     this.currentTime.set(0);
@@ -143,7 +272,7 @@ export class VideoPlayer implements OnDestroy {
     }
     this.videoSink = null;
     this.packetSink = null;
-    this.nominalFrameDuration = 1 / 30;
+    this.nominalFrameDuration = VideoPlayer.DEFAULT_FRAME_DURATION;
 
     try {
       const canvasEl = this.canvas()?.nativeElement;
@@ -155,6 +284,94 @@ export class VideoPlayer implements OnDestroy {
       }
     } catch (_e) {
       // Ignore
+    }
+  }
+
+  /**
+   * Loads a media file directly, initializing decoding and bounds across the entire video.
+   *
+   * @param fileId The ID of the media file to load.
+   */
+  private async loadFile(fileId: MediaFileId): Promise<void> {
+    const prevFileId = this.currentLoadedFileId;
+    if (prevFileId === fileId && this.mediabunnyInput && this.isLoaded()) {
+      return;
+    }
+    const wasPlaying = this.isPlaying();
+    const prevTime = this.currentTime();
+    this.currentSegment = null;
+    this.currentLoadedFileId = fileId;
+
+    if (prevFileId !== fileId) {
+      this.cleanup();
+    }
+
+    const id = ++this.loadSegmentId;
+    const mediaFiles = this.mediaFilesService.mediaFiles();
+    const fileRecord = mediaFiles.find((f) => f.id === fileId);
+
+    if (!fileRecord) {
+      return;
+    }
+
+    if (prevFileId !== fileId || !this.mediabunnyInput) {
+      const inputObj = new Input({
+        formats: ALL_FORMATS,
+        source: new BlobSource(fileRecord.file)
+      });
+
+      try {
+        const videoTrack = await inputObj.getPrimaryVideoTrack();
+        if (!videoTrack || this.loadSegmentId !== id) {
+          inputObj.dispose();
+          return;
+        }
+
+        this.mediabunnyInput = inputObj;
+        const firstTs = (await videoTrack.getFirstTimestamp()) ?? 0;
+        const duration = (await videoTrack.computeDuration()) ?? 0;
+
+        if (this.loadSegmentId !== id) {
+          this.mediabunnyInput.dispose();
+          this.mediabunnyInput = null;
+          return;
+        }
+
+        this.playableStartTime.set(firstTs);
+        this.playableEndTime.set(duration);
+        this.videoSink = new VideoSampleSink(videoTrack);
+        this.packetSink = new EncodedPacketSink(videoTrack);
+
+        try {
+          const metrics = await videoTrack.computeFrameRateMetrics();
+          const fps = metrics.bestGuessFrameRate || metrics.averageFrameRate;
+          if (fps && fps > 0) {
+            this.nominalFrameDuration = 1 / fps;
+          }
+        } catch (_e) {
+          this.nominalFrameDuration = VideoPlayer.DEFAULT_FRAME_DURATION;
+        }
+
+        this.isLoaded.set(true);
+
+        const currentPos = this.currentTime();
+        const hasValidPos = currentPos >= firstTs && currentPos <= duration;
+        const targetTime = hasValidPos
+          ? currentPos
+          : (prevTime >= firstTs && prevTime <= duration ? prevTime : firstTs);
+        this.currentTime.set(targetTime);
+
+        if (wasPlaying) {
+          this.isPlaying.set(true);
+        } else {
+          await this.renderFrameAtTime(targetTime);
+        }
+      } catch (_e) {
+        inputObj.dispose();
+        if (this.mediabunnyInput === inputObj) {
+          this.mediabunnyInput = null;
+        }
+      }
     }
   }
 
@@ -223,7 +440,7 @@ export class VideoPlayer implements OnDestroy {
           this.nominalFrameDuration = 1 / fps;
         }
       } catch (_e) {
-        this.nominalFrameDuration = 1 / 30;
+        this.nominalFrameDuration = VideoPlayer.DEFAULT_FRAME_DURATION;
       }
 
       this.isLoaded.set(true);
@@ -242,8 +459,6 @@ export class VideoPlayer implements OnDestroy {
 
       if (shouldKeepPlaying) {
         this.isPlaying.set(true);
-        this.playbackId++;
-        this.playLoop(this.playbackId);
       } else {
         await this.renderFrameAtTime(this.currentTime());
       }
@@ -270,6 +485,7 @@ export class VideoPlayer implements OnDestroy {
       return;
     }
 
+    this.isRenderingFrame = true;
     try {
       const sample = await this.videoSink.getSample(time);
       if (sample) {
@@ -279,13 +495,15 @@ export class VideoPlayer implements OnDestroy {
             canvasEl.height = sample.squarePixelHeight;
           }
           sample.draw(ctx, 0, 0);
-          this.currentTime.set(Math.max(this.playableStartTime(), Math.min(this.playableEndTime(), sample.timestamp)));
+          this.lastRenderedTime = sample.timestamp;
         } finally {
           sample.close();
         }
       }
     } catch (_e) {
       // Ignore errors from disposal or seeking out of bounds
+    } finally {
+      this.isRenderingFrame = false;
     }
   }
 
@@ -298,18 +516,11 @@ export class VideoPlayer implements OnDestroy {
       return;
     }
 
-    if (this.isPlaying()) {
-      this.isPlaying.set(false);
-      this.playbackId++;
-    } else {
-      if (this.currentTime() >= this.playableEndTime()) {
-        this.currentTime.set(this.playableStartTime());
-      }
-      
-      this.isPlaying.set(true);
-      this.playbackId++;
-      this.playLoop(this.playbackId);
+    if (!this.isPlaying() && this.currentTime() >= this.playableEndTime()) {
+      this.currentTime.set(this.playableStartTime());
     }
+
+    this.isPlaying.update((p) => !p);
   }
 
   /**
@@ -322,19 +533,21 @@ export class VideoPlayer implements OnDestroy {
     if (!this.videoSink || !this.canvas()) {
       if (this.playbackId === id) {
         this.isPlaying.set(false);
+        this.activePlaybackLoopId = null;
       }
-      
+
       return;
     }
-    
+
     const canvasEl = this.canvas().nativeElement;
     const ctx = canvasEl.getContext('2d');
-    
+
     if (!ctx) {
       if (this.playbackId === id) {
         this.isPlaying.set(false);
+        this.activePlaybackLoopId = null;
       }
-      
+
       return;
     }
 
@@ -362,14 +575,16 @@ export class VideoPlayer implements OnDestroy {
             canvasEl.width = sample.squarePixelWidth;
             canvasEl.height = sample.squarePixelHeight;
           }
-          
+
           sample.draw(ctx, 0, 0);
+          this.lastRenderedTime = sample.timestamp;
           this.currentTime.set(sample.timestamp);
         } finally {
           sample.close();
         }
 
-        const targetTime = this.playbackStartTime + ((sample.timestamp - this.playbackStartCurrentTime) * 1000);
+        const targetTime = this.playbackStartTime +
+          ((sample.timestamp - this.playbackStartCurrentTime) * VideoPlayer.MILLISECONDS_PER_SECOND);
         const waitTime = targetTime - performance.now();
 
         if (waitTime > 0) {
@@ -386,12 +601,13 @@ export class VideoPlayer implements OnDestroy {
       if (this.currentSamplesIterator === iterator) {
         this.currentSamplesIterator = null;
       }
-      
+
       if (this.playbackId === id) {
         this.isPlaying.set(false);
+        this.activePlaybackLoopId = null;
         this.currentTime.set(this.playableEndTime());
       }
-      
+
       try {
         await iterator.return?.();
       } catch (_e) {
@@ -413,8 +629,9 @@ export class VideoPlayer implements OnDestroy {
     }
 
     const wasPlaying = this.isPlaying();
-    this.isPlaying.set(false);
-    this.playbackId++;
+    if (wasPlaying) {
+      this.isPlaying.set(false);
+    }
 
     this.currentTime.set(
       Math.max(
@@ -422,11 +639,9 @@ export class VideoPlayer implements OnDestroy {
         Math.min(this.playableEndTime(), this.currentTime() + delta)
       )
     );
-    await this.renderFrameAtTime(this.currentTime());
 
     if (wasPlaying) {
       this.isPlaying.set(true);
-      this.playLoop(this.playbackId);
     }
   }
 
@@ -448,7 +663,7 @@ export class VideoPlayer implements OnDestroy {
 
     let targetTime: number | null = null;
     const curr = this.currentTime();
-    const fallbackDelta = this.nominalFrameDuration || (1 / 30);
+    const fallbackDelta = this.nominalFrameDuration || VideoPlayer.DEFAULT_FRAME_DURATION;
 
     if (this.packetSink) {
       try {
@@ -457,14 +672,20 @@ export class VideoPlayer implements OnDestroy {
           if (dir === 1) {
             const frameDuration = currentPacket.duration > 0 ? currentPacket.duration : fallbackDelta;
             const nextTimestampHint = currentPacket.timestamp + frameDuration;
-            const nextPacket = await this.packetSink.getPacket(nextTimestampHint + 1e-4, { metadataOnly: true });
+            const nextPacket = await this.packetSink.getPacket(
+              nextTimestampHint + VideoPlayer.RENDER_TIMESTAMP_EPSILON,
+              { metadataOnly: true }
+            );
             if (nextPacket && nextPacket.timestamp > currentPacket.timestamp) {
               targetTime = nextPacket.timestamp;
             } else {
               targetTime = currentPacket.timestamp + frameDuration;
             }
           } else {
-            const prevPacket = await this.packetSink.getPacket(currentPacket.timestamp - 1e-4, { metadataOnly: true });
+            const prevPacket = await this.packetSink.getPacket(
+              currentPacket.timestamp - VideoPlayer.RENDER_TIMESTAMP_EPSILON,
+              { metadataOnly: true }
+            );
             if (prevPacket && prevPacket.timestamp < currentPacket.timestamp) {
               targetTime = prevPacket.timestamp;
             } else {
@@ -483,47 +704,30 @@ export class VideoPlayer implements OnDestroy {
 
     const clampedTime = Math.max(this.playableStartTime(), Math.min(this.playableEndTime(), targetTime));
     this.currentTime.set(clampedTime);
-    await this.renderFrameAtTime(this.currentTime());
   }
 
-  private scrubWasPlaying = false;
-  private isScrubbing = false;
-  private pendingRenderTime: number | null = null;
-  private isRenderingFrame = false;
-
   /**
-   * Handles the start of a scrubbing action (slider drag or keyboard interaction) by recording the previous playback
-   * state and pausing playback.
+   * Handles the start of a scrubbing action (slider drag or keyboard interaction) by setting isScrubbing.
    */
   protected onScrubStart(): void {
-    if (!this.isLoaded() || this.isScrubbing) {
+    if (!this.isLoaded() || this.isScrubbing()) {
       return;
     }
-    this.isScrubbing = true;
-    this.scrubWasPlaying = this.isPlaying();
-    this.isPlaying.set(false);
-    this.playbackId++;
+    this.isScrubbing.set(true);
   }
 
   /**
-   * Handles the end of a scrubbing action, resuming playback if the video was actively playing prior to scrubbing.
+   * Handles the end of a scrubbing action by resetting isScrubbing.
    */
   protected onScrubEnd(): void {
-    if (!this.isScrubbing) {
+    if (!this.isScrubbing()) {
       return;
     }
-    this.isScrubbing = false;
-    if (this.scrubWasPlaying) {
-      if (this.currentTime() >= this.playableEndTime()) {
-        this.currentTime.set(this.playableStartTime());
-      }
-      this.isPlaying.set(true);
-      this.playLoop(this.playbackId);
-    }
+    this.isScrubbing.set(false);
   }
 
   /**
-   * Handles progress slider input events by updating the current playback time and queuing a throttled frame render.
+   * Handles progress slider input events by updating the current playback time.
    *
    * @param event The DOM input event triggered by changing the progress range slider.
    */
@@ -532,7 +736,7 @@ export class VideoPlayer implements OnDestroy {
       return;
     }
 
-    if (!this.isScrubbing) {
+    if (!this.isScrubbing()) {
       this.onScrubStart();
     }
 
@@ -540,10 +744,23 @@ export class VideoPlayer implements OnDestroy {
     const value = Number(inputElement.value);
 
     this.currentTime.set(value);
-    this.pendingRenderTime = value;
+  }
 
-    if (!this.isRenderingFrame) {
-      this.processPendingRenders();
+  /**
+   * Schedules a throttled frame render request synchronized with the next animation frame.
+   */
+  private schedulePendingRender(): void {
+    if (this.renderRafId !== null || this.isRenderingFrame) {
+      return;
+    }
+
+    if (typeof requestAnimationFrame === 'function') {
+      this.renderRafId = requestAnimationFrame(() => {
+        this.renderRafId = null;
+        void this.processPendingRenders();
+      });
+    } else {
+      void this.processPendingRenders();
     }
   }
 
@@ -557,32 +774,59 @@ export class VideoPlayer implements OnDestroy {
     }
     this.isRenderingFrame = true;
 
-    while (this.pendingRenderTime !== null) {
-      const timeToRender = this.pendingRenderTime;
-      this.pendingRenderTime = null;
+    try {
+      while (this.pendingRenderTime !== null) {
+        const timeToRender = this.pendingRenderTime;
+        this.pendingRenderTime = null;
 
-      const canvasEl = this.canvas().nativeElement;
-      const ctx = canvasEl.getContext('2d');
-      if (ctx && this.videoSink) {
-        try {
-          const sample = await this.videoSink.getSample(timeToRender);
-          if (sample) {
-            try {
-              if (canvasEl.width !== sample.squarePixelWidth || canvasEl.height !== sample.squarePixelHeight) {
-                canvasEl.width = sample.squarePixelWidth;
-                canvasEl.height = sample.squarePixelHeight;
+        const canvasEl = this.canvas().nativeElement;
+        const ctx = canvasEl.getContext('2d');
+        if (ctx && this.videoSink) {
+          try {
+            const sample = await this.videoSink.getSample(timeToRender);
+            if (sample) {
+              try {
+                if (canvasEl.width !== sample.squarePixelWidth || canvasEl.height !== sample.squarePixelHeight) {
+                  canvasEl.width = sample.squarePixelWidth;
+                  canvasEl.height = sample.squarePixelHeight;
+                }
+                sample.draw(ctx, 0, 0);
+                this.lastRenderedTime = sample.timestamp;
+              } finally {
+                sample.close();
               }
-              sample.draw(ctx, 0, 0);
-            } finally {
-              sample.close();
             }
+          } catch (_e) {
+            // Ignore errors from disposal or seeking out of bounds
           }
-        } catch (_e) {
-          // Ignore errors from disposal or seeking out of bounds
+        }
+
+        if (this.pendingRenderTime !== null && typeof requestAnimationFrame === 'function') {
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => resolve());
+          });
         }
       }
+    } finally {
+      this.isRenderingFrame = false;
+      if (this.pendingRenderTime !== null) {
+        this.schedulePendingRender();
+      }
     }
+  }
 
-    this.isRenderingFrame = false;
+  /**
+   * Formats a timestamp in seconds to MM:SS format for accessibility displays.
+   *
+   * @param seconds The timestamp in seconds.
+   * @returns Formatted MM:SS time string.
+   */
+  public formatTime(seconds: number): string {
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return '00:00';
+    }
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 }

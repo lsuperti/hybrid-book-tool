@@ -13,6 +13,7 @@
       [attr.aria-valuenow]="currentTime()"
       [attr.aria-valuemin]="playableStartTime()"
       [attr.aria-valuemax]="playableEndTime()"
+      [attr.aria-valuetext]="formatTime(currentTime())"
       [disabled]="!isLoaded()"
       step="0.05"
       (mousedown)="onScrubStart()"
@@ -85,35 +86,35 @@
   </div>
 </div>
 <ng-template #backwardOneSecondIcon>
-  <svg aria-hidden="true" class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 55.900589,73.864889 23.99994,71.345251 26.51958,39.444601" />
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round" d="m 103.99994,71.345251 c -36,-48 -72,-8.016335 -72,-8.016335" />
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:currentColor" d="M 20,6 11.431111,12 20,18 Z" />
+    <path style="fill:currentColor" d="M 2.5,12 11.068888,6 v 12 z" />
   </svg>
 </ng-template>
 <ng-template #backwardOneFrameIcon>
-  <svg aria-hidden="true" class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 76,32 44,64 76,96" />
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:currentColor" d="M 8,12 14,6 V 18 Z" />
   </svg>
 </ng-template>
 <ng-template #pauseIcon>
-  <svg aria-hidden="true" class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <rect style="fill:currentColor" width="24" height="96" x="28.28759" y="16" ry="8" />
-    <rect style="fill:currentColor" width="24" height="96" x="75.71241" y="16" ry="8" />
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:none;stroke:currentColor;stroke-width:4" d="M 8,5 V 19" />
+    <path style="fill:none;stroke:currentColor;stroke-width:4" d="M 16,5 V 19" />
   </svg>
 </ng-template>
 <ng-template #playIcon>
-  <svg aria-hidden="true" class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linejoin:round" d="M 40.905989,24 110.18799,64 40.905989,104 Z" />
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:currentColor" d="M 8,5 19,12 8,19 Z" />
   </svg>
 </ng-template>
 <ng-template #advanceOneFrameIcon>
-  <svg aria-hidden="true" class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 52,32 84,64 52,96" />
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:currentColor" d="m 10,6 6,6 -6,6 z" />
   </svg>
 </ng-template>
 <ng-template #advanceOneSecondIcon>
-  <svg aria-hidden="true" class="icon" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 72.099351,73.864889 104,71.345251 101.48036,39.444601" />
-    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round" d="m 24,71.345251 c 36,-48 72,-8.016335 72,-8.016335" />
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:2;stroke-linejoin:round;stroke-dashoffset:9.99999" d="M 4,6 12.568888,12 4,18 Z" />
+    <path style="fill:currentColor" d="M 21.5,12 12.931112,6 v 12 z" />
   </svg>
 </ng-template>
