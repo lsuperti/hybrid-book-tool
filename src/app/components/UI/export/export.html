@@ -1,1 +1,562 @@
-<p>[PH] export works!</p>
+<app-split
+direction="horizontal"
+[defaultSize]="50"
+[resizeBarAriaLabel]="'Redimensionamento entre painel de metadados e pré-visualização'"
+>
+  <div left class="card export-sidebar">
+    <header class="export-header">
+      <h2 class="sidebar-title">Metadados da Publicação</h2>
+      <p class="sidebar-subtitle">Todos os campos abaixo são opcionais.</p>
+    </header>
+
+    <div class="export-form-scroll-container">
+      <form id="export-form" class="export-form" (submit)="onExport(); $event.preventDefault()">
+        <fieldset class="metadata-fieldset">
+          <legend class="fieldset-legend">Dados da Publicação</legend>
+
+          <div class="form-field">
+            <label for="field-title" class="field-label">
+              Título <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-title"
+            type="text"
+            class="field-input"
+            placeholder="Título da publicação"
+            aria-describedby="desc-title"
+            [formField]="exportForm.title"
+            />
+            <span id="desc-title" class="field-hint">Título da edição do livro híbrido</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-author" class="field-label">
+              Autor(a) <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-author"
+            type="text"
+            class="field-input"
+            placeholder="Nome do(a) autor(a)"
+            aria-describedby="desc-author"
+            [formField]="exportForm.author"
+            />
+            <span id="desc-author" class="field-hint">Nome do autor ou criador da obra</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-illustrations" class="field-label">
+              Ilustrações <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-illustrations"
+            type="text"
+            class="field-input"
+            placeholder="Nome do(a) ilustrador(a)"
+            aria-describedby="desc-illustrations"
+            [formField]="exportForm.illustrations"
+            />
+            <span id="desc-illustrations" class="field-hint">Responsável pelas ilustrações</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-rendering" class="field-label">
+              Tradução <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-rendering"
+            type="text"
+            class="field-input"
+            placeholder="Nome do(a) tradutor(a)"
+            aria-describedby="desc-rendering"
+            [formField]="exportForm.rendering"
+            />
+            <span id="desc-rendering" class="field-hint">Responsável pela tradução</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-editorial-revisions" class="field-label">
+              Revisão editorial <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-editorial-revisions"
+            type="text"
+            class="field-input"
+            placeholder="Revisão e preparação"
+            aria-describedby="desc-editorial-revisions"
+            [formField]="exportForm.editorialRevisions"
+            />
+            <span id="desc-editorial-revisions" class="field-hint">Revisão editorial e preparação do texto</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-performers" class="field-label">
+              Intérpretes <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-performers"
+            type="text"
+            class="field-input"
+            placeholder="Nomes dos intérpretes"
+            aria-describedby="desc-performers"
+            [formField]="exportForm.performers"
+            />
+            <span id="desc-performers" class="field-hint">Intérpretes de língua de sinais ou narradores</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-video-engineer" class="field-label">
+              Direção de gravação de vídeo <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-video-engineer"
+            type="text"
+            class="field-input"
+            placeholder="Direção de gravação do vídeo"
+            aria-describedby="desc-video-engineer"
+            [formField]="exportForm.videoEngineer"
+            />
+            <span id="desc-video-engineer" class="field-hint">Responsável pela direção do vídeo</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-video-editing" class="field-label">
+              Edição de vídeo <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-video-editing"
+            type="text"
+            class="field-input"
+            placeholder="Nome do(a) editor(a) de vídeo"
+            aria-describedby="desc-video-editing"
+            [formField]="exportForm.videoEditing"
+            />
+            <span id="desc-video-editing" class="field-hint">Responsável pela edição do vídeo</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-sound-engineer" class="field-label">
+              Direção de gravação de áudio <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-sound-engineer"
+            type="text"
+            class="field-input"
+            placeholder="Direção da gravação de áudio"
+            aria-describedby="desc-sound-engineer"
+            [formField]="exportForm.soundEngineer"
+            />
+            <span id="desc-sound-engineer" class="field-hint">Responsável pela direção sonora</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-sound-editor" class="field-label">
+              Edição de áudio <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-sound-editor"
+            type="text"
+            class="field-input"
+            placeholder="Nome do(a) editor(a) de áudio"
+            aria-describedby="desc-sound-editor"
+            [formField]="exportForm.soundEditor"
+            />
+            <span id="desc-sound-editor" class="field-hint">Responsável pela edição do som</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-version" class="field-label">
+              Informações de versão <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-version"
+            type="text"
+            class="field-input"
+            placeholder="Ex.: 1.0, Edição revisada"
+            aria-describedby="desc-version"
+            [formField]="exportForm.version"
+            />
+            <span id="desc-version" class="field-hint">Versão desta publicação híbrida</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-published" class="field-label">
+              Local de publicação <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-published"
+            type="text"
+            class="field-input"
+            placeholder="Cidade ou local de publicação"
+            aria-describedby="desc-published"
+            [formField]="exportForm.published"
+            />
+            <span id="desc-published" class="field-hint">Local onde a obra foi publicada</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-publisher" class="field-label">
+              Editora <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-publisher"
+            type="text"
+            class="field-input"
+            placeholder="Nome da editora ou publicador"
+            aria-describedby="desc-publisher"
+            [formField]="exportForm.publisher"
+            />
+            <span id="desc-publisher" class="field-hint">Editora ou entidade publicadora</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-year" class="field-label">
+              Ano de publicação <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-year"
+            type="text"
+            class="field-input"
+            placeholder="Ex.: 2026"
+            aria-describedby="desc-year"
+            [formField]="exportForm.year"
+            />
+            <span id="desc-year" class="field-hint">Ano de publicação do livro híbrido</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-production" class="field-label">
+              Produção <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-production"
+            type="text"
+            class="field-input"
+            placeholder="Entidade ou equipe de produção"
+            aria-describedby="desc-production"
+            [formField]="exportForm.production"
+            />
+            <span id="desc-production" class="field-hint">Responsável pela produção da obra</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="metadata-fieldset subaltern-fieldset">
+          <legend class="fieldset-legend">
+            Obra Original
+            <span class="badge-optional">(Subconjunto opcional)</span>
+          </legend>
+
+          <div class="subaltern-notice" role="note">
+            <p>
+              As informações abaixo referem-se à obra original de referência e constituem um grupo subordinado
+              inteiramente opcional.
+            </p>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-author" class="field-label">
+              Autor(a) original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-author"
+            type="text"
+            class="field-input"
+            placeholder="Nome do(a) autor(a) original"
+            aria-describedby="desc-orig-author"
+            [formField]="exportForm.originalBook.author"
+            />
+            <span id="desc-orig-author" class="field-hint">Autor(a) da obra original</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-title" class="field-label">
+              Título original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-title"
+            type="text"
+            class="field-input"
+            placeholder="Título da obra original"
+            aria-describedby="desc-orig-title"
+            [formField]="exportForm.originalBook.title"
+            />
+            <span id="desc-orig-title" class="field-hint">Título original da publicação</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-publication-no" class="field-label">
+              Número da edição original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-publication-no"
+            type="text"
+            class="field-input"
+            placeholder="Ex.: 1ª edição"
+            aria-describedby="desc-orig-publication-no"
+            [formField]="exportForm.originalBook.publicationNo"
+            />
+            <span id="desc-orig-publication-no" class="field-hint">Ordem ou número da edição original</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-published" class="field-label">
+              Local de publicação original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-published"
+            type="text"
+            class="field-input"
+            placeholder="Local de publicação da obra original"
+            aria-describedby="desc-orig-published"
+            [formField]="exportForm.originalBook.published"
+            />
+            <span id="desc-orig-published" class="field-hint">Cidade ou local de publicação original</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-publisher" class="field-label">
+              Editora original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-publisher"
+            type="text"
+            class="field-input"
+            placeholder="Editora original"
+            aria-describedby="desc-orig-publisher"
+            [formField]="exportForm.originalBook.publisher"
+            />
+            <span id="desc-orig-publisher" class="field-hint">Editora da publicação original</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-year" class="field-label">
+              Ano de publicação original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-year"
+            type="text"
+            class="field-input"
+            placeholder="Ex.: 2011"
+            aria-describedby="desc-orig-year"
+            [formField]="exportForm.originalBook.year"
+            />
+            <span id="desc-orig-year" class="field-hint">Ano de publicação da obra original</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-isbn" class="field-label">
+              ISBN original <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-isbn"
+            type="text"
+            class="field-input"
+            placeholder="Ex.: 978-0-000-00000-0"
+            aria-describedby="desc-orig-isbn"
+            [formField]="exportForm.originalBook.isbn"
+            />
+            <span id="desc-orig-isbn" class="field-hint">Código ISBN da obra original</span>
+          </div>
+
+          <div class="form-field">
+            <label for="field-orig-copyright" class="field-label">
+              Direitos autorais originais <span class="field-optional">(opcional)</span>
+            </label>
+            <input
+            id="field-orig-copyright"
+            type="text"
+            class="field-input"
+            placeholder="Informações de direitos autorais"
+            aria-describedby="desc-orig-copyright"
+            [formField]="exportForm.originalBook.copyright"
+            />
+            <span id="desc-orig-copyright" class="field-hint">Informações de copyright da obra original</span>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+
+    <div class="export-actions">
+      @if (exportError()) {
+        <div class="export-alert export-alert-error" role="alert">
+          <p>{{ exportError() }}</p>
+          <button class="export-alert-close" aria-label="Fechar alerta" (click)="onCloseAlertError()">
+            <ng-container *ngTemplateOutlet="closeIcon"></ng-container>
+          </button>
+        </div>
+      }
+      @if (exportSuccess()) {
+        <div class="export-alert export-alert-success" role="status">
+          <p>{{ exportSuccess() }}</p>
+          <button class="export-alert-close" aria-label="Fechar alerta" (click)="onCloseAlertSuccess()">
+            <ng-container *ngTemplateOutlet="closeIcon"></ng-container>
+          </button>
+        </div>
+      }
+      <div class="export-progress-sr" aria-live="polite">
+        @if (isExporting()) {
+          <span>Exportação em andamento: {{ progressPercent() }}% concluído</span>
+        }
+      </div>
+      <button
+      #exportSubmitButton
+      type="submit"
+      form="export-form"
+      class="export-submit-button"
+      [disabled]="isExporting()"
+      [attr.aria-busy]="isExporting()"
+      aria-label="Exportar livro híbrido"
+      (click)="onExport()"
+      >
+        @if (isExporting()) {
+          <svg
+          class="export-progress-svg"
+          aria-hidden="true"
+          focusable="false"
+          preserveAspectRatio="none"
+          [attr.viewBox]="'0 0 ' + (buttonWidth() || 200) + ' ' + (buttonHeight() || 56)"
+          >
+            <defs>
+              <pattern
+              patternUnits="userSpaceOnUse"
+              width="32"
+              height="32"
+              patternTransform="translate(0,0)"
+              preserveAspectRatio="xMidYMid"
+              id="stripe-pattern"
+              >
+                <path style="fill: var(--primary-accent); opacity: 0.5" d="M 0,32 16,0 h 8 L 8,32 Z" />
+                <path style="fill: var(--primary-accent); opacity: 0.5" d="M 16,32 32,0 v 16 l -8,16 z" />
+                <path style="fill: var(--primary-accent); opacity: 0.5" d="M 0,0 H 8 L 0,16 Z" />
+                <animateTransform
+                attributeName="patternTransform"
+                type="translate"
+                from="0, 0"
+                to="0, 32"
+                dur="1.5s"
+                repeatCount="indefinite"
+                />
+              </pattern>
+            </defs>
+            @if (isExporting() && progressPercent() >= 100) {
+              <rect
+              class="export-progress-stripes"
+              style="fill:url(#stripe-pattern)"
+              [class.reduced-motion]="reducedMotion()"
+              [attr.x]="-strokeThickness()"
+              [attr.y]="-strokeThickness()"
+              [attr.width]="(buttonWidth() || 200) + strokeThickness() * 2"
+              [attr.height]="(buttonHeight() || 56) + strokeThickness() * 2"
+              [attr.rx]="buttonRadius()"
+              [attr.ry]="buttonRadius()"
+              />
+            }
+            <rect
+            class="export-progress-track"
+            [attr.x]="-strokeThickness()"
+            [attr.y]="-strokeThickness()"
+            [attr.width]="(buttonWidth() || 200) + strokeThickness() * 2"
+            [attr.height]="(buttonHeight() || 56) + strokeThickness() * 2"
+            [attr.rx]="buttonRadius()"
+            [attr.ry]="buttonRadius()"
+            />
+            <rect
+            class="export-progress-fill"
+            [class.reduced-motion]="reducedMotion()"
+            [attr.x]="-strokeThickness()"
+            [attr.y]="-strokeThickness()"
+            [attr.width]="(buttonWidth() || 200) + strokeThickness() * 2"
+            [attr.height]="(buttonHeight() || 56) + strokeThickness() * 2"
+            [attr.rx]="buttonRadius()"
+            [attr.ry]="buttonRadius()"
+            pathLength="100"
+            [style.stroke-dashoffset]="strokeDashoffset()"
+            />
+          </svg>
+        }
+        <div class="export-button-icon-container">
+          <ng-container *ngTemplateOutlet="exportIcon"></ng-container>
+        </div>
+        <span class="export-button-label">
+          {{ isExporting() ? ('Exportando Livro Híbrido (' + progressPercent() + '%)') : 'Exportar Livro Híbrido' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div right class="card preview-container">
+    <!-- STUB: Preview area for the hybrid book to be exported. We don't yet have a viewer, so this will be a
+     placeholder until we do. -->
+    <header class="preview-header">
+      <h2 class="preview-title">[PH] Pré-visualização</h2>
+    </header>
+    <div class="preview-body">
+      <div class="preview-placeholder-box">
+        <div class="preview-icon-container">
+          <ng-container *ngTemplateOutlet="previewPlaceholderIcon"></ng-container>
+        </div>
+        <p class="preview-placeholder-text">
+          Pré-visualização do livro híbrido a ser exportado será exibida aqui quando esta funcionalidade for
+          implementada.
+        </p>
+      </div>
+    </div>
+  </div>
+</app-split>
+
+<ng-template #exportIcon>
+  <svg viewBox="0 0 24 24">
+    <defs>
+      <pattern
+      patternUnits="userSpaceOnUse"
+      width="18"
+      height="24"
+      patternTransform="translate(3, 0)"
+      preserveAspectRatio="xMidYMid"
+      id="export-arrow-down-pattern"
+      >
+        <path
+        style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"
+        d="M 9,3 V 15"
+        />
+        <path
+        style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"
+        d="m 4,10 5,5 5,-5"
+        />
+        @if (isExporting() && !reducedMotion()) {
+          <animateTransform
+          attributeName="patternTransform"
+          type="translate"
+          from="3, 0"
+          to="3, 24"
+          dur="1.5s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0.5 0.1 0.5 0.9"
+          />
+        }
+      </pattern>
+    </defs>
+    <path
+    d="m 21,15 v 4 c 0,1.104569 -0.895431,2 -2,2 H 5 C 3.8954305,21 3,20.104569 3,19 v -4"
+    style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"
+    />
+    <rect style="fill:url(#export-arrow-down-pattern)" width="18" height="21" x="3" y="0" />
+  </svg>
+</ng-template>
+
+<ng-template #previewPlaceholderIcon>
+  <!-- STUB: Placeholder icon for preview area -->
+  <svg aria-hidden="true" class="icon preview-placeholder-svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  </svg>
+</ng-template>
+
+<ng-template #closeIcon>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" d="M 3,3 21,21" />
+    <path style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" d="M 3,21 21,3" />
+  </svg>
+</ng-template>
