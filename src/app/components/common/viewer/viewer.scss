@@ -1,0 +1,172 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.viewer-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
+  flex-shrink: 0;
+  background-color: var(--card-bg);
+
+  .viewer-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+  }
+
+  .viewer-book-title {
+    font-size: 0.875rem;
+    color: var(--text-accent);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50%;
+  }
+}
+
+.viewer-body {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--card-bg);
+}
+
+.viewer-left-pane {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.viewer-video-pane {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg);
+
+  .viewer-video-player {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+.viewer-segments-pane {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg);
+}
+
+.viewer-segments-list {
+  height: 100%;
+  list-style: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-color: var(--card-bg-accent-accent-accent) var(--card-bg);
+  background-color: var(--card-bg);
+}
+
+.viewer-segment-item {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  contain: layout;
+
+  &:nth-child(odd) {
+    background-color: var(--card-bg);
+  }
+
+  &:nth-child(even) {
+    background-color: var(--card-bg-accent);
+  }
+}
+
+.viewer-segment-button {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: stretch;
+
+  &:focus-visible {
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: -0.25rem;
+    border-radius: var(--button-border-radius);
+  }
+
+  &[aria-pressed="true"] .viewer-segment-text {
+    color: var(--primary-color);
+    font-weight: 600;
+
+    &.hovered {
+      color: var(--primary-color);
+    }
+  }
+
+  .viewer-segment-text {
+    display: flex;
+    align-items: center;
+    text-align: justify;
+    width: 100%;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-color);
+
+    &.hovered {
+      font-style: italic;
+      color: var(--primary-accent);
+    }
+  }
+}
+
+.viewer-text-record-pane {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg);
+
+  .viewer-pdf-viewer {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: hidden;
+  }
+}
+
+.viewer-info-card {
+  width: 100%;
+  height: 100%;
+}

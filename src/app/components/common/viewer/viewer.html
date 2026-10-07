@@ -1,0 +1,112 @@
+<div class="viewer-container">
+  <div class="viewer-body">
+    <app-split
+    direction="horizontal"
+    [defaultSize]="50"
+    [resizeBarAriaLabel]="'Redimensionamento entre painel multimídia e registro de texto'"
+    >
+      <div left class="viewer-left-pane">
+        <app-split
+        direction="vertical"
+        [defaultSize]="50"
+        [resizeBarAriaLabel]="'Redimensionamento entre player de vídeo e lista de segmentos de texto'"
+        >
+          <div top class="viewer-video-pane">
+            @if (videoSegmentationService.segments().length <= 0) {
+              <app-info-card
+              class="viewer-info-card"
+              [type]="'warning'"
+              [message]="'Não há segmentos de vídeo.'"
+              ></app-info-card>
+            } @else {
+              <app-video-player
+              class="viewer-video-player"
+              [segment]="selectedVideoSegment()"
+              ></app-video-player>
+            }
+          </div>
+
+          <div bottom class="viewer-segments-pane">
+            @if (mediaFilesService.textRecord().type === 'invalid') {
+              <app-info-card
+              class="viewer-info-card"
+              [type]="'error'"
+              [message]="'Registro de texto inválido.'"
+              ></app-info-card>
+            } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
+              <app-info-card
+              class="viewer-info-card"
+              [type]="'warning'"
+              [message]="'Registro de texto não selecionado.'"
+              ></app-info-card>
+            } @else if (textSegments().length <= 0) {
+              <app-info-card
+              class="viewer-info-card"
+              [type]="'warning'"
+              [message]="'Não há segmentos de texto.'"
+              ></app-info-card>
+            } @else {
+              <ol
+              #segmentsList
+              class="viewer-segments-list"
+              role="list"
+              aria-label="Segmentos de texto da publicação"
+              >
+                @for (segment of textSegments(); track segment.pdfJsId; let index = $index) {
+                  <li class="viewer-segment-item" role="listitem">
+                    <button
+                    #segmentButton
+                    type="button"
+                    class="viewer-segment-button"
+                    [attr.data-segment-id]="segment.pdfJsId"
+                    [attr.data-segment-page]="segment.page"
+                    [attr.data-segment-index]="index"
+                    [aria-pressed]="segment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
+                    (click)="onSegmentClick(segment)"
+                    (dblclick)="onSegmentDoubleClick(segment)"
+                    >
+                      <p
+                      class="viewer-segment-text"
+                      [class.hovered]="segment.pdfJsId === hoveredSegmentPdfJsId()?.pdfJsId"
+                      >
+                        {{ getFullText(segment) }}
+                      </p>
+                    </button>
+                  </li>
+                }
+              </ol>
+            }
+          </div>
+        </app-split>
+      </div>
+
+      <div right class="viewer-text-record-pane">
+        @if (mediaFilesService.textRecord().type === 'invalid') {
+          <app-info-card
+          class="viewer-info-card"
+          [type]="'error'"
+          [message]="'Registro de texto inválido.'"
+          ></app-info-card>
+        } @else if (mediaFilesService.textRecord().type !== 'application/pdf') {
+          <app-info-card
+          class="viewer-info-card"
+          [type]="'warning'"
+          [message]="'Registro de texto não selecionado.'"
+          ></app-info-card>
+        } @else {
+          <app-pdf-viewer
+          class="viewer-pdf-viewer"
+          [src]="mediaFilesService.textRecord().url!"
+          [visible]="visible()"
+          [name]="'viewer'"
+          [highlightMode]="'text-segment'"
+          [navigateToMarkedContentInViewer]="navigateToMarkedContentInViewer()"
+          (navigateToMarkedContentInParent)="onNavigateToMarkedContent($event)"
+          [(selectedMarkedContent)]="selectedSegmentPdfJsId"
+          [(hoveredMarkedContent)]="hoveredSegmentPdfJsId"
+          ></app-pdf-viewer>
+        }
+      </div>
+    </app-split>
+  </div>
+</div>

@@ -300,42 +300,8 @@
   box-sizing: border-box;
 }
 
-.preview-header {
-  padding: 1rem 1.25rem;
-  border-bottom: var(--card-border-thickness) solid var(--card-bg-accent);
-  flex-shrink: 0;
-
-  .preview-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-color);
-  }
-}
-
-.preview-body {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background-color: var(--card-bg);
-}
-
-.preview-placeholder-box {
-  max-width: 28rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 1rem;
-
-  .preview-icon-container {
-    color: var(--icon-color-disabled);
-  }
-
-  .preview-placeholder-text {
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--icon-color-disabled);
-  }
+.preview-viewer {
+  width: 100%;
+  height: 100%;
+  display: block;
 }

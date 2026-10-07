@@ -14,6 +14,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { form, FormField, submit } from '@angular/forms/signals';
 import { Split } from '../../layout/split/split';
+import { Viewer } from '../../common/viewer/viewer';
 import { ExportService } from '../../../services/export/export';
 import { UndoRedoService } from '../../../services/undo/undo-redo';
 import { UpdateExportMetadataCommand } from '../../../services/undo/commands/export-commands';
@@ -59,7 +60,7 @@ export interface OriginalBookMetadata {
  */
 @Component({
   selector: 'app-export',
-  imports: [CommonModule, FormField, Split],
+  imports: [CommonModule, FormField, Split, Viewer],
   templateUrl: './export.html',
   styleUrl: './export.scss',
 })
