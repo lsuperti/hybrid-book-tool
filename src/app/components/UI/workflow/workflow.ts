@@ -1,21 +1,125 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed, inject, Renderer2, OnDestroy } from '@angular/core';
 import { Ingest } from '../ingest/ingest';
 import { TextSegmentation } from '../text-segmentation/text-segmentation';
 import { VideoSegmentation } from '../video-segmentation/video-segmentation';
 import { Correlation } from '../correlation/correlation';
 import { Export } from '../export/export';
+import { UndoRedoService } from '../../../services/undo/undo-redo';
 
+/**
+ * Root workflow component orchestrating the main application phases,
+ * global keyboard shortcuts (Ctrl+Z / Ctrl+Y), and undo/redo controls.
+ */
 @Component({
   selector: 'app-workflow',
   imports: [Ingest, TextSegmentation, VideoSegmentation, Correlation, Export],
   templateUrl: './workflow.html',
   styleUrl: './workflow.scss',
 })
-export class Workflow {
+export class Workflow implements OnDestroy {
   protected readonly currentTab = signal<Tab>('ingest');
+  protected readonly undoRedoService = inject(UndoRedoService);
+  protected readonly lastActionAnnouncement = signal<string>('');
 
+  protected readonly undoTitle = computed(() => {
+    const desc = this.undoRedoService.lastUndoDescription();
+    return desc ? `Desfazer: ${desc} (Ctrl+Z)` : 'Desfazer (Ctrl+Z)';
+  });
+
+  protected readonly redoTitle = computed(() => {
+    const desc = this.undoRedoService.lastRedoDescription();
+    return desc ? `Refazer: ${desc} (Ctrl+Y)` : 'Refazer (Ctrl+Y)';
+  });
+
+  protected readonly undoAriaLabel = computed(() => {
+    const desc = this.undoRedoService.lastUndoDescription();
+    return desc ? `Desfazer ${desc}` : 'Desfazer';
+  });
+
+  protected readonly redoAriaLabel = computed(() => {
+    const desc = this.undoRedoService.lastRedoDescription();
+    return desc ? `Refazer ${desc}` : 'Refazer';
+  });
+
+  private readonly renderer2 = inject(Renderer2);
+  private readonly unlisteners: (() => void)[] = [];
+
+  constructor() {
+    this.unlisteners.push(
+      this.renderer2.listen('window', 'keydown', (event: KeyboardEvent) => {
+        this.handleGlobalKeydown(event);
+      })
+    );
+  }
+
+  /**
+   * Switches the active workflow view tab.
+   *
+   * @param tab The target workflow tab.
+   */
   protected tabButtonClick(tab: Tab): void {
     this.currentTab.set(tab);
+  }
+
+  /**
+   * Triggers an undo operation via the UndoRedoService.
+   */
+  protected onUndo(): void {
+    const desc = this.undoRedoService.lastUndoDescription();
+    void this.undoRedoService.undo().then(() => {
+      if (desc) {
+        this.lastActionAnnouncement.set(`Desfeito: ${desc}`);
+      }
+    });
+  }
+
+  /**
+   * Triggers a redo operation via the UndoRedoService.
+   */
+  protected onRedo(): void {
+    const desc = this.undoRedoService.lastRedoDescription();
+    void this.undoRedoService.redo().then(() => {
+      if (desc) {
+        this.lastActionAnnouncement.set(`Refeito: ${desc}`);
+      }
+    });
+  }
+
+  /**
+   * Handles application-wide shortcut keys for Undo (Ctrl+Z) and Redo (Ctrl+Y / Ctrl+Shift+Z).
+   *
+   * @param event The keyboard event.
+   */
+  private handleGlobalKeydown(event: KeyboardEvent): void {
+    const isCtrlOrMeta = event.ctrlKey || event.metaKey;
+    if (!isCtrlOrMeta) {
+      return;
+    }
+
+    if (event.key === 'z' || event.key === 'Z') {
+      if (event.shiftKey) {
+        if (this.undoRedoService.canRedo()) {
+          event.preventDefault();
+          this.onRedo();
+        }
+      } else {
+        if (this.undoRedoService.canUndo()) {
+          event.preventDefault();
+          this.onUndo();
+        }
+      }
+    } else if (event.key === 'y' || event.key === 'Y') {
+      if (this.undoRedoService.canRedo()) {
+        event.preventDefault();
+        this.onRedo();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    for (const unlisten of this.unlisteners) {
+      unlisten();
+    }
   }
 }
 

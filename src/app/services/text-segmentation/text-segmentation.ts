@@ -557,6 +557,44 @@ export class TextSegmentationService {
       return currentSegments[parentIndex].linkedChildren[childIndex];
     }
   }
+
+  /**
+   * Restores the text segments list to a specific snapshot state, rebuilding addressable segment cache.
+   *
+   * @param segments The text segments hierarchy to restore.
+   */
+  public restoreSegments(segments: readonly TextSegment[]): void {
+    const cloned = this.cloneSegments(segments);
+    this.addressableSegments.clear();
+
+    const registerAddressable = (items: readonly TextSegment[]): void => {
+      for (const item of items) {
+        if (item.pdfJsId) {
+          this.addressableSegments.add(item.pdfJsId);
+        }
+        if (item.linkedChildren && item.linkedChildren.length > 0) {
+          registerAddressable(item.linkedChildren);
+        }
+      }
+    };
+
+    registerAddressable(cloned);
+    this.segments.set(cloned);
+    this.status.set(cloned.length > 0 ? 'success' : 'idle');
+  }
+
+  /**
+   * Performs a deep clone of a text segment hierarchy.
+   *
+   * @param segments The text segments to clone.
+   * @returns A deep clone of the text segments.
+   */
+  public cloneSegments(segments: readonly TextSegment[]): TextSegment[] {
+    return segments.map((seg) => ({
+      ...seg,
+      linkedChildren: seg.linkedChildren ? this.cloneSegments(seg.linkedChildren) : [],
+    }));
+  }
 }
 
 /**

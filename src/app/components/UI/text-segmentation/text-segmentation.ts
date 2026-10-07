@@ -23,6 +23,8 @@ import {
   type TextSegment,
   type PdfJsAccessibleTextSegment
 } from '../../../services/text-segmentation/text-segmentation';
+import { UndoRedoService } from '../../../services/undo/undo-redo';
+import { TextSegmentationCommand } from '../../../services/undo/commands/text-segmentation-commands';
 
 import { PdfViewer } from '../../common/pdf-viewer/pdf-viewer';
 
@@ -35,6 +37,7 @@ import { PdfViewer } from '../../common/pdf-viewer/pdf-viewer';
 export class TextSegmentation implements OnDestroy {
   protected readonly mediaFilesService = inject(MediaFiles);
   protected readonly textSegmentationService = inject(TextSegmentationService);
+  private readonly undoRedoService = inject(UndoRedoService);
   private readonly injector = inject(Injector);
   private readonly renderer2 = inject(Renderer2);
 
@@ -148,7 +151,17 @@ export class TextSegmentation implements OnDestroy {
    * @param segment The text segment to toggle linking for.
    */
   protected onLinkButtonClick(segment: TextSegment) {
+    const before = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
     this.textSegmentationService.toggleSegmentLinking(segment.pdfJsId);
+    const after = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
+    this.undoRedoService.execute(
+      new TextSegmentationCommand(
+        'Alternar vinculação de segmento de texto',
+        before,
+        after,
+        this.textSegmentationService
+      )
+    );
 
     // Since the segments lists have been rebuilt in the DOM with the linking change, the focus in the button gets lost,
     // which is terrible for accessibility. So we need to restore the focus to the button that was clicked.
@@ -167,7 +180,12 @@ export class TextSegmentation implements OnDestroy {
    * @param segment The text segment to move up.
    */
   protected onUpButtonClick(segment: TextSegment) {
+    const before = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
     this.textSegmentationService.moveSegmentUp(segment.pdfJsId);
+    const after = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
+    this.undoRedoService.execute(
+      new TextSegmentationCommand('Mover segmento de texto para cima', before, after, this.textSegmentationService)
+    );
 
     afterNextRender(() => {
       const buttonToFocus = this.upButtons()
@@ -184,7 +202,12 @@ export class TextSegmentation implements OnDestroy {
    * @param segment The text segment to move down.
    */
   protected onDownButtonClick(segment: TextSegment) {
+    const before = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
     this.textSegmentationService.moveSegmentDown(segment.pdfJsId);
+    const after = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
+    this.undoRedoService.execute(
+      new TextSegmentationCommand('Mover segmento de texto para baixo', before, after, this.textSegmentationService)
+    );
 
     afterNextRender(() => {
       const buttonToFocus = this.downButtons()
@@ -201,7 +224,12 @@ export class TextSegmentation implements OnDestroy {
    * @param segment The text segment to exclude.
    */
   protected onExcludeButtonClick(segment: TextSegment) {
+    const before = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
     this.textSegmentationService.excludeSegment(segment.pdfJsId);
+    const after = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
+    this.undoRedoService.execute(
+      new TextSegmentationCommand('Excluir segmento de texto', before, after, this.textSegmentationService)
+    );
 
     afterNextRender(() => {
       const buttonToFocus = this.includeButtons()
@@ -218,7 +246,12 @@ export class TextSegmentation implements OnDestroy {
    * @param segment The text segment to include.
    */
   protected onIncludeButtonClick(segment: TextSegment) {
+    const before = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
     this.textSegmentationService.includeSegment(segment.pdfJsId);
+    const after = this.textSegmentationService.cloneSegments(this.textSegmentationService.segments());
+    this.undoRedoService.execute(
+      new TextSegmentationCommand('Incluir segmento de texto', before, after, this.textSegmentationService)
+    );
 
     afterNextRender(() => {
       const buttonToFocus = this.excludeButtons()

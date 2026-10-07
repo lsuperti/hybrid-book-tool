@@ -98,7 +98,7 @@ export class VideoSegmentationService {
         sub.unsubscribe();
       }
       this.segmentThumbnailSubscriptions.clear();
-      this.thumbnailService.freeAllSegmentThumbnails();
+      this.thumbnailService?.freeAllSegmentThumbnails?.();
     });
   }
 
@@ -836,6 +836,73 @@ export class VideoSegmentationService {
       }
       return a.startTime - b.startTime;
     });
+  }
+
+  /**
+   * Restores video segments and correlation order to a specified snapshot state.
+   * Cleans up pending debounce timers for removed segments and requests thumbnails for restored segments.
+   *
+   * @param segments The video segments snapshot to restore.
+   * @param correlationOrder The correlation order snapshot to restore.
+   */
+  public restoreSegmentationState(
+    segments: readonly VideoSegment[],
+    correlationOrder: readonly string[]
+  ): void {
+    const oldSegmentIds = new Set(
+      this.segments()
+        .map((s) => s.id)
+        .filter(Boolean)
+    );
+    const newSegmentIds = new Set(
+      segments
+        .map((s) => s.id)
+        .filter(Boolean)
+    );
+
+    for (const id of oldSegmentIds) {
+      if (!newSegmentIds.has(id)) {
+        const timer = this.segmentThumbnailDebounceTimers.get(id!);
+        if (timer) {
+          clearTimeout(timer);
+          this.segmentThumbnailDebounceTimers.delete(id!);
+        }
+        const sub = this.segmentThumbnailSubscriptions.get(id!);
+        if (sub) {
+          sub.unsubscribe();
+          this.segmentThumbnailSubscriptions.delete(id!);
+        }
+        this.thumbnailService?.freeSegmentThumbnail?.(id!);
+      }
+    }
+
+    const currentSegmentMap = new Map(this.segments().map((s) => [s.id, s]));
+    const cloned: VideoSegment[] = segments.map((seg) => {
+      const live = seg.id ? currentSegmentMap.get(seg.id) : undefined;
+      return {
+        ...seg,
+        thumbnail: live?.thumbnail ?? null,
+      };
+    });
+
+    this.sortSegmentsTemporally(cloned);
+    this.segments.set(cloned);
+    this.correlationOrder.set([...correlationOrder]);
+
+    for (const seg of cloned) {
+      if (seg.id && !seg.thumbnail) {
+        this.requestSegmentThumbnail(seg.id);
+      }
+    }
+  }
+
+  /**
+   * Restores the correlation order array.
+   *
+   * @param correlationOrder The correlation order array to restore.
+   */
+  public restoreCorrelationOrder(correlationOrder: readonly string[]): void {
+    this.correlationOrder.set([...correlationOrder]);
   }
 
   /**

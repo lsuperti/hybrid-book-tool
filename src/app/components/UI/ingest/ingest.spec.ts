@@ -228,6 +228,31 @@ class ThumbnailStub {
   public freeFilmstripThumbnailsForFile(_mediaFileId: string): void {
     // No-op for stub
   }
+
+  /**
+   * Stub method for freeing all segment thumbnails.
+   */
+  public freeAllSegmentThumbnails(): void {
+    // No-op for stub
+  }
+
+  /**
+   * Stub method for freeing a segment thumbnail.
+   *
+   * @param _segmentId The segment ID.
+   */
+  public freeSegmentThumbnail(_segmentId: string): void {
+    // No-op for stub
+  }
+
+  /**
+   * Stub method for freeing segment thumbnails for a file.
+   *
+   * @param _mediaFileId The media file ID.
+   */
+  public freeSegmentThumbnailsForFile(_mediaFileId: string): void {
+    // No-op for stub
+  }
 }
 
 /**

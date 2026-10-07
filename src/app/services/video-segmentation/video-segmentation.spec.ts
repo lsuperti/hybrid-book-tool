@@ -672,4 +672,49 @@ describe('VideoSegmentationService', () => {
       expect(service.findSegmentAtTime('media-1' as MediaFileId, 70)?.id).toBe('seg-2');
     });
   });
+
+  describe('restoreSegmentationState and restoreCorrelationOrder', () => {
+    it('should restore segments and correlation order, freeing removed and requesting missing thumbnails', () => {
+      service.segments.set([
+        {
+          id: 'seg-old',
+          fileId: 'media-1' as MediaFileId,
+          name: 'Old',
+          startTime: 0,
+          endTime: 10,
+          thumbnail: 'blob:old-thumb',
+        },
+      ]);
+      service.correlationOrder.set(['seg-old']);
+
+      const mockFile = new File(['dummy'], 'video.mp4', { type: 'video/mp4' });
+      mockMediaFiles.mediaFiles.set([{
+        id: 'media-1' as MediaFileId,
+        file: mockFile,
+        name: 'video.mp4',
+        url: 'blob:video',
+        thumbnail: null,
+      }]);
+
+      const restoredSeg: VideoSegment = {
+        id: 'seg-restored',
+        fileId: 'media-1' as MediaFileId,
+        name: 'Restored',
+        startTime: 0,
+        endTime: 20,
+        thumbnail: null,
+      };
+
+      service.restoreSegmentationState([restoredSeg], ['seg-restored']);
+
+      expect(mockThumbnail.freeSegmentThumbnail).toHaveBeenCalledWith('seg-old');
+      expect(service.segments().length).toBe(1);
+      expect(service.segments()[0].id).toBe('seg-restored');
+      expect(service.correlationOrder()).toEqual(['seg-restored']);
+      expect(mockThumbnail.generateSegmentThumbnailUrls).toHaveBeenCalled();
+
+      service.restoreCorrelationOrder(['seg-restored-reordered']);
+      expect(service.correlationOrder()).toEqual(['seg-restored-reordered']);
+    });
+  });
 });

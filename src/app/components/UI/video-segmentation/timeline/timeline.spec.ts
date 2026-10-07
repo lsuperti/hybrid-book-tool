@@ -34,6 +34,7 @@ describe('Timeline', () => {
     updateSegmentEnd: ReturnType<typeof vi.fn>,
     requestSegmentThumbnail: ReturnType<typeof vi.fn>,
     findSegmentAtTime: ReturnType<typeof vi.fn>,
+    correlationOrder: ReturnType<typeof signal<readonly string[]>>,
   };
   let mockThumbnail: {
     generateFilmstripThumbnails: ReturnType<typeof vi.fn>,
@@ -71,6 +72,7 @@ describe('Timeline', () => {
           thumbnail: null,
         },
       ]),
+      correlationOrder: signal<readonly string[]>(['seg-1']),
       getFileDuration: vi.fn((fileId: string) => (fileId === 'file-1' ? 60 : 80)),
       getFileFps: vi.fn(() => 30),
       formatTimestamp: vi.fn((sec: number) => `${Math.floor(sec)}s`),

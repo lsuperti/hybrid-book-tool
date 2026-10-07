@@ -16,6 +16,14 @@ import { MediaFiles } from '../../../services/media-files/media-files';
 import { PdfViewerFrame } from '../../common/pdf-viewer/pdf-viewer-frame';
 import { PDFNotificationService, PDFPageProxy, TextContent, type IPDFViewerApplication } from 'ngx-extended-pdf-viewer';
 import { TextSegmentationService } from '../../../services/text-segmentation/text-segmentation';
+import { VideoSegmentationService } from '../../../services/video-segmentation/video-segmentation';
+import { UndoRedoService } from '../../../services/undo/undo-redo';
+import {
+  AddMediaFilesCommand,
+  RemoveMediaFileCommand,
+  SetTextRecordCommand,
+} from '../../../services/undo/commands/media-commands';
+import { FileRegistry } from '../../../services/undo/file-registry/file-registry';
 
 @Component({
   selector: 'app-ingest',
@@ -25,6 +33,9 @@ import { TextSegmentationService } from '../../../services/text-segmentation/tex
 })
 export class Ingest {
   protected readonly mediaFilesService = inject(MediaFiles);
+  private readonly videoSegmentationService = inject(VideoSegmentationService);
+  private readonly undoRedoService = inject(UndoRedoService);
+  private readonly fileRegistry = inject(FileRegistry, { optional: true });
   private readonly injector = inject(Injector);
   private readonly pdfNotificationService = inject(PDFNotificationService);
   private readonly textSegmentationService = inject(TextSegmentationService);
@@ -86,7 +97,8 @@ export class Ingest {
     this.draggingOverMediaFilesUploadArea.set(false);
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       const droppedFiles = Array.from(event.dataTransfer.files);
-      this.mediaFilesService.addMediaFiles(droppedFiles);
+      const added = this.mediaFilesService.addMediaFiles(droppedFiles);
+      this.undoRedoService.execute(new AddMediaFilesCommand(added, this.mediaFilesService, this.fileRegistry));
     }
   }
 
@@ -147,7 +159,8 @@ export class Ingest {
 
     if (inputElement.files && inputElement.files.length > 0) {
       const selectedFiles = Array.from(inputElement.files);
-      this.mediaFilesService.addMediaFiles(selectedFiles);
+      const added = this.mediaFilesService.addMediaFiles(selectedFiles);
+      this.undoRedoService.execute(new AddMediaFilesCommand(added, this.mediaFilesService, this.fileRegistry));
       inputElement.value = '';
     }
   }
@@ -185,7 +198,25 @@ export class Ingest {
       }, { injector: this.injector });
     }
 
-    this.mediaFilesService.removeMediaFile(mediaFileId);
+    const associatedSegments = this.videoSegmentationService
+      .segments()
+      .filter((s) => s.fileId === mediaFileId);
+    const correlationOrder = this.videoSegmentationService.correlationOrder();
+
+    const result = this.mediaFilesService.removeMediaFile(mediaFileId);
+    if (result) {
+      this.undoRedoService.execute(
+        new RemoveMediaFileCommand(
+          result.removedFile,
+          result.index,
+          this.mediaFilesService,
+          associatedSegments,
+          correlationOrder,
+          this.videoSegmentationService,
+          this.fileRegistry
+        )
+      );
+    }
   }
 
   /**
@@ -235,6 +266,9 @@ export class Ingest {
    * @param textRecordFile The selected text record file, or null to clear it.
    */
   private setTextRecord(textRecordFile: File | null): void {
+    const prevFile = this.mediaFilesService.textRecord().file;
+    const prevSegments = this.textSegmentationService.segments();
+
     this.mediaFilesService.setTextRecord(textRecordFile);
 
     if (this.mediaFilesService.textRecord()?.type === 'application/pdf') {
@@ -242,5 +276,17 @@ export class Ingest {
       // pages load the onPagesLoaded method will start the text segmentation handled by the text segmentation service.
       this.textSegmentationService.workUpcoming();
     }
+
+    this.undoRedoService.execute(
+      new SetTextRecordCommand(
+        prevFile,
+        textRecordFile,
+        this.mediaFilesService,
+        prevSegments,
+        [],
+        this.textSegmentationService,
+        this.fileRegistry
+      )
+    );
   }
 }

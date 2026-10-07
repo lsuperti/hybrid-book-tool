@@ -914,4 +914,38 @@ describe('TextSegmentationService', () => {
       expect(service.isMarkedContentAnAddressableSegment('mc_new_1')).toBe(true);
     });
   });
+
+  describe('restoreSegments', () => {
+    it('should restore segment hierarchy, rebuild addressable segments, and update status', () => {
+      const child: TextSegment = {
+        sequentialId: 1,
+        pdfJsId: 'c1',
+        page: 1,
+        text: 'Child',
+        excluded: false,
+        linkedChildren: [],
+      };
+      const parent: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'p1',
+        page: 1,
+        text: 'Parent',
+        excluded: false,
+        linkedChildren: [child],
+      };
+
+      service.restoreSegments([parent]);
+
+      expect(service.segments().length).toBe(1);
+      expect(service.segments()[0].linkedChildren.length).toBe(1);
+      expect(service.isMarkedContentAnAddressableSegment('p1')).toBe(true);
+      expect(service.isMarkedContentAnAddressableSegment('c1')).toBe(true);
+      expect(service.status()).toBe('success');
+
+      service.restoreSegments([]);
+      expect(service.segments().length).toBe(0);
+      expect(service.status()).toBe('idle');
+      expect(service.isMarkedContentAnAddressableSegment('p1')).toBe(false);
+    });
+  });
 });

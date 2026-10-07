@@ -28,6 +28,8 @@ import {
 } from '../../../services/text-segmentation/text-segmentation';
 
 import { VideoSegmentationService, type VideoSegment } from '../../../services/video-segmentation/video-segmentation';
+import { UndoRedoService } from '../../../services/undo/undo-redo';
+import { ReorderCorrelationCommand } from '../../../services/undo/commands/correlation-commands';
 import { PdfViewer } from '../../common/pdf-viewer/pdf-viewer';
 import { VideoPlayer } from '../../common/video-player/video-player';
 
@@ -47,6 +49,7 @@ export class Correlation implements OnDestroy {
   protected readonly mediaFilesService = inject(MediaFiles);
   protected readonly textSegmentationService = inject(TextSegmentationService);
   protected readonly videoSegmentationService = inject(VideoSegmentationService);
+  private readonly undoRedoService = inject(UndoRedoService);
   private readonly injector = inject(Injector);
   private readonly renderer2 = inject(Renderer2);
 
@@ -206,7 +209,14 @@ export class Correlation implements OnDestroy {
    * @param index The current index of the video segment to move up.
    */
   protected onUpButtonClick(index: number): void {
+    const beforeOrder = [...this.videoSegmentationService.correlationOrder()];
     this.videoSegmentationService.moveSegmentUp(index);
+    const afterOrder = [...this.videoSegmentationService.correlationOrder()];
+    if (beforeOrder.join(',') !== afterOrder.join(',')) {
+      this.undoRedoService.execute(
+        new ReorderCorrelationCommand(beforeOrder, afterOrder, this.videoSegmentationService)
+      );
+    }
 
     afterNextRender(() => {
       const buttonToFocus = this.upButtons()
@@ -224,7 +234,14 @@ export class Correlation implements OnDestroy {
    * @param index The current index of the video segment to move down.
    */
   protected onDownButtonClick(index: number): void {
+    const beforeOrder = [...this.videoSegmentationService.correlationOrder()];
     this.videoSegmentationService.moveSegmentDown(index);
+    const afterOrder = [...this.videoSegmentationService.correlationOrder()];
+    if (beforeOrder.join(',') !== afterOrder.join(',')) {
+      this.undoRedoService.execute(
+        new ReorderCorrelationCommand(beforeOrder, afterOrder, this.videoSegmentationService)
+      );
+    }
 
     afterNextRender(() => {
       const buttonToFocus = this.downButtons()

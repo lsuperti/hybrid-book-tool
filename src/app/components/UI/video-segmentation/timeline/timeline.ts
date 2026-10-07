@@ -24,6 +24,13 @@ import {
   type FilmstripFileSection,
 } from '../../../../services/thumbnail/thumbnail';
 import { Subscription } from 'rxjs';
+import { UndoRedoService } from '../../../../services/undo/undo-redo';
+import {
+  SplitSegmentCommand,
+  JoinSegmentsCommand,
+  DeleteSegmentCommand,
+  UpdateSegmentBoundaryCommand,
+} from '../../../../services/undo/commands/video-segmentation-commands';
 
 export interface ThumbnailSlot {
   index: number,
@@ -55,6 +62,7 @@ export class Timeline implements OnDestroy, AfterViewInit {
   protected readonly mediaFilesService = inject(MediaFiles);
   protected readonly videoSegmentationService = inject(VideoSegmentationService);
   private readonly thumbnailService = inject(Thumbnail);
+  private readonly undoRedoService = inject(UndoRedoService);
   private readonly renderer = inject(Renderer2);
 
   public readonly currentTime = model<number>(0);
@@ -84,6 +92,8 @@ export class Timeline implements OnDestroy, AfterViewInit {
     edge: 'start' | 'end',
     startX: number,
     initialTime: number,
+    initialSegments: VideoSegment[],
+    initialOrder: string[],
   } | null = null;
 
   protected readonly isGhostPreview = signal<boolean>(false);
@@ -1050,11 +1060,16 @@ export class Timeline implements OnDestroy, AfterViewInit {
     const initialTime = edge === 'start' ? segment.startTime : segment.endTime;
     this.startGhostPreview(segment.fileId, initialTime);
 
+    const initialSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+    const initialOrder = [...this.getCorrelationOrder()];
+
     this.activeTabDrag = {
       segmentId: segment.id!,
       edge,
       startX: event.clientX,
       initialTime,
+      initialSegments,
+      initialOrder,
     };
 
     this.unlistenMouseMove = this.renderer.listen('window', 'mousemove', (e: MouseEvent) => {
@@ -1079,8 +1094,37 @@ export class Timeline implements OnDestroy, AfterViewInit {
     });
 
     this.unlistenMouseUp = this.renderer.listen('window', 'mouseup', () => {
-      if (this.activeTabDrag && this.activeTabDrag.edge === 'start') {
-        this.videoSegmentationService.requestSegmentThumbnail(this.activeTabDrag.segmentId);
+      if (this.activeTabDrag) {
+        const segId = this.activeTabDrag.segmentId;
+        const dragEdge = this.activeTabDrag.edge;
+        const initSegs = this.activeTabDrag.initialSegments;
+        const initOrder = this.activeTabDrag.initialOrder;
+        const currentSegs = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+        const currentOrder = [...this.getCorrelationOrder()];
+
+        const prevSeg = initSegs.find((s) => s.id === segId);
+        const currSeg = currentSegs.find((s) => s.id === segId);
+        if (
+          prevSeg &&
+          currSeg &&
+          (prevSeg.startTime !== currSeg.startTime || prevSeg.endTime !== currSeg.endTime)
+        ) {
+          this.undoRedoService.execute(
+            new UpdateSegmentBoundaryCommand(
+              initSegs,
+              initOrder,
+              currentSegs,
+              currentOrder,
+              segId,
+              dragEdge,
+              this.videoSegmentationService
+            )
+          );
+        }
+
+        if (dragEdge === 'start') {
+          this.videoSegmentationService.requestSegmentThumbnail(segId);
+        }
       }
       this.activeTabDrag = null;
       this.cleanupMouseListeners();
@@ -1115,6 +1159,9 @@ export class Timeline implements OnDestroy, AfterViewInit {
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
       event.stopPropagation();
+
+      const beforeSegs = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const beforeOrder = [...this.getCorrelationOrder()];
 
       if (event.shiftKey) {
         // Snap to adjacent left boundary or playhead if intermediate
@@ -1156,10 +1203,27 @@ export class Timeline implements OnDestroy, AfterViewInit {
         this.currentTime.set(edge === 'start' ? updatedSeg.startTime : updatedSeg.endTime);
       }
 
+      const afterSegs = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const afterOrder = [...this.getCorrelationOrder()];
+      this.undoRedoService.execute(
+        new UpdateSegmentBoundaryCommand(
+          beforeSegs,
+          beforeOrder,
+          afterSegs,
+          afterOrder,
+          segment.id!,
+          edge,
+          this.videoSegmentationService
+        )
+      );
+
       this.scheduleGhostEndAfterTabKey(segment, edge);
     } else if (event.key === 'ArrowRight') {
       event.preventDefault();
       event.stopPropagation();
+
+      const beforeSegs = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const beforeOrder = [...this.getCorrelationOrder()];
 
       if (event.shiftKey) {
         // Snap to adjacent right boundary or playhead if intermediate
@@ -1202,6 +1266,20 @@ export class Timeline implements OnDestroy, AfterViewInit {
         this.currentTime.set(edge === 'start' ? updatedSeg.startTime : updatedSeg.endTime);
       }
 
+      const afterSegs = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const afterOrder = [...this.getCorrelationOrder()];
+      this.undoRedoService.execute(
+        new UpdateSegmentBoundaryCommand(
+          beforeSegs,
+          beforeOrder,
+          afterSegs,
+          afterOrder,
+          segment.id!,
+          edge,
+          this.videoSegmentationService
+        )
+      );
+
       this.scheduleGhostEndAfterTabKey(segment, edge);
     } else if (event.key === 'j' || event.key === 'J') {
       event.preventDefault();
@@ -1212,7 +1290,22 @@ export class Timeline implements OnDestroy, AfterViewInit {
       event.preventDefault();
       event.stopPropagation();
       this.endGhostPreview();
+      const beforeSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const beforeOrder = [...this.getCorrelationOrder()];
+
       this.videoSegmentationService.deleteSegment(segment.id!);
+
+      const afterSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const afterOrder = [...this.getCorrelationOrder()];
+      this.undoRedoService.execute(
+        new DeleteSegmentCommand(
+          beforeSegments,
+          beforeOrder,
+          afterSegments,
+          afterOrder,
+          this.videoSegmentationService
+        )
+      );
     }
   }
 
@@ -1461,7 +1554,24 @@ export class Timeline implements OnDestroy, AfterViewInit {
     if (!active) {
       return;
     }
-    this.videoSegmentationService.splitSegment(active.id, this.currentTime());
+
+    const beforeSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+    const beforeOrder = [...this.getCorrelationOrder()];
+
+    const created = this.videoSegmentationService.splitSegment(active.id, this.currentTime());
+    if (created) {
+      const afterSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const afterOrder = [...this.getCorrelationOrder()];
+      this.undoRedoService.execute(
+        new SplitSegmentCommand(
+          beforeSegments,
+          beforeOrder,
+          afterSegments,
+          afterOrder,
+          this.videoSegmentationService
+        )
+      );
+    }
     this.updateFocusForPlayhead(true);
   }
 
@@ -1473,7 +1583,24 @@ export class Timeline implements OnDestroy, AfterViewInit {
     if (!active) {
       return;
     }
-    this.videoSegmentationService.joinSegments(active.id, this.currentTime());
+
+    const beforeSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+    const beforeOrder = [...this.getCorrelationOrder()];
+
+    const joined = this.videoSegmentationService.joinSegments(active.id, this.currentTime());
+    if (joined) {
+      const afterSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const afterOrder = [...this.getCorrelationOrder()];
+      this.undoRedoService.execute(
+        new JoinSegmentsCommand(
+          beforeSegments,
+          beforeOrder,
+          afterSegments,
+          afterOrder,
+          this.videoSegmentationService
+        )
+      );
+    }
     this.updateFocusForPlayhead(true);
   }
 
@@ -1488,7 +1615,22 @@ export class Timeline implements OnDestroy, AfterViewInit {
 
     const seg = this.activeSegment();
     if (seg?.id) {
+      const beforeSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const beforeOrder = [...this.getCorrelationOrder()];
+
       this.videoSegmentationService.deleteSegment(seg.id);
+
+      const afterSegments = this.videoSegmentationService.segments().map((s) => ({ ...s }));
+      const afterOrder = [...this.getCorrelationOrder()];
+      this.undoRedoService.execute(
+        new DeleteSegmentCommand(
+          beforeSegments,
+          beforeOrder,
+          afterSegments,
+          afterOrder,
+          this.videoSegmentationService
+        )
+      );
       this.updateFocusForPlayhead(true);
     }
   }
@@ -1533,5 +1675,14 @@ export class Timeline implements OnDestroy, AfterViewInit {
       this.unlistenMouseUp();
       this.unlistenMouseUp = null;
     }
+  }
+
+  /**
+   * Helper to safely retrieve current correlation order from VideoSegmentationService.
+   *
+   * @returns The current correlation order array.
+   */
+  private getCorrelationOrder(): readonly string[] {
+    return this.videoSegmentationService.correlationOrder ? this.videoSegmentationService.correlationOrder() : [];
   }
 }

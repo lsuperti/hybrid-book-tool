@@ -15,6 +15,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { form, FormField, submit } from '@angular/forms/signals';
 import { Split } from '../../layout/split/split';
 import { ExportService } from '../../../services/export/export';
+import { UndoRedoService } from '../../../services/undo/undo-redo';
+import { UpdateExportMetadataCommand } from '../../../services/undo/commands/export-commands';
 
 /**
  * Metadata fields for the hybrid book imprint.
@@ -64,6 +66,7 @@ export interface OriginalBookMetadata {
 export class Export {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly exportService = inject(ExportService);
+  private readonly undoRedoService = inject(UndoRedoService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly exportSubmitButton = viewChild<ElementRef<HTMLButtonElement>>('exportSubmitButton');
 
@@ -115,8 +118,39 @@ export class Export {
   protected readonly exportForm = form(this.metadataModel);
 
   private readonly unlisteners: (() => void)[] = [];
+  private lastCommittedMetadata: BookImprintMetadata;
+  private isApplyingUndoRedo = false;
 
   constructor() {
+    this.lastCommittedMetadata = this.cloneMetadata(this.metadataModel());
+
+    effect(() => {
+      const current = this.metadataModel();
+      if (this.isApplyingUndoRedo || this.undoRedoService.isOperating()) {
+        this.lastCommittedMetadata = this.cloneMetadata(current);
+        return;
+      }
+
+      if (this.isMetadataEqual(this.lastCommittedMetadata, current)) {
+        return;
+      }
+
+      const before = this.lastCommittedMetadata;
+      const after = this.cloneMetadata(current);
+      this.lastCommittedMetadata = after;
+
+      this.undoRedoService.execute(
+        new UpdateExportMetadataCommand(before, after, (restored) => {
+          this.isApplyingUndoRedo = true;
+          try {
+            this.metadataModel.set(this.cloneMetadata(restored));
+            this.lastCommittedMetadata = this.cloneMetadata(restored);
+          } finally {
+            this.isApplyingUndoRedo = false;
+          }
+        })
+      );
+    });
     effect(() => {
       if (this.visible() && isPlatformBrowser(this.platformId)) {
         queueMicrotask(() => this.updateDimensions());
@@ -216,5 +250,46 @@ export class Export {
 
   protected onCloseAlertSuccess(): void {
     this.exportSuccess.set(null);
+  }
+
+  private cloneMetadata(m: BookImprintMetadata): BookImprintMetadata {
+    return {
+      ...m,
+      originalBook: { ...m.originalBook },
+    };
+  }
+
+  private isMetadataEqual(a: BookImprintMetadata, b: BookImprintMetadata): boolean {
+    if (
+      a.title !== b.title ||
+      a.author !== b.author ||
+      a.illustrations !== b.illustrations ||
+      a.rendering !== b.rendering ||
+      a.editorialRevisions !== b.editorialRevisions ||
+      a.performers !== b.performers ||
+      a.videoEngineer !== b.videoEngineer ||
+      a.videoEditing !== b.videoEditing ||
+      a.soundEngineer !== b.soundEngineer ||
+      a.soundEditor !== b.soundEditor ||
+      a.version !== b.version ||
+      a.published !== b.published ||
+      a.publisher !== b.publisher ||
+      a.year !== b.year ||
+      a.production !== b.production
+    ) {
+      return false;
+    }
+    const oA = a.originalBook;
+    const oB = b.originalBook;
+    return (
+      oA.author === oB.author &&
+      oA.title === oB.title &&
+      oA.publicationNo === oB.publicationNo &&
+      oA.published === oB.published &&
+      oA.publisher === oB.publisher &&
+      oA.year === oB.year &&
+      oA.isbn === oB.isbn &&
+      oA.copyright === oB.copyright
+    );
   }
 }

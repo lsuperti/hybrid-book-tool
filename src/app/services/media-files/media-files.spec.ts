@@ -283,6 +283,41 @@ describe('MediaFiles', () => {
       expect(revokeObjectURLSpy).toHaveBeenCalledWith(textRecordUrl);
     });
   });
+
+  describe('restoreMediaFile, restoreMediaFiles, and restoreTextRecord', () => {
+    it('should restore a single media file at specified index', () => {
+      const f1 = new File(['1'], '1.mp4', { type: 'video/mp4' });
+      const f2 = new File(['2'], '2.mp4', { type: 'video/mp4' });
+      service.addMediaFiles([f1, f2]);
+
+      const removed = service.removeMediaFile(service.mediaFiles()[0].id);
+      expect(service.mediaFiles().length).toBe(1);
+
+      service.restoreMediaFile(removed!.removedFile, removed!.index);
+      expect(service.mediaFiles().length).toBe(2);
+      expect(service.mediaFiles()[0].name).toBe('1.mp4');
+    });
+
+    it('should restore all media files and refresh thumbnails', () => {
+      const f1 = new File(['1'], '1.mp4', { type: 'video/mp4' });
+      const created = service.addMediaFiles([f1]);
+
+      service.restoreMediaFiles(created);
+      expect(service.mediaFiles().length).toBe(1);
+      expect(service.mediaFiles()[0].name).toBe('1.mp4');
+    });
+
+    it('should restore text record from TextRecord state', () => {
+      const pdf = new File(['%PDF-1.4'], 'test.pdf', { type: 'application/pdf' });
+      service.restoreTextRecord({ file: pdf, type: 'application/pdf', url: null });
+
+      expect(service.textRecord().file).toBe(pdf);
+      expect(service.textRecord().type).toBe('application/pdf');
+
+      service.restoreTextRecord(null);
+      expect(service.textRecord().file).toBeNull();
+    });
+  });
 });
 
 /**
