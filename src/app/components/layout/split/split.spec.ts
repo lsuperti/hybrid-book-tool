@@ -177,12 +177,23 @@ describe('Split', () => {
     }
 
     const resizeBar = fixture.debugElement.query(By.css('.resize-bar'));
+    const setPointerCaptureSpy = vi.fn();
+    const releasePointerCaptureSpy = vi.fn();
+    const hasPointerCaptureSpy = vi.fn().mockReturnValue(true);
+
+    resizeBar.nativeElement.setPointerCapture = setPointerCaptureSpy;
+    resizeBar.nativeElement.releasePointerCapture = releasePointerCaptureSpy;
+    resizeBar.nativeElement.hasPointerCapture = hasPointerCaptureSpy;
+
     resizeBar.triggerEventHandler('pointerdown', {
+      target: resizeBar.nativeElement,
+      pointerId: 42,
       clientX: 100,
       preventDefault: vi.fn(),
     });
 
-    expect(component['isResizing']).toBe(true);
+    expect(component['isResizing']()).toBe(true);
+    expect(setPointerCaptureSpy).toHaveBeenCalledWith(42);
 
     // Move pointer right by 40px (+20% in a 200px container)
     window.dispatchEvent(new PointerEvent('pointermove', { clientX: 140 }));
@@ -196,8 +207,9 @@ describe('Split', () => {
     window.dispatchEvent(new PointerEvent('pointermove', { clientX: -200 }));
     expect(component['size']()).toBe(10);
 
-    window.dispatchEvent(new PointerEvent('pointerup'));
-    expect(component['isResizing']).toBe(false);
+    window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 42 }));
+    expect(component['isResizing']()).toBe(false);
+    expect(releasePointerCaptureSpy).toHaveBeenCalledWith(42);
   });
 
   it('should handle pointer drag vertically and clamp to min and max boundaries', async () => {
@@ -213,12 +225,23 @@ describe('Split', () => {
     }
 
     const resizeBar = fixture.debugElement.query(By.css('.resize-bar'));
+    const setPointerCaptureSpy = vi.fn();
+    const releasePointerCaptureSpy = vi.fn();
+    const hasPointerCaptureSpy = vi.fn().mockReturnValue(true);
+
+    resizeBar.nativeElement.setPointerCapture = setPointerCaptureSpy;
+    resizeBar.nativeElement.releasePointerCapture = releasePointerCaptureSpy;
+    resizeBar.nativeElement.hasPointerCapture = hasPointerCaptureSpy;
+
     resizeBar.triggerEventHandler('pointerdown', {
+      target: resizeBar.nativeElement,
+      pointerId: 7,
       clientY: 100,
       preventDefault: vi.fn(),
     });
 
-    expect(component['isResizing']).toBe(true);
+    expect(component['isResizing']()).toBe(true);
+    expect(setPointerCaptureSpy).toHaveBeenCalledWith(7);
 
     // Move pointer down by 40px (+20% in a 200px container)
     window.dispatchEvent(new PointerEvent('pointermove', { clientY: 140 }));
@@ -232,8 +255,44 @@ describe('Split', () => {
     window.dispatchEvent(new PointerEvent('pointermove', { clientY: -200 }));
     expect(component['size']()).toBe(10);
 
-    window.dispatchEvent(new PointerEvent('pointerup'));
-    expect(component['isResizing']).toBe(false);
+    window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 7 }));
+    expect(component['isResizing']()).toBe(false);
+    expect(releasePointerCaptureSpy).toHaveBeenCalledWith(7);
+  });
+
+  it('should stop resizing on pointercancel and lostpointercapture', async () => {
+    const resizeBar = fixture.debugElement.query(By.css('.resize-bar'));
+    const setPointerCaptureSpy = vi.fn();
+    const releasePointerCaptureSpy = vi.fn();
+    const hasPointerCaptureSpy = vi.fn().mockReturnValue(true);
+
+    resizeBar.nativeElement.setPointerCapture = setPointerCaptureSpy;
+    resizeBar.nativeElement.releasePointerCapture = releasePointerCaptureSpy;
+    resizeBar.nativeElement.hasPointerCapture = hasPointerCaptureSpy;
+
+    resizeBar.triggerEventHandler('pointerdown', {
+      target: resizeBar.nativeElement,
+      pointerId: 99,
+      clientX: 100,
+      preventDefault: vi.fn(),
+    });
+    expect(component['isResizing']()).toBe(true);
+
+    window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 99 }));
+    expect(component['isResizing']()).toBe(false);
+    expect(releasePointerCaptureSpy).toHaveBeenCalledWith(99);
+
+    // Test lostpointercapture
+    resizeBar.triggerEventHandler('pointerdown', {
+      target: resizeBar.nativeElement,
+      pointerId: 100,
+      clientX: 100,
+      preventDefault: vi.fn(),
+    });
+    expect(component['isResizing']()).toBe(true);
+
+    window.dispatchEvent(new CustomEvent('lostpointercapture'));
+    expect(component['isResizing']()).toBe(false);
   });
 
   it('should update layout when collapsed input changes', async () => {

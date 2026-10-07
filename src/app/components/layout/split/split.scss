@@ -14,6 +14,14 @@ $resize-bar-grab-width: max(0.5rem, var(--card-spacing));
   height: 100%;
   position: relative;
 
+  &.is-resizing {
+    user-select: none;
+
+    iframe {
+      pointer-events: none;
+    }
+  }
+
   &.horizontal {
     flex-direction: row;
 

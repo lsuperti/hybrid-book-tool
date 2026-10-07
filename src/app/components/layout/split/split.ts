@@ -1,6 +1,7 @@
 import {
   Component,
   linkedSignal,
+  signal,
   viewChild,
   ElementRef,
   afterNextRender,
@@ -29,12 +30,14 @@ export class Split implements OnDestroy {
   public readonly layoutChanged = output<void>();
 
   protected readonly size = linkedSignal(() => this.defaultSize());
+  protected readonly isResizing = signal(false);
   private readonly splitContainer = viewChild<ElementRef<HTMLDivElement>>('splitContainer');
   private readonly unlisteners: (() => void)[] = [];
 
-  private isResizing = false;
   private startPointerPos = 0;
   private startSize = 0;
+  private capturingElement: HTMLElement | null = null;
+  private activePointerId: number | null = null;
 
   /**
    * Checks whether the first area is collapsed.
@@ -66,15 +69,58 @@ export class Split implements OnDestroy {
   }
 
   /**
-   * Handles pointerdown event on the resize bar to initiate dragging.
+   * Handles pointerdown event on the resize bar to initiate dragging with pointer capture.
    *
    * @param event The pointer event.
    */
   protected resizeBarPointerDown(event: PointerEvent) {
-    this.isResizing = true;
+    this.isResizing.set(true);
     this.startPointerPos = this.direction() === 'horizontal' ? event.clientX : event.clientY;
     this.startSize = this.size();
+
+    const targetElement = event.target as HTMLElement | null;
+    if (targetElement && typeof targetElement.setPointerCapture === 'function') {
+      try {
+        targetElement.setPointerCapture(event.pointerId);
+        this.capturingElement = targetElement;
+        this.activePointerId = event.pointerId;
+      } catch (_e) {
+        // Fallback gracefully if setPointerCapture is not permitted.
+      }
+    }
+
     event.preventDefault();
+  }
+
+  /**
+   * Concludes resizing and releases pointer capture if currently captured.
+   *
+   * @param event The optional pointer event triggering the stop.
+   */
+  private stopResizing(event?: PointerEvent) {
+    if (!this.isResizing()) {
+      return;
+    }
+
+    this.isResizing.set(false);
+
+    const pointerIdToRelease = event?.pointerId ?? this.activePointerId;
+    if (
+      this.capturingElement &&
+      pointerIdToRelease !== null &&
+      typeof this.capturingElement.releasePointerCapture === 'function'
+    ) {
+      try {
+        if (this.capturingElement.hasPointerCapture(pointerIdToRelease)) {
+          this.capturingElement.releasePointerCapture(pointerIdToRelease);
+        }
+      } catch (_e) {
+        // Ignore if pointer capture was already released by the browser.
+      }
+    }
+
+    this.capturingElement = null;
+    this.activePointerId = null;
   }
 
   /**
@@ -126,7 +172,7 @@ export class Split implements OnDestroy {
     afterNextRender(() => {
       this.unlisteners.push(
         this.renderer2.listen('window', 'pointermove', (event: PointerEvent) => {
-          if (this.isResizing) {
+          if (this.isResizing()) {
             const containerRect = this.splitContainer()?.nativeElement.getBoundingClientRect();
             const containerDimension =
               this.direction() === 'horizontal' ? (containerRect?.width || 0) : (containerRect?.height || 0);
@@ -150,10 +196,20 @@ export class Split implements OnDestroy {
       );
 
       this.unlisteners.push(
-        this.renderer2.listen('window', 'pointerup', () => {
-          if (this.isResizing) {
-            this.isResizing = false;
-          }
+        this.renderer2.listen('window', 'pointerup', (event: PointerEvent) => {
+          this.stopResizing(event);
+        })
+      );
+
+      this.unlisteners.push(
+        this.renderer2.listen('window', 'pointercancel', (event: PointerEvent) => {
+          this.stopResizing(event);
+        })
+      );
+
+      this.unlisteners.push(
+        this.renderer2.listen('window', 'lostpointercapture', () => {
+          this.stopResizing();
         })
       );
     });

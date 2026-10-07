@@ -5,6 +5,7 @@ class="split-container"
 [class.vertical]="direction() === 'vertical'"
 [class.first-collapsed]="isFirstCollapsed()"
 [class.second-collapsed]="isSecondCollapsed()"
+[class.is-resizing]="isResizing()"
 [style.--first-size.%]="isFirstCollapsed() ? 0 : isSecondCollapsed() ? 100 : size()"
 >
   @if (isSecondCollapsed() || isCollapsedNone()) {
