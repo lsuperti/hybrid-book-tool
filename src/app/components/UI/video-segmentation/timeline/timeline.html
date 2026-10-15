@@ -1,7 +1,7 @@
 <div #timelineContainer class="timeline-component-container">
   <div class="timeline-header-toolbar" tabindex="-1" (keydown)="onToolbarKeydown($event)">
-    <!-- STUB: Placeholder for magic auto-segmentation button -->
-    <button
+    <!-- TODO: Implement magic segmentation. -->
+    <!-- <button
     type="button"
     class="timeline-header-button magic-button"
     (click)="onMagicButtonClick()"
@@ -15,7 +15,7 @@
       </div>
     </button>
 
-    <div class="toolbar-divider"></div>
+    <div class="toolbar-divider"></div> -->
 
     <button
     type="button"
@@ -276,6 +276,7 @@
                   [attr.id]="'segment-content-' + item.segment.id"
                   class="segment-content"
                   tabindex="-1"
+                  role="region"
                   (mousedown)="onSegmentMouseDown($event, item.segment)"
                   [attr.aria-label]="'Segmento ' + item.segment.name"
                   ></div>
@@ -321,7 +322,7 @@
 </div>
 
 <ng-template #magicIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:4" d="M 4,20 14.5,9.5" />
     <path style="fill:none;stroke:currentColor;stroke-width:4" d="M 16.5,7.5 18,6" />
     <circle style="fill:currentColor" cx="18" cy="6" r="2" />
@@ -331,7 +332,7 @@
 </ng-template>
 
 <ng-template #splitIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 3,6 C 3,18 3,18 3,18" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 21,6 V 18" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 12,7 V 17" />
@@ -343,7 +344,7 @@
 </ng-template>
 
 <ng-template #splitDisabledIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 21,6 V 18" />
     <path style="fill:currentColor" d="M 2,6 V 18 H 3.171875 L 4,17.171875 V 6 Z" />
     <path style="fill:currentColor" d="m 11,7 v 3.171875 l 2,-2 V 7 Z M 7.5,8.5 4,12 6.5859375,14.585938 7.5,13.671875 V 13 h 0.671875 l 2,-2 H 7.5 Z m 9,0 V 11 H 13 l -2,2 v 4 h 2 v -4 h 3.5 v 2.5 L 20,12 Z" />
@@ -353,7 +354,7 @@
 
 <ng-template #createSegmentIcon #zoomInIcon>
   <!-- Handwritten SVG -->
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 2,12 H 22" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 12,2 V 22" />
   </svg>
@@ -361,13 +362,13 @@
 
 <ng-template #zoomOutIcon>
   <!-- Handwritten SVG -->
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 4,12 H 20" />
   </svg>
 </ng-template>
 
 <ng-template #joinIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 3,6 C 3,18 3,18 3,18" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 21,6 V 18" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 12,7 V 17" />
@@ -379,7 +380,7 @@
 </ng-template>
 
 <ng-template #joinDisabledIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="M 2,6 V 18 H 3.171875 L 4,17.171875 V 13 h 3.5 v 0.671875 L 10.085938,11.085938 7.5,8.5 V 11 H 4 V 6 Z m 9,1 v 3.171875 l 2,-2 V 7 Z m 2,4 -2,2 v 4 h 2 z" />
     <path style="fill:currentColor" d="m 20,6 v 5 H 16.5 V 8.5 L 13,12 16.5,15.5 V 13 H 20 v 5 h 2 V 6 Z" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 2.7070312,22.707031 22.707031,2.7070312" />
@@ -387,7 +388,7 @@
 </ng-template>
 
 <ng-template #deleteIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="m 6,7 v 12 c 0,1.107999 0.8920011,2 2,2 h 8 c 1.107999,0 2,-0.892001 2,-2 V 7 Z" />
     <rect style="fill:currentColor" width="14" height="2" x="5" y="4" ry="0.5" />
     <rect style="fill:currentColor" id="rect12" width="7" height="1.5" x="8.5" y="3" ry="0.5" />
@@ -395,7 +396,7 @@
 </ng-template>
 
 <ng-template #deleteDisabledIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="m 6,7 v 8.171875 L 14.171875,7 Z M 17,7 6,18 v 1 c 0,1.107998 0.8920022,2 2,2 h 8 c 1.107998,0 2,-0.892002 2,-2 V 7 Z" />
     <path style="fill:currentColor" d="M 9,3 C 8.7230006,3 8.5,3.2230006 8.5,3.5 V 4 h -3 C 5.2230006,4 5,4.2230006 5,4.5 v 1 C 5,5.7769994 5.2230006,6 5.5,6 h 9.671875 l 2,-2 H 15.5 V 3.5 C 15.5,3.2230006 15.277,3 15,3 Z m 10,2 -1,1 h 0.5 C 18.777,6 19,5.7769994 19,5.5 Z" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 2.7070312,22.707031 22.707031,2.7070312" />
@@ -403,53 +404,53 @@
 </ng-template>
 
 <ng-template #prevSegmentIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="M 9.5,12 18,18 V 6 Z" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 7,6 V 18" />
   </svg>
 </ng-template>
 
 <ng-template #backward1sIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="M 20,6 11.431111,12 20,18 Z" />
     <path style="fill:currentColor" d="M 2.5,12 11.068888,6 v 12 z" />
   </svg>
 </ng-template>
 
 <ng-template #backward1fIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="M 8,12 14,6 V 18 Z" />
   </svg>
 </ng-template>
 
 <ng-template #playIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="M 8,5 19,12 8,19 Z" />
   </svg>
 </ng-template>
 
 <ng-template #pauseIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:none;stroke:currentColor;stroke-width:4" d="M 8,5 V 19" />
     <path style="fill:none;stroke:currentColor;stroke-width:4" d="M 16,5 V 19" />
   </svg>
 </ng-template>
 
 <ng-template #forward1fIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor" d="m 10,6 6,6 -6,6 z" />
   </svg>
 </ng-template>
 
 <ng-template #forward1sIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:2;stroke-linejoin:round;stroke-dashoffset:9.99999" d="M 4,6 12.568888,12 4,18 Z" />
     <path style="fill:currentColor" d="M 21.5,12 12.931112,6 v 12 z" />
   </svg>
 </ng-template>
 
 <ng-template #nextSegmentIcon>
-  <svg class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
+  <svg aria-hidden="true" class="icon" viewBox="0 0 24 24" width="1.5rem" height="1.5rem" fill="currentColor">
     <path d="M 14.5,12 6,18 V 6 Z" style="fill:currentColor" />
     <path style="fill:none;stroke:currentColor;stroke-width:2" d="M 17,6 V 18" />
   </svg>

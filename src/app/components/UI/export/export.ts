@@ -18,6 +18,8 @@ import { Viewer } from '../../common/viewer/viewer';
 import { ExportService } from '../../../services/export/export';
 import { UndoRedoService } from '../../../services/undo/undo-redo';
 import { UpdateExportMetadataCommand } from '../../../services/undo/commands/export-commands';
+import { TextSegmentationService } from '../../../services/text-segmentation/text-segmentation';
+import { VideoSegmentationService } from '../../../services/video-segmentation/video-segmentation';
 
 /**
  * Metadata fields for the hybrid book imprint.
@@ -69,9 +71,31 @@ export class Export {
   private readonly exportService = inject(ExportService);
   private readonly undoRedoService = inject(UndoRedoService);
   private readonly destroyRef = inject(DestroyRef);
+  protected readonly textSegmentationService = inject(TextSegmentationService);
+  protected readonly videoSegmentationService = inject(VideoSegmentationService);
   private readonly exportSubmitButton = viewChild<ElementRef<HTMLButtonElement>>('exportSubmitButton');
 
   public readonly visible = input.required<boolean>();
+
+  protected readonly activeTextSegments = computed(() => {
+    return this.textSegmentationService.segments().filter((segment) => !segment.excluded);
+  });
+
+  protected readonly correlatedVideoSegments = computed(() => {
+    return this.videoSegmentationService.correlatedSegments();
+  });
+
+  protected readonly alignedSegmentsCount = computed(() => {
+    return Math.min(this.activeTextSegments().length, this.correlatedVideoSegments().length);
+  });
+
+  protected readonly hasSegmentMismatch = computed(() => {
+    return (
+      this.activeTextSegments().length > 0 &&
+      this.correlatedVideoSegments().length > 0 &&
+      this.activeTextSegments().length !== this.correlatedVideoSegments().length
+    );
+  });
 
   protected readonly isExporting = signal(false);
   protected readonly exportError = signal<string | null>(null);

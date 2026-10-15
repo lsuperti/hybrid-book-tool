@@ -90,7 +90,9 @@ export class PdfTextRecordExporter implements TextRecordExporter {
       root.addChild(phraseElement);
     });
 
-    const doc = new XmlDocument(root);
+    const doc = new XmlDocument(root, {
+      doctype: '<!DOCTYPE book SYSTEM "pdf_phrase_map_1.0.0-schema.dtd">',
+    });
     return doc.toString();
   }
 }

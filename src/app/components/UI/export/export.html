@@ -405,7 +405,7 @@ direction="horizontal"
       class="export-submit-button"
       [disabled]="isExporting()"
       [attr.aria-busy]="isExporting()"
-      aria-label="Exportar livro híbrido"
+      [attr.aria-label]="isExporting() ? ('Exportando livro híbrido (' + progressPercent() + '%)') : 'Exportar livro híbrido'"
       (click)="onExport()"
       >
         @if (isExporting()) {
@@ -485,6 +485,19 @@ direction="horizontal"
   </div>
 
   <div right class="card preview-container">
+    @if (hasSegmentMismatch()) {
+      <div class="segment-mismatch-banner" role="status">
+        <ng-container *ngTemplateOutlet="warningIcon"></ng-container>
+        <p class="mismatch-text">
+          Aviso: Quantidade divergente de segmentos ({{ activeTextSegments().length }}
+          {{ activeTextSegments().length === 1 ? 'segmento de texto' : 'segmentos de texto' }}
+          e {{ correlatedVideoSegments().length }}
+          {{ correlatedVideoSegments().length === 1 ? 'segmento de vídeo' : 'segmentos de vídeo' }}).
+          Apenas {{ alignedSegmentsCount() === 1 ? 'o primeiro segmento alinhado' : 'os primeiros ' + alignedSegmentsCount().toString() + ' segmentos alinhados' }}
+          {{ alignedSegmentsCount() === 1 ? 'será exportado' : 'serão exportados' }}.
+        </p>
+      </div>
+    }
     <app-viewer
     class="preview-viewer"
     [visible]="visible()"
@@ -492,8 +505,16 @@ direction="horizontal"
   </div>
 </app-split>
 
+<ng-template #warningIcon>
+  <svg aria-hidden="true" class="icon mismatch-icon" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <circle style="fill:currentColor" cx="128" cy="198.4852" r="8" />
+    <path style="fill:currentColor;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="m 125.18985,91.16989 h 5.6203 L 128,169.50391 Z" />
+    <path style="fill:none;stroke:currentColor;stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 128,23.360286 248,231.20638 H 8 Z" />
+  </svg>
+</ng-template>
+
 <ng-template #exportIcon>
-  <svg viewBox="0 0 24 24">
+  <svg aria-hidden="true" viewBox="0 0 24 24">
     <defs>
       <pattern
       patternUnits="userSpaceOnUse"
@@ -535,7 +556,7 @@ direction="horizontal"
 </ng-template>
 
 <ng-template #closeIcon>
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" d="M 3,3 21,21" />
     <path style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" d="M 3,21 21,3" />
   </svg>

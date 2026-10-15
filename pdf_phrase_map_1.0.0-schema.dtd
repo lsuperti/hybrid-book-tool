@@ -1,0 +1,32 @@
+<!--
+  Hybrid Book 3.0 - PDF Phrase Map Schema
+  Version: 1.0.0
+  Description:
+    Document Type Definition (DTD) for the PDF phrase mapping descriptor
+    accompanying a PDF text record in a Hybrid Book 3.0 publication.
+    Maps canonical navigation and synchronization phrase IDs to PDF pages
+    and sequential Marked Content identifiers.
+-->
+
+<!-- Root element of the phrase map -->
+<!ELEMENT phrase_map (phrase*)>
+<!ATTLIST phrase_map
+  file CDATA #REQUIRED
+>
+
+<!-- Phrase element: maps a canonical phrase ID to one or more marked content segments -->
+<!ELEMENT phrase (segment+)>
+<!ATTLIST phrase
+  id CDATA #REQUIRED
+  page CDATA #REQUIRED
+>
+
+<!-- Segment element: identifies a specific PDF marked content occurrence on a page -->
+<!ELEMENT segment EMPTY>
+<!ATTLIST segment
+  id CDATA #REQUIRED
+  page CDATA #REQUIRED
+>
+
+<!-- Compatibility declaration for standard Hybrid Book DOCTYPE book declaration -->
+<!ELEMENT book (phrase_map*)>

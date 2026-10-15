@@ -1,8 +1,8 @@
 # Undo/Redo Architecture & Core Service
 
-The `UndoRedoService` provides an extensible, memory-efficient, and reactive Undo/Redo system for the Hybrid Book Tool.
-It enables every user action across all five workflow phases (Ingest, Text Segmentation, Video Segmentation,
-Correlation, and Export) to be reversed and restored with minimal overhead and zero data loss.
+The `UndoRedoService` provides an extensible, memory-efficient, and reactive Undo/Redo system for the Hybrid Book
+Creation Tool. It enables every user action across all five workflow phases (Ingest, Text Segmentation, Video
+Segmentation, Correlation, and Export) to be reversed and restored with minimal overhead and zero data loss.
 
 ---
 

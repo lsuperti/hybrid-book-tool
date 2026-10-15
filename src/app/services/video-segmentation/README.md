@@ -1,7 +1,7 @@
 # Video Segmentation Service
 
 The `VideoSegmentationService` manages the temporal segmentation of video files, time boundaries, split/join mechanics,
-and correlation ordering for the Hybrid Book Tool.
+and correlation ordering for the Hybrid Book Creation Tool.
 
 ---
 

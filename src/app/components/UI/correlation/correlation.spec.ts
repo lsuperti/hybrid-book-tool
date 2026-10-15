@@ -345,4 +345,67 @@ describe('Correlation', () => {
       expect(component['hoveredSegmentPdfJsId']()).toBeNull();
     });
   });
+
+  describe('Video Segment Container and Nested Button Elimination', () => {
+    it('should not contain nested buttons in correlation-video-segment-container', () => {
+      mediaFilesService.textRecord.set({ file: null, type: 'application/pdf', url: 'blob:test' });
+      const mockTextSegment: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'pdfjs-0',
+        page: 1,
+        text: 'Sample text',
+        excluded: false,
+        linkedChildren: [],
+      };
+      textSegmentationService.segments.set([mockTextSegment]);
+      videoSegmentationService.segments.set([{
+        fileId: 'media-1' as MediaFileId, name: 'Video 1', startTime: 0, endTime: 10, thumbnail: null
+      }]);
+      fixture.detectChanges();
+
+      const container = fixture.debugElement.query(By.css('.correlation-video-segment-container'));
+      expect(container).toBeTruthy();
+
+      const segmentButton = container.query(By.css('.correlation-video-segment-button'));
+      expect(segmentButton).toBeTruthy();
+      expect(segmentButton.nativeElement.tagName.toLowerCase()).toBe('button');
+
+      // The segment button itself must not contain any nested button elements
+      const nestedButtonsInsideSegmentButton = segmentButton.queryAll(By.css('button'));
+      expect(nestedButtonsInsideSegmentButton.length).toBe(0);
+
+      // Up and down buttons should be siblings within the container, not descendants of the segment button
+      const upButton = container.query(By.css('.up-button'));
+      const downButton = container.query(By.css('.down-button'));
+      expect(upButton).toBeTruthy();
+      expect(downButton).toBeTruthy();
+
+      // Video segment button must be keyboard focusable (not disabled or forced to tabindex -1)
+      expect(segmentButton.nativeElement.getAttribute('tabindex')).toBeNull();
+      expect(segmentButton.nativeElement.getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('should highlight corresponding PDF text segment when focusing on video segment button', () => {
+      mediaFilesService.textRecord.set({ file: null, type: 'application/pdf', url: 'blob:test' });
+      const mockTextSegment: TextSegment = {
+        sequentialId: 0,
+        pdfJsId: 'pdfjs-test',
+        page: 2,
+        text: 'Segment text',
+        excluded: false,
+        linkedChildren: [],
+      };
+      textSegmentationService.segments.set([mockTextSegment]);
+      videoSegmentationService.segments.set([{
+        fileId: 'media-1' as MediaFileId, name: 'Video 1', startTime: 0, endTime: 10, thumbnail: null
+      }]);
+      fixture.detectChanges();
+
+      const segmentButton = fixture.debugElement.query(By.css('.correlation-video-segment-button'));
+      expect(segmentButton).toBeTruthy();
+
+      segmentButton.nativeElement.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      expect(component['hoveredSegmentPdfJsId']()).toEqual({ pdfJsId: 'pdfjs-test', page: 2 });
+    });
+  });
 });

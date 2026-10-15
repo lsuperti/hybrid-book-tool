@@ -1,10 +1,29 @@
-import { Component, signal, computed, inject, Renderer2, OnDestroy } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  inject,
+  Renderer2,
+  OnDestroy,
+  viewChildren,
+  ElementRef,
+} from '@angular/core';
 import { Ingest } from '../ingest/ingest';
 import { TextSegmentation } from '../text-segmentation/text-segmentation';
 import { VideoSegmentation } from '../video-segmentation/video-segmentation';
 import { Correlation } from '../correlation/correlation';
 import { Export } from '../export/export';
 import { UndoRedoService } from '../../../services/undo/undo-redo';
+
+export type Tab = 'ingest' | 'text-segmentation' | 'video-segmentation' | 'correlation' | 'export';
+
+export const WORKFLOW_TABS: readonly Tab[] = [
+  'ingest',
+  'text-segmentation',
+  'video-segmentation',
+  'correlation',
+  'export',
+];
 
 /**
  * Root workflow component orchestrating the main application phases,
@@ -41,6 +60,7 @@ export class Workflow implements OnDestroy {
     return desc ? `Refazer ${desc}` : 'Refazer';
   });
 
+  private readonly tabButtons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
   private readonly renderer2 = inject(Renderer2);
   private readonly unlisteners: (() => void)[] = [];
 
@@ -59,6 +79,41 @@ export class Workflow implements OnDestroy {
    */
   protected tabButtonClick(tab: Tab): void {
     this.currentTab.set(tab);
+  }
+
+  /**
+   * Handles keyboard navigation within the tabs list according to the WAI-ARIA APG Tabs pattern.
+   * Supports ArrowRight, ArrowLeft, Home, and End keys with roving tabindex.
+   *
+   * @param event The keyboard event.
+   * @param tab The tab identifier that received the keydown event.
+   */
+  protected onTabKeydown(event: KeyboardEvent, tab: Tab): void {
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    const currentIndex = WORKFLOW_TABS.indexOf(tab);
+    let targetIndex = -1;
+
+    if (event.key === 'ArrowRight') {
+      targetIndex = (currentIndex + 1) % WORKFLOW_TABS.length;
+    } else if (event.key === 'ArrowLeft') {
+      targetIndex = (currentIndex - 1 + WORKFLOW_TABS.length) % WORKFLOW_TABS.length;
+    } else if (event.key === 'Home') {
+      targetIndex = 0;
+    } else if (event.key === 'End') {
+      targetIndex = WORKFLOW_TABS.length - 1;
+    }
+
+    if (targetIndex !== -1) {
+      event.preventDefault();
+      const targetTab = WORKFLOW_TABS[targetIndex];
+      this.currentTab.set(targetTab);
+      const buttons = this.tabButtons();
+      const targetButton = buttons[targetIndex];
+      targetButton?.nativeElement.focus();
+    }
   }
 
   /**
@@ -122,5 +177,3 @@ export class Workflow implements OnDestroy {
     }
   }
 }
-
-type Tab = 'ingest' | 'text-segmentation' | 'video-segmentation' | 'correlation' | 'export';

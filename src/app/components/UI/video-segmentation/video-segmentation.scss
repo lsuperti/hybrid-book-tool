@@ -36,7 +36,8 @@ $thumbnail-height: $list-item-height - 1rem;
     background-color: var(--card-bg-accent);
   }
 
-  &[aria-selected="true"] {
+  &[aria-selected="true"],
+  &.selected {
     .segment-name-container .segment-name {
       color: var(--primary-color);
     }

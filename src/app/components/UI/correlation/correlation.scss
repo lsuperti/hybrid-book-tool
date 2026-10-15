@@ -105,6 +105,14 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   align-items: stretch;
 }
 
+.correlation-video-segment-container {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+}
+
 .correlation-video-segment-button {
   flex: 1;
   min-width: 0;
@@ -112,10 +120,24 @@ $thumbnail-height: calc(var(--button-size) * 2 + $spacing-between-up-down-button
   border: none;
   display: flex;
   align-items: center;
-  padding: 0.5rem;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
 
-  &[aria-selected="true"] .video-segment-name-container .video-segment-name {
-    color: var(--primary-color);
+  &:focus-visible {
+    outline: var(--button-border-thickness) solid var(--primary-color);
+    outline-offset: 0.125rem;
+    border-radius: var(--button-border-radius);
+  }
+
+  &[aria-selected="true"],
+  &[aria-pressed="true"],
+  &.selected {
+    .video-segment-name-container .video-segment-name {
+      color: var(--primary-color);
+    }
   }
 }
 

@@ -1647,10 +1647,10 @@ export class Timeline implements OnDestroy, AfterViewInit {
   }
 
   /**
-   * Placeholder handler for the magic automatic segmentation button.
+   * Handles the click event on the magic automatic segmentation button.
    */
   public onMagicButtonClick(): void {
-    // STUB: Unimplemented magic auto-segmentation button placeholder.
+    // TODO: Implement magic auto-segmentation.
   }
 
   private scheduleGhostEndAfterTabKey(segment: VideoSegment, edge: 'start' | 'end'): void {

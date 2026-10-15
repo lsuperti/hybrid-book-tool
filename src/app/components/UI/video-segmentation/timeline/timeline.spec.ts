@@ -1045,6 +1045,8 @@ describe('Timeline', () => {
 
         const buttons = fixture.nativeElement.querySelectorAll('.timeline-header-toolbar .timeline-header-button');
 
+        /*
+        // TODO: Implement the magic button. These indices assume there is a magic button, which isn't there currently.
         // Button index 0: magic button
         // Button index 1: Cut button
         // Button index 2: Join button
@@ -1052,6 +1054,11 @@ describe('Timeline', () => {
         const cutButton = buttons[1] as HTMLButtonElement;
         const joinButton = buttons[2] as HTMLButtonElement;
         const deleteButton = buttons[3] as HTMLButtonElement;
+        // The following indices are relative to the buttons the way they are currently, without the magic button.
+        */
+        const cutButton = buttons[0] as HTMLButtonElement;
+        const joinButton = buttons[1] as HTMLButtonElement;
+        const deleteButton = buttons[2] as HTMLButtonElement;
 
         expect(cutButton.disabled).toBe(false);
         expect(joinButton.disabled).toBe(true);

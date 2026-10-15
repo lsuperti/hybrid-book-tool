@@ -53,6 +53,7 @@ describe('PdfTextRecordExporter', () => {
 
     const phraseMapContent = result.files[1].content as string;
     expect(phraseMapContent).toContain('<?xml version="1.0" encoding="utf-8"?>');
+    expect(phraseMapContent).toContain('<!DOCTYPE book SYSTEM "pdf_phrase_map_1.0.0-schema.dtd">');
     expect(phraseMapContent).toContain('<phrase_map file="sample.pdf">');
     expect(phraseMapContent).toContain('<phrase id="1" page="1">');
     expect(phraseMapContent).toContain('<segment id="0" page="1" />');

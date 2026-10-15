@@ -1,22 +1,71 @@
 <main>
-  <app-ingest [style.visibility]="currentTab() === 'ingest' ? 'visible' : 'hidden'" [visible]="currentTab() === 'ingest'"></app-ingest>
-  <app-text-segmentation [style.visibility]="currentTab() === 'text-segmentation' ? 'visible' : 'hidden'" [visible]="currentTab() === 'text-segmentation'"></app-text-segmentation>
-  <app-video-segmentation [style.visibility]="currentTab() === 'video-segmentation' ? 'visible' : 'hidden'" [visible]="currentTab() === 'video-segmentation'"></app-video-segmentation>
-  <app-correlation [style.visibility]="currentTab() === 'correlation' ? 'visible' : 'hidden'" [visible]="currentTab() === 'correlation'"></app-correlation>
-  <app-export [style.visibility]="currentTab() === 'export' ? 'visible' : 'hidden'" [visible]="currentTab() === 'export'"></app-export>
+  <app-ingest
+  id="tabpanel-ingest"
+  role="tabpanel"
+  aria-labelledby="tab-ingest"
+  [attr.tabindex]="currentTab() === 'ingest' ? 0 : -1"
+  [attr.aria-hidden]="currentTab() !== 'ingest'"
+  [style.visibility]="currentTab() === 'ingest' ? 'visible' : 'hidden'"
+  [visible]="currentTab() === 'ingest'"
+  ></app-ingest>
+  <app-text-segmentation
+  id="tabpanel-text-segmentation"
+  role="tabpanel"
+  aria-labelledby="tab-text-segmentation"
+  [attr.tabindex]="currentTab() === 'text-segmentation' ? 0 : -1"
+  [attr.aria-hidden]="currentTab() !== 'text-segmentation'"
+  [style.visibility]="currentTab() === 'text-segmentation' ? 'visible' : 'hidden'"
+  [visible]="currentTab() === 'text-segmentation'"
+  ></app-text-segmentation>
+  <app-video-segmentation
+  id="tabpanel-video-segmentation"
+  role="tabpanel"
+  aria-labelledby="tab-video-segmentation"
+  [attr.tabindex]="currentTab() === 'video-segmentation' ? 0 : -1"
+  [attr.aria-hidden]="currentTab() !== 'video-segmentation'"
+  [style.visibility]="currentTab() === 'video-segmentation' ? 'visible' : 'hidden'"
+  [visible]="currentTab() === 'video-segmentation'"
+  ></app-video-segmentation>
+  <app-correlation
+  id="tabpanel-correlation"
+  role="tabpanel"
+  aria-labelledby="tab-correlation"
+  [attr.tabindex]="currentTab() === 'correlation' ? 0 : -1"
+  [attr.aria-hidden]="currentTab() !== 'correlation'"
+  [style.visibility]="currentTab() === 'correlation' ? 'visible' : 'hidden'"
+  [visible]="currentTab() === 'correlation'"
+  ></app-correlation>
+  <app-export
+  id="tabpanel-export"
+  role="tabpanel"
+  aria-labelledby="tab-export"
+  [attr.tabindex]="currentTab() === 'export' ? 0 : -1"
+  [attr.aria-hidden]="currentTab() !== 'export'"
+  [style.visibility]="currentTab() === 'export' ? 'visible' : 'hidden'"
+  [visible]="currentTab() === 'export'"
+  ></app-export>
 </main>
 
-<nav class="tabs" role="tablist" aria-label="Abas do fluxo de trabalho">
+<div class="workflow-action-announcement-sr" aria-live="polite" aria-atomic="true">
+  {{ lastActionAnnouncement() }}
+</div>
+
+<nav class="tabs" role="tablist" aria-orientation="horizontal" aria-label="Abas do fluxo de trabalho">
   <ol class="tabs-list" role="presentation">
     <li class="tab" role="presentation">
       <button
+      #tabButton
+      id="tab-ingest"
       (click)="tabButtonClick('ingest')"
+      (keydown)="onTabKeydown($event, 'ingest')"
       class="tab-button ingest-button"
       role="tab"
       aria-label="Ingestão de arquivos de mídia e registro de texto"
       title="Ingestão de arquivos de mídia e registro de texto"
-      aria-selected="{{ currentTab() === 'ingest' }}"
-      tabindex="0">
+      aria-controls="tabpanel-ingest"
+      [attr.aria-selected]="currentTab() === 'ingest'"
+      [attr.tabindex]="currentTab() === 'ingest' ? 0 : -1"
+      >
         <div class="icon-container">
           <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="192" height="128" x="64" y="256" />
@@ -39,13 +88,18 @@
     </li>
     <li class="tab" role="presentation">
       <button
+      #tabButton
+      id="tab-text-segmentation"
       (click)="tabButtonClick('text-segmentation')"
+      (keydown)="onTabKeydown($event, 'text-segmentation')"
       class="tab-button text-segmentation-button"
       role="tab"
       aria-label="Segmentação de texto"
       title="Segmentação de texto"
-      aria-selected="{{ currentTab() === 'text-segmentation' }}"
-      tabindex="0">
+      aria-controls="tabpanel-text-segmentation"
+      [attr.aria-selected]="currentTab() === 'text-segmentation'"
+      [attr.tabindex]="currentTab() === 'text-segmentation' ? 0 : -1"
+      >
         <div class="icon-container">
           <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="display:inline;fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="416" height="192" x="48" y="160" />
@@ -64,13 +118,18 @@
     </li>
     <li class="tab" role="presentation">
       <button
+      #tabButton
+      id="tab-video-segmentation"
       (click)="tabButtonClick('video-segmentation')"
+      (keydown)="onTabKeydown($event, 'video-segmentation')"
       class="tab-button video-segmentation-button"
       role="tab"
       aria-label="Segmentação de vídeo"
       title="Segmentação de vídeo"
-      aria-selected="{{ currentTab() === 'video-segmentation' }}"
-      tabindex="0">
+      aria-controls="tabpanel-video-segmentation"
+      [attr.aria-selected]="currentTab() === 'video-segmentation'"
+      [attr.tabindex]="currentTab() === 'video-segmentation' ? 0 : -1"
+      >
         <div class="icon-container">
           <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="416" height="192" x="48" y="160" />
@@ -87,13 +146,18 @@
     </li>
     <li class="tab" role="presentation">
       <button
+      #tabButton
+      id="tab-correlation"
       (click)="tabButtonClick('correlation')"
+      (keydown)="onTabKeydown($event, 'correlation')"
       class="tab-button correlation-button"
       role="tab"
       aria-label="Correlação entre segmentos de texto e segmentos de vídeo"
       title="Correlação entre segmentos de texto e segmentos de vídeo"
-      aria-selected="{{ currentTab() === 'correlation' }}"
-      tabindex="0">
+      aria-controls="tabpanel-correlation"
+      [attr.aria-selected]="currentTab() === 'correlation'"
+      [attr.tabindex]="currentTab() === 'correlation' ? 0 : -1"
+      >
         <div class="icon-container">
           <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <rect style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" width="384" height="256" x="64" y="128" />
@@ -115,13 +179,18 @@
     </li>
     <li class="tab" role="presentation">
       <button
+      #tabButton
+      id="tab-export"
       (click)="tabButtonClick('export')"
+      (keydown)="onTabKeydown($event, 'export')"
       class="tab-button export-button"
       role="tab"
       aria-label="Exportação"
       title="Exportação"
-      aria-selected="{{ currentTab() === 'export' }}"
-      tabindex="0">
+      aria-controls="tabpanel-export"
+      [attr.aria-selected]="currentTab() === 'export'"
+      [attr.tabindex]="currentTab() === 'export' ? 0 : -1"
+      >
         <div class="icon-container">
           <svg aria-hidden="true" class="icon" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <path style="fill:none;stroke:currentColor;stroke-width:32;stroke-linejoin:round" d="m 378.05395,201.82826 c 26.82016,-26.82014 21.54956,-68.96002 11.31371,-79.19588 -10.23587,-10.23585 -52.37575,-15.50645 -79.1959,11.3137 l -113.13699,113.13697 67.8822,67.88219 z" />

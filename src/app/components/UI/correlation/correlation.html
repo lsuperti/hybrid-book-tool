@@ -67,32 +67,33 @@ direction="vertical"
                 <div class="empty-segment"></div>
               }
             </div>
-            <button
-            class="correlation-video-segment-button"
-            tabindex="-1"
-            [disabled]="!row.videoSegment"
-            [aria-selected]="row.textSegment && row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId"
-            (click)="onSegmentButtonClick(row.textSegment)"
-            (dblclick)="onSegmentButtonDoubleClick(row.textSegment)"
-            >
+            <div class="correlation-video-segment-container">
               @if (row.videoSegment) {
-                @if (row.videoSegment.thumbnail) {
-                  <div class="video-segment-thumbnail-container">
-                    <img
-                    inert
-                    class="video-segment-thumbnail"
-                    [src]="row.videoSegment.thumbnail"
-                    [alt]="'Thumbnail de ' + row.videoSegment.name"
-                    />
+                <button
+                class="correlation-video-segment-button"
+                [class.selected]="row.textSegment ? row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId : false"
+                [attr.aria-pressed]="row.textSegment ? row.textSegment.pdfJsId === selectedSegmentPdfJsId()?.pdfJsId : false"
+                (click)="onSegmentButtonClick(row.textSegment)"
+                (dblclick)="onSegmentButtonDoubleClick(row.textSegment)"
+                >
+                  @if (row.videoSegment.thumbnail) {
+                    <div class="video-segment-thumbnail-container">
+                      <img
+                      inert
+                      class="video-segment-thumbnail"
+                      [src]="row.videoSegment.thumbnail"
+                      [alt]="'Thumbnail de ' + row.videoSegment.name"
+                      />
+                    </div>
+                  } @else {
+                    <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
+                      <ng-container *ngTemplateOutlet="thumbnailPlaceholder"></ng-container>
+                    </div>
+                  }
+                  <div class="video-segment-name-container">
+                    <p class="video-segment-name">{{ row.videoSegment.name }}</p>
                   </div>
-                } @else {
-                  <div class="video-segment-thumbnail-container video-segment-thumbnail-placeholder">
-                    <ng-container *ngTemplateOutlet="thumbnailPlaceholder"></ng-container>
-                  </div>
-                }
-                <div class="video-segment-name-container">
-                  <p class="video-segment-name">{{ row.videoSegment.name }}</p>
-                </div>
+                </button>
                 <div class="up-down-buttons-container">
                   <button
                   #upButton
@@ -118,7 +119,7 @@ direction="vertical"
               } @else {
                 <div class="empty-segment"></div>
               }
-            </button>
+            </div>
             <span class="correlation-splitter" aria-hidden="true"></span>
           </li>
         }
